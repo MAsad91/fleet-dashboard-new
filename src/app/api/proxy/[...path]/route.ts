@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { API_CONFIG } from '@/config/api';
+import { API_CONFIG, getCompanyApiUrl } from '@/config/api';
 
 const API_BASE_URL = API_CONFIG.BASE_URL;
 
@@ -63,12 +63,31 @@ async function handleRequest(request: NextRequest, method: string) {
     console.log(`🔐 Original path: ${originalPath}`);
     console.log(`🔐 Processed path: ${apiPath}`);
     
-    // Build the full URL with query parameters
-    const fullUrl = new URL(`${API_BASE_URL.replace(/\/$/, '')}/${apiPath}`);
+    // Check if we have a company name in the request headers or query params
+    let baseUrl = API_BASE_URL;
+    const companyName = request.headers.get('x-company-name') || url.searchParams.get('company');
     
-    // Copy query parameters from the original request
+    if (companyName && companyName.trim()) {
+      try {
+        baseUrl = getCompanyApiUrl(companyName);
+        console.log(`🔐 Using company-specific URL: ${baseUrl} for company: ${companyName}`);
+      } catch (error) {
+        console.error(`❌ Invalid company name: ${companyName}`, error);
+        return NextResponse.json(
+          { error: 'Invalid company name provided' },
+          { status: 400 }
+        );
+      }
+    }
+    
+    // Build the full URL with query parameters
+    const fullUrl = new URL(`${baseUrl.replace(/\/$/, '')}/${apiPath}`);
+    
+    // Copy query parameters from the original request (except company)
     url.searchParams.forEach((value, key) => {
-      fullUrl.searchParams.set(key, value);
+      if (key !== 'company') {
+        fullUrl.searchParams.set(key, value);
+      }
     });
     
     console.log(`🔐 Full URL: ${fullUrl.toString()}`);
@@ -119,7 +138,7 @@ async function handleRequest(request: NextRequest, method: string) {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Company-Name',
       },
     });
   } catch (error) {

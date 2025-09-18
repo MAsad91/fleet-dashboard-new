@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
-import { API_CONFIG } from '@/config/api';
+import { API_CONFIG, getCompanyApiUrl } from '@/config/api';
 
 class ApiClient {
   private client: AxiosInstance;
@@ -17,13 +17,20 @@ class ApiClient {
       },
     });
 
-    // Request interceptor to add auth token
+    // Request interceptor to add auth token and company name
     this.client.interceptors.request.use(
       (config) => {
         const token = this.getToken();
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
+        
+        // Add company name header if available
+        const companyName = localStorage.getItem('company_name');
+        if (companyName) {
+          config.headers['X-Company-Name'] = companyName;
+        }
+        
         return config;
       },
       (error) => {
@@ -88,6 +95,7 @@ class ApiClient {
     localStorage.removeItem('access_token');
     localStorage.removeItem('authToken');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('company_name');
   }
 
   private async refreshToken(): Promise<boolean> {
@@ -119,6 +127,93 @@ class ApiClient {
     localStorage.setItem('refresh_token', refresh_token);
     
     return { user, access_token };
+  }
+
+  // Company-based authentication methods
+  async validateDomain(companyName: string) {
+    try {
+      const companyApiUrl = getCompanyApiUrl(companyName);
+      const domain = `${companyName.toLowerCase().replace(/[^a-z0-9]/g, '')}.platform-api-test.joulepoint.com`;
+      
+      console.log(`🔐 Validating domain: ${domain} for company: ${companyName}`);
+      console.log(`🔐 API URL: ${companyApiUrl}`);
+      
+      const response = await axios.get(
+        `${companyApiUrl}/api/tenant/validate-domain/?domain=${domain}`,
+        {
+          timeout: API_CONFIG.TIMEOUT,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      console.log(`✅ Domain validation successful for ${companyName}`);
+      return { success: true, data: response.data };
+    } catch (error: any) {
+      console.error(`❌ Domain validation failed for ${companyName}:`, error);
+      
+      if (error.response?.status === 404) {
+        throw new Error(`Company '${companyName}' not found. Please check the company name and try again.`);
+      } else if (error.response?.status === 400) {
+        throw new Error(`Invalid domain for company '${companyName}'. Please check the company name.`);
+      } else if (error.code === 'NETWORK_ERROR' || error.code === 'ECONNREFUSED') {
+        throw new Error(`Unable to connect to ${companyName}'s platform. Please check the company name and try again.`);
+      } else {
+        throw new Error(error.response?.data?.message || error.message || `Failed to validate domain for company '${companyName}'`);
+      }
+    }
+  }
+
+  async loginWithCompany(companyName: string, username: string, password: string) {
+    try {
+      // First validate the domain
+      await this.validateDomain(companyName);
+      
+      // If domain validation is successful, proceed with login
+      const companyApiUrl = getCompanyApiUrl(companyName);
+      
+      console.log(`🔐 Logging in to company: ${companyName}`);
+      console.log(`🔐 API URL: ${companyApiUrl}`);
+      
+      const response = await axios.post(
+        `${companyApiUrl}/api/users/login_with_password/`,
+        {
+          username: username,
+          password: password,
+        },
+        {
+          timeout: API_CONFIG.TIMEOUT,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      const { access_token, refresh_token, user } = response.data;
+      this.setToken(access_token);
+      localStorage.setItem('refresh_token', refresh_token);
+      
+      // Store company name for future requests
+      localStorage.setItem('company_name', companyName.toLowerCase().replace(/[^a-z0-9]/g, ''));
+      
+      console.log(`✅ Login successful for company: ${companyName}`);
+      return { user, access_token };
+    } catch (error: any) {
+      console.error(`❌ Company login failed for ${companyName}:`, error);
+      
+      if (error.response?.status === 401) {
+        throw new Error('Invalid username or password. Please check your credentials and try again.');
+      } else if (error.response?.status === 403) {
+        throw new Error('Access denied. Your account may not have permission to access this company.');
+      } else if (error.response?.status === 404) {
+        throw new Error(`Company '${companyName}' not found. Please check the company name and try again.`);
+      } else if (error.code === 'NETWORK_ERROR' || error.code === 'ECONNREFUSED') {
+        throw new Error(`Unable to connect to ${companyName}'s platform. Please check the company name and try again.`);
+      } else {
+        throw new Error(error.response?.data?.message || error.message || `Login failed for company '${companyName}'`);
+      }
+    }
   }
 
   async logout() {

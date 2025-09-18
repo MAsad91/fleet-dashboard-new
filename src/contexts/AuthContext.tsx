@@ -17,7 +17,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (username: string, password: string, companyName?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   hasRole: (role: string) => boolean;
@@ -45,14 +45,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const isAuthenticated = !!user;
 
-  const login = async (username: string, password: string) => {
+  const login = async (username: string, password: string, companyName?: string) => {
     try {
       console.log('🔐 AuthContext: Starting login process');
       setLoading(true);
       
-      // Real API authentication
-      console.log('🔐 AuthContext: Calling apiClient.login');
-      const { user: userData } = await apiClient.login(username, password);
+      // Use company-based login if company name is provided
+      let userData;
+      if (companyName && companyName.trim()) {
+        console.log('🔐 AuthContext: Using company-based login for:', companyName);
+        const result = await apiClient.loginWithCompany(companyName, username, password);
+        userData = result.user;
+      } else {
+        console.log('🔐 AuthContext: Using standard login');
+        const result = await apiClient.login(username, password);
+        userData = result.user;
+      }
+      
       console.log('🔐 AuthContext: API response received:', userData);
       
       // Map API response to expected user format
@@ -77,7 +86,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return { success: true };
     } catch (error: any) {
       console.error('❌ AuthContext: Login error:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'Login failed. Please try again.';
+      const errorMessage = error.message || 'Login failed. Please try again.';
       console.error('❌ AuthContext: Error message:', errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -96,6 +105,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.removeItem('authToken');
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('user_data');
+      localStorage.removeItem('company_name');
       setUser(null);
     }
   };
