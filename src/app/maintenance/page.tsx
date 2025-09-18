@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { useListScheduledMaintenanceQuery, useMarkServiceDoneMutation } from "@/store/api/maintenanceApi";
+import { useListScheduledMaintenanceQuery, useMarkServiceDoneMutation } from "@/store/api/fleetApi";
 import { setMaintenanceFilters, setMaintenancePagination } from "@/store/slices/maintenanceUISlice";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 import { Button } from "@/components/ui-elements/button";
@@ -113,7 +113,7 @@ export default function MaintenancePage() {
   }
 
   return (
-    <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer']}>
+    <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">

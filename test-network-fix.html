@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Fix Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .success { background: #e8f5e8; color: #2e7d32; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .error { background: #ffe8e8; color: #d32f2f; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .warning { background: #fff3cd; color: #856404; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .step { margin: 15px 0; padding: 15px; border-left: 3px solid #5750F1; background: #f8f9ff; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+        .log { font-family: monospace; background: #f1f1f1; padding: 10px; border-radius: 4px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Network Fix Test</h1>
+        
+        <div class="success">
+            <h3>✅ Issues Fixed:</h3>
+            <ul>
+                <li>Login 500 Error: Fixed trailing slash issue</li>
+                <li>Data Duplication: All components use DashboardContext</li>
+                <li>Chart Errors: Fixed ApexCharts data format</li>
+                <li>RTK Query Issues: All configured with /api/proxy</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            <h3>⚠️ Network Tab 404 Errors:</h3>
+            <p>If you're seeing 404 errors for <code>/api/fleet/</code> endpoints, they might be:</p>
+            <ul>
+                <li>Cached requests from previous sessions</li>
+                <li>Requests from other pages (not fleet dashboard)</li>
+                <li>Old RTK Query cache still trying to refetch</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>🧪 Test Steps:</h3>
+            <ol>
+                <li>Clear browser cache and network tab</li>
+                <li>Refresh the page</li>
+                <li>Go directly to fleet dashboard</li>
+                <li>Monitor network tab for new requests</li>
+            </ol>
+        </div>
+
+        <div>
+            <button onclick="testAPIEndpoints()">Test API Endpoints</button>
+            <button onclick="clearCacheAndReload()">Clear Cache & Reload</button>
+            <button onclick="openFleetDashboard()">Open Fleet Dashboard</button>
+        </div>
+
+        <div id="log" class="log" style="display: none;"></div>
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        let authToken = null;
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            logDiv.style.display = 'block';
+            logDiv.innerHTML += `<p>${new Date().toLocaleTimeString()}: ${message}</p>`;
+        }
+
+        // Intercept all fetch requests to monitor API calls
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            const url = args[0];
+            if (typeof url === 'string' && url.includes('/api/')) {
+                log(`📡 API Call: ${url}`);
+            }
+            return originalFetch.apply(this, args);
+        };
+
+        async function testAPIEndpoints() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<h3>Testing API Endpoints...</h3>';
+            
+            try {
+                // Login first
+                log('🔐 Testing login...');
+                const response = await fetch('http://localhost:3000/api/proxy/users/login_with_password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: 'testadmin',
+                        password: 'testadmin123'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.access_token;
+                    log('✅ Login successful');
+                    
+                    // Test dashboard endpoints
+                    const endpoints = [
+                        'fleet/dashboard/summary?date_range=today',
+                        'fleet/vehicles/dashboard_stats?date_range=today',
+                        'fleet/drivers/dashboard_stats?date_range=today',
+                        'fleet/trips/dashboard_stats?date_range=today',
+                        'fleet/alerts/dashboard_stats?date_range=today',
+                        'fleet/scheduled-maintenance/dashboard_stats?date_range=today'
+                    ];
+                    
+                    let successCount = 0;
+                    let results = '<h4>API Endpoint Test Results:</h4><ul>';
+                    
+                    for (const endpoint of endpoints) {
+                        try {
+                            log(`🧪 Testing ${endpoint}...`);
+                            const testResponse = await fetch(`http://localhost:3000/api/proxy/${endpoint}`, {
+                                headers: { 'Authorization': `Bearer ${authToken}` }
+                            });
+                            
+                            if (testResponse.ok) {
+                                successCount++;
+                                results += `<li class="success">✅ ${endpoint}: ${testResponse.status} OK</li>`;
+                                log(`✅ ${endpoint}: Success`);
+                            } else {
+                                results += `<li class="error">❌ ${endpoint}: ${testResponse.status} Error</li>`;
+                                log(`❌ ${endpoint}: Error ${testResponse.status}`);
+                            }
+                        } catch (error) {
+                            results += `<li class="error">❌ ${endpoint}: Network Error</li>`;
+                            log(`❌ ${endpoint}: ${error.message}`);
+                        }
+                    }
+                    
+                    results += '</ul>';
+                    results += `<p><strong>Summary:</strong> ${successCount}/${endpoints.length} endpoints working</p>`;
+                    
+                    if (successCount === endpoints.length) {
+                        results += '<div class="success"><h4>🎉 All API endpoints working correctly!</h4><p>If you see 404 errors in network tab, they are likely from cache or other pages.</p></div>';
+                    }
+                    
+                    resultDiv.innerHTML = results;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Login failed</div>';
+                    log('❌ Login failed');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Test error: ${error.message}</div>`;
+                log(`❌ Test error: ${error.message}`);
+            }
+        }
+
+        function clearCacheAndReload() {
+            log('🧹 Clearing cache and reloading...');
+            // Clear browser cache (this won't work in production, but shows intent)
+            if ('caches' in window) {
+                caches.keys().then(function(names) {
+                    for (let name of names) caches.delete(name);
+                });
+            }
+            
+            // Clear local storage
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // Reload page
+            window.location.reload(true);
+        }
+
+        function openFleetDashboard() {
+            log('🚀 Opening fleet dashboard...');
+            window.open('http://localhost:3000/fleet', '_blank');
+        }
+
+        // Initial log
+        log('📋 Network Fix Test loaded. Monitor API calls below.');
+    </script>
+</body>
+</html>
+

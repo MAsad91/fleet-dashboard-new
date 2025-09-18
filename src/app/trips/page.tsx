@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { useGetTripsQuery, useStartTripMutation, useEndTripMutation, useCancelTripMutation } from "@/store/api/tripsApi";
+import { useGetTripsQuery, useStartTripMutation, useEndTripMutation, useCancelTripMutation } from "@/store/api/fleetApi";
 import { setTripsFilters, setTripsPagination } from "@/store/slices/tripsUISlice";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 import { Button } from "@/components/ui-elements/button";
@@ -126,7 +126,7 @@ export default function TripsPage() {
   }
 
   return (
-    <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer']}>
+    <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">

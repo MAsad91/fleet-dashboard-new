@@ -26,7 +26,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       }
 
       if (requiredRoles.length > 0 && !hasAnyRole(requiredRoles)) {
-        router.push('/unauthorized');
+        // Instead of redirecting to /unauthorized (which doesn't exist), show access denied
         return;
       }
     }

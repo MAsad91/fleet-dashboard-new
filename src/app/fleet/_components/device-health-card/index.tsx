@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetDashboardSummaryQuery } from "@/store/api/fleetApi";
+import { useDashboard } from "@/contexts/DashboardContext";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 
@@ -12,7 +12,7 @@ interface DeviceHealthCardProps {
 }
 
 export function DeviceHealthCard({ className }: DeviceHealthCardProps) {
-  const { data: summary, isLoading: loading } = useGetDashboardSummaryQuery('today');
+  const { summary, loading } = useDashboard();
 
   if (loading) {
     return (

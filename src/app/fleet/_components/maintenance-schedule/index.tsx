@@ -1,5 +1,6 @@
 "use client";
 
+import { useDashboard } from "@/contexts/DashboardContext";
 import { cn } from "@/lib/utils";
 import { WrenchIcon } from "@/components/Layouts/sidebar/icons";
 
@@ -8,54 +9,31 @@ type PropsType = {
 };
 
 export function MaintenanceSchedule({ className }: PropsType) {
-  // Mock maintenance data
-  const maintenanceData = [
-    {
-      id: "M001",
-      vehicle: "Truck Alpha",
-      type: "Oil Change",
-      dueDate: "2024-01-15",
-      status: "overdue",
-      priority: "high",
-      assignedTo: "Service Center A",
-    },
-    {
-      id: "M002",
-      vehicle: "Truck Beta",
-      type: "Brake Inspection",
-      dueDate: "2024-01-20",
-      status: "scheduled",
-      priority: "medium",
-      assignedTo: "Service Center B",
-    },
-    {
-      id: "M003",
-      vehicle: "Truck Gamma",
-      type: "Tire Rotation",
-      dueDate: "2024-01-25",
-      status: "scheduled",
-      priority: "low",
-      assignedTo: "Service Center A",
-    },
-    {
-      id: "M004",
-      vehicle: "Truck Delta",
-      type: "Engine Check",
-      dueDate: "2024-01-30",
-      status: "completed",
-      priority: "high",
-      assignedTo: "Service Center C",
-    },
-    {
-      id: "M005",
-      vehicle: "Truck Echo",
-      type: "Transmission Service",
-      dueDate: "2024-02-05",
-      status: "scheduled",
-      priority: "medium",
-      assignedTo: "Service Center B",
-    },
-  ];
+  const { summary, loading } = useDashboard();
+  
+  if (loading) {
+    return (
+      <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>
+        <div className="animate-pulse">
+          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-40 mb-6"></div>
+          <div className="space-y-4">
+            {[...Array(5)].map((_, index) => (
+              <div key={index} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+                </div>
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Use real maintenance data from API
+  const maintenanceData = summary?.maintenance_schedule || [];
 
   const getStatusColor = (status: string) => {
     switch (status) {

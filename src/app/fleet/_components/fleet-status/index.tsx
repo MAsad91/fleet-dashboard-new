@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetDashboardSummaryQuery } from "@/store/api/fleetApi";
+import { useDashboard } from "@/contexts/DashboardContext";
 import { cn } from "@/lib/utils";
 import { TruckIcon } from "@/components/Layouts/sidebar/icons";
 
@@ -9,7 +9,7 @@ type PropsType = {
 };
 
 export function FleetStatus({ className }: PropsType) {
-  const { data: summary, isLoading: loading } = useGetDashboardSummaryQuery('today');
+  const { summary, loading } = useDashboard();
 
   if (loading) {
     return (

@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
+import { DashboardProvider } from "@/contexts/DashboardContext";
 import { FleetOverviewCards } from "./_components/fleet-overview-cards";
 import { FleetOverviewCardsSkeleton } from "./_components/fleet-overview-cards/skeleton";
 import { LiveTrackingMap } from "./_components/live-tracking-map";
@@ -15,15 +16,16 @@ import { MostActiveVehicle } from "./_components/most-active-vehicle";
 
 export default function FleetDashboard() {
   return (
-    <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer']}>
-      <div className="mb-6">
-        <h1 className="text-title-md2 font-bold text-black dark:text-white">
-          Fleet Management Dashboard
-        </h1>
-        <p className="text-sm text-body-color dark:text-body-color-dark">
-          Welcome back! Here&apos;s what&apos;s happening with your fleet today.
-        </p>
-      </div>
+    <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
+      <DashboardProvider>
+        <div className="mb-6">
+          <h1 className="text-title-md2 font-bold text-black dark:text-white">
+            Fleet Management Dashboard
+          </h1>
+          <p className="text-sm text-body-color dark:text-body-color-dark">
+            Welcome back! Here&apos;s what&apos;s happening with your fleet today.
+          </p>
+        </div>
 
       {/* Row 1: Key Performance Indicators */}
       <Suspense fallback={<FleetOverviewCardsSkeleton />}>
@@ -76,6 +78,7 @@ export default function FleetDashboard() {
           <MostActiveVehicle />
         </div>
       </div>
+      </DashboardProvider>
     </ProtectedRoute>
   );
 }

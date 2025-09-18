@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { useListVehiclesQuery, useDeleteVehicleMutation } from "@/store/api/vehiclesApi";
+import { useListVehiclesQuery, useDeleteVehicleMutation } from "@/store/api/fleetApi";
 import { setVehiclesFilters, setVehiclesPagination } from "@/store/slices/vehiclesUISlice";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 import { Button } from "@/components/ui-elements/button";
@@ -91,7 +91,7 @@ export default function VehiclesPage() {
   }
 
   return (
-    <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer']}>
+    <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">

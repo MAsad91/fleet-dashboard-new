@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { useListDashcamsQuery, useRefreshDashcamApiKeyMutation, useDeleteDashcamMutation } from "@/store/api/dashcamsApi";
+import { useListDashcamsQuery, useRefreshDashcamApiKeyMutation, useDeleteDashcamMutation } from "@/store/api/fleetApi";
 import { setDashcamsFilters, setDashcamsPagination } from "@/store/slices/dashcamsUISlice";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 import { Button } from "@/components/ui-elements/button";
@@ -95,6 +95,32 @@ export default function DashcamsPage() {
   };
 
   if (error) {
+    // Check if it's a 403 error (admin-only access)
+    const is403Error = error && 'status' in error && error.status === 403;
+    
+    if (is403Error) {
+      return (
+        <div className="p-6">
+          <div className="text-center">
+            <div className="mx-auto w-16 h-16 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center mb-4">
+              <Video className="h-8 w-8 text-yellow-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              Admin Access Required
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Dashcams management requires administrator privileges. Please contact your system administrator to access this feature.
+            </p>
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                <strong>Note:</strong> This section is restricted to admin users only. Regular fleet users can view other sections like Vehicles, Drivers, and Trips.
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
     return (
       <div className="p-6">
         <div className="text-center text-red-600">
@@ -105,7 +131,7 @@ export default function DashcamsPage() {
   }
 
   return (
-    <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer']}>
+    <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">

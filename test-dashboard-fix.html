@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Fix Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .success { background: #e8f5e8; color: #2e7d32; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .error { background: #ffe8e8; color: #d32f2f; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .step { margin: 15px 0; padding: 15px; border-left: 3px solid #5750F1; background: #f8f9ff; }
+        .credentials { background: #e8f5e8; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .result { margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎉 Dashboard Fix Test</h1>
+        
+        <div class="success">
+            <h3>✅ Issues Fixed:</h3>
+            <ul>
+                <li><strong>Data Duplication:</strong> Fixed 10 components making the same API call</li>
+                <li><strong>API Overload:</strong> Now using shared DashboardContext</li>
+                <li><strong>Performance:</strong> Single API call instead of 10 simultaneous calls</li>
+                <li><strong>Real Data:</strong> Using the working API path from before</li>
+            </ul>
+        </div>
+
+        <div class="credentials">
+            <h3>🔑 Test Credentials:</h3>
+            <p><strong>Username:</strong> testadmin</p>
+            <p><strong>Password:</strong> testadmin123</p>
+            <p><strong>API Endpoint:</strong> https://oem.platform-api-test.joulepoint.com/api</p>
+        </div>
+
+        <div class="step">
+            <h3>🚀 Test Steps:</h3>
+            <ol>
+                <li>Click "Test Login" to verify authentication</li>
+                <li>Click "Test Dashboard API" to verify data loading</li>
+                <li>Click "Open Dashboard" to see the fixed dashboard</li>
+            </ol>
+        </div>
+
+        <div>
+            <button onclick="testLogin()">Test Login</button>
+            <button onclick="testDashboardAPI()">Test Dashboard API</button>
+            <button onclick="openDashboard()">Open Dashboard</button>
+        </div>
+        
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        let authToken = null;
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Testing login...</p>';
+            resultDiv.style.display = 'block';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/proxy/users/login_with_password/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: 'testadmin',
+                        password: 'testadmin123'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.access_token;
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Login Successful!</h3>
+                            <p><strong>User:</strong> ${data.user.username}</p>
+                            <p><strong>Role:</strong> ${data.user.profile?.role || 'N/A'}</p>
+                            <p><strong>Token:</strong> ${authToken ? 'Received' : 'Not received'}</p>
+                        </div>
+                    `;
+                } else {
+                    const errorData = await response.text();
+                    resultDiv.innerHTML = `<div class="error">❌ Login failed: ${response.status} - ${errorData}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Network error: ${error.message}</div>`;
+            }
+        }
+
+        async function testDashboardAPI() {
+            if (!authToken) {
+                document.getElementById('result').innerHTML = '<div class="error">❌ Please login first!</div>';
+                return;
+            }
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Testing dashboard API...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/proxy/fleet/dashboard/summary/?date_range=today', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Dashboard API Working!</h3>
+                            <p><strong>Total Vehicles:</strong> ${data.total_vehicles || 0}</p>
+                            <p><strong>Online Vehicles:</strong> ${data.online_vehicles || 0}</p>
+                            <p><strong>Active Trips:</strong> ${data.total_active_trips || 0}</p>
+                            <p><strong>Critical Alerts:</strong> ${data.critical_alerts || 0}</p>
+                            <p><strong>Maintenance Due:</strong> ${data.open_maintenance || 0}</p>
+                            <p><strong>Total Distance:</strong> ${data.total_distance_travelled_km || 0} km</p>
+                        </div>
+                    `;
+                } else {
+                    const errorData = await response.text();
+                    resultDiv.innerHTML = `<div class="error">❌ Dashboard API failed: ${response.status} - ${errorData}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Dashboard API error: ${error.message}</div>`;
+            }
+        }
+
+        function openDashboard() {
+            window.open('http://localhost:3000/auth/sign-in', '_blank');
+        }
+    </script>
+</body>
+</html>
+

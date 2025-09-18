@@ -11,19 +11,23 @@ export default function Home() {
   useEffect(() => {
     if (!loading) {
       if (isAuthenticated) {
-        router.push('/fleet');
+        router.replace('/fleet');
       } else {
-        router.push('/auth/sign-in');
+        router.replace('/auth/sign-in');
       }
     }
   }, [isAuthenticated, loading, router]);
 
+  // Show loading state while checking authentication
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="text-center">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-          Redirecting...
+          Fleet Management Dashboard
         </h1>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">
+          Loading...
+        </p>
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto"></div>
       </div>
     </div>
