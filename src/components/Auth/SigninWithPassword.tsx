@@ -109,7 +109,7 @@ export default function SigninWithPassword() {
         type="text"
         label="Company Name"
         className="mb-4 [&_input]:py-[15px]"
-        placeholder="e.g., oem, joulepoint, acme"
+        placeholder="oem / joulepoint"
         name="companyName"
         handleChange={handleChange}
         value={data.companyName}
