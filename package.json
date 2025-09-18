@@ -11,12 +11,17 @@
   "dependencies": {
     "@reduxjs/toolkit": "^2.9.0",
     "@types/js-cookie": "^3.0.6",
+    "@types/node": "^22",
+    "@types/react": "19.0.8",
+    "@types/react-dom": "19.0.3",
     "apexcharts": "^4.5.0",
     "autoprefixer": "^10.4.20",
     "axios": "^1.12.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
+    "eslint": "^9",
+    "eslint-config-next": "15.1.6",
     "flatpickr": "^4.6.13",
     "js-cookie": "^3.0.5",
     "jsvectormap": "^1.6.0",
@@ -30,16 +35,11 @@
     "react-dom": "19.0.0",
     "react-redux": "^9.2.0",
     "tailwind-merge": "^2.6.0",
-    "tailwindcss": "^3.4.16"
+    "tailwindcss": "^3.4.16",
+    "typescript": "^5"
   },
   "devDependencies": {
-    "@types/node": "^22",
-    "@types/react": "19.0.8",
-    "@types/react-dom": "19.0.3",
-    "eslint": "^9",
-    "eslint-config-next": "15.1.6",
     "prettier": "^3.4.2",
-    "prettier-plugin-tailwindcss": "^0.6.11",
-    "typescript": "^5"
+    "prettier-plugin-tailwindcss": "^0.6.11"
   }
 }
