@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { useGetAlertsQuery, useAcknowledgeAlertMutation, useIgnoreAlertMutation, useResolveAlertLegacyMutation } from "@/store/api/fleetApi";
-import { setAlertsFilters, setAlertsPagination } from "@/store/slices/alertsUISlice";
-import ProtectedRoute from "@/components/Auth/ProtectedRoute";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { useGetAlertsQuery, useAcknowledgeAlertMutation, useIgnoreAlertMutation, useResolveAlertLegacyMutation } from "../../store/api/fleetApi";
+import { setAlertsFilters, setAlertsPagination } from "../../store/slices/alertsUISlice";
+import ProtectedRoute from "../../components/Auth/ProtectedRoute";
 import { Button } from "@/components/ui-elements/button";
 import InputGroup from "@/components/FormElements/InputGroup";
 import { Select } from "@/components/FormElements/select";
