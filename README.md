@@ -1,85 +1,202 @@
-# NextAdmin - Next.js Admin Dashboard Template and Components
+# Fleet Management Dashboard
 
-**NextAdmin** is a Free, open-source Next.js admin dashboard toolkit featuring 200+ UI components and templates that come with pre-built elements, components, pages, high-quality design, integrations, and much more to help you create powerful admin dashboards with ease.
+A comprehensive fleet management dashboard built with Next.js 15, TypeScript, Tailwind CSS, and Redux Toolkit. This application provides real-time fleet monitoring, vehicle tracking, driver management, and maintenance scheduling capabilities.
 
+![Fleet Dashboard](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-593D88?style=for-the-badge&logo=redux&logoColor=white)
 
-[![nextjs admin template](https://cdn.pimjo.com/nextadmin-2.png)](https://nextadmin.co/)
+## 🚀 Features
 
+### Core Dashboard
+- **Real-time Fleet Overview** - Live monitoring of fleet status, active trips, and maintenance alerts
+- **Interactive Maps** - Real-time vehicle tracking with map and list views
+- **Analytics & Reporting** - Comprehensive fleet analytics with charts and metrics
+- **Responsive Design** - Mobile-first design that works on all devices
 
-**NextAdmin** provides you with a diverse set of dashboard UI components, elements, examples and pages necessary for creating top-notch admin panels or dashboards with **powerful** features and integrations. Whether you are working on a complex web application or a basic website, **NextAdmin** has got you covered.
+### Vehicle Management
+- **Vehicle Tracking** - Real-time location and status monitoring
+- **OBD Integration** - Vehicle diagnostics and health monitoring
+- **Maintenance Scheduling** - Automated maintenance reminders and tracking
+- **Fuel Efficiency** - Monitor fuel consumption and efficiency metrics
 
-### [✨ Visit Website](https://nextadmin.co/)
-### [🚀 Live Demo](https://demo.nextadmin.co/)
-### [📖 Docs](https://docs.nextadmin.co/)
+### Driver Management
+- **Driver Profiles** - Complete driver information and performance tracking
+- **Trip Management** - Start, monitor, and complete trips
+- **Performance Analytics** - Driver performance metrics and reporting
 
-By leveraging the latest features of **Next.js 14** and key functionalities like **server-side rendering (SSR)**, **static site generation (SSG)**, and seamless **API route integration**, **NextAdmin** ensures optimal performance. With the added benefits of **React 18 advancements** and **TypeScript** reliability, **NextAdmin** is the ultimate choice to kickstart your **Next.js** project efficiently.
+### Alert System
+- **Real-time Alerts** - Critical alerts for maintenance, safety, and operational issues
+- **Alert Management** - Acknowledge, resolve, and track alert status
+- **Severity Levels** - Categorized alerts with priority management
 
-## Installation
+### Maintenance & Diagnostics
+- **Scheduled Maintenance** - Automated maintenance scheduling and tracking
+- **OBD Device Management** - Monitor and manage OBD devices
+- **Battery Health** - Real-time battery monitoring with animated indicators
+- **Device Health** - System health monitoring and diagnostics
 
-1. Download/fork/clone the repo and Once you're in the correct directory, it's time to install all the necessary dependencies. You can do this by typing the following command:
+### Dashcam Integration
+- **Video Management** - Dashcam footage management and storage
+- **API Key Management** - Secure API key generation and refresh
+- **Status Monitoring** - Real-time dashcam status and connectivity
+
+## 🛠️ Tech Stack
+
+- **Frontend Framework**: Next.js 15 with App Router
+- **Language**: TypeScript for type safety
+- **Styling**: Tailwind CSS for responsive design
+- **State Management**: Redux Toolkit with RTK Query
+- **Charts**: ApexCharts for data visualization
+- **Authentication**: JWT-based authentication system
+- **Icons**: Lucide React for consistent iconography
+- **UI Components**: Custom component library
+
+## 📦 Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/MAsad91/fleet-dashboard-new.git
+   cd fleet-dashboard-new
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
+   
+   Configure the following variables in `.env.local`:
+   ```env
+   NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api
+   NEXT_PUBLIC_DEMO_EMAIL=demo@fleet.com
+   NEXT_PUBLIC_DEMO_PASSWORD=demo123
+   ```
+
+4. **Run the development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## 🏗️ Project Structure
 
 ```
-npm install
+src/
+├── app/                    # Next.js App Router pages
+│   ├── auth/              # Authentication pages
+│   ├── fleet/             # Main dashboard
+│   ├── vehicles/          # Vehicle management
+│   ├── drivers/           # Driver management
+│   ├── trips/             # Trip management
+│   ├── alerts/            # Alert management
+│   ├── maintenance/       # Maintenance scheduling
+│   ├── obd-devices/       # OBD device management
+│   └── dashcams/          # Dashcam management
+├── components/            # Reusable UI components
+│   ├── Auth/             # Authentication components
+│   ├── Layouts/          # Layout components
+│   └── ui-elements/      # UI component library
+├── store/                # Redux store configuration
+│   ├── api/              # RTK Query API slices
+│   └── slices/           # Redux slices
+└── lib/                  # Utility functions
 ```
-If you're using **Yarn** as your package manager, the command will be:
 
-```
-yarn install
-```
+## 🚀 Available Scripts
 
-2. Okay, you're almost there. Now all you need to do is start the development server. If you're using **npm**, the command is:
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run type-check` - Run TypeScript type checking
 
-```
-npm run dev
-```
-And if you're using **Yarn**, it's:
+## 🔧 API Integration
 
-```
-yarn dev
-```
+The dashboard integrates with a comprehensive fleet management API that provides:
 
-And voila! You're now ready to start developing. **Happy coding**!
+- **Dashboard Summary** - Fleet overview statistics
+- **Vehicle Management** - CRUD operations for vehicles
+- **Driver Management** - Driver profiles and management
+- **Trip Management** - Trip tracking and management
+- **Alert System** - Real-time alert management
+- **Maintenance** - Maintenance scheduling and tracking
+- **OBD Devices** - Device management and telemetry
+- **Dashcams** - Video management and API key handling
 
-## Highlighted Features
-**200+ Next.js Dashboard Ul Components and Templates** - includes a variety of prebuilt **Ul elements, components, pages, and examples** crafted with a high-quality design.
-Additionally, features seamless **essential integrations and extensive functionalities**.
+## 🎨 UI Components
 
-- A library of over **200** professional dashboard UI components and elements.
-- Five distinctive dashboard variations, catering to diverse use-cases.
-- A comprehensive set of essential dashboard and admin pages.
-- More than **45** **Next.js** files, ready for use.
-- Styling facilitated by **Tailwind CSS** files.
-- A design that resonates premium quality and high aesthetics.
-- A handy UI kit with assets.
-- Over ten web apps complete with examples.
-- Support for both **dark mode** and **light mode**.
-- Essential integrations including - Authentication (**NextAuth**), Database (**Postgres** with **Prisma**), and Search (**Algolia**).
-- Detailed and user-friendly documentation.
-- Customizable plugins and add-ons.
-- **TypeScript** compatibility.
-- Plus, much more!
+The project includes a comprehensive set of custom UI components:
 
-All these features and more make **NextAdmin** a robust, well-rounded solution for all your dashboard development needs.
+- **Charts**: Line charts, bar charts, donut charts, and gauges
+- **Tables**: Sortable, filterable data tables with pagination
+- **Forms**: Input groups, selects, date pickers, and validation
+- **Cards**: Information cards with various layouts
+- **Maps**: Interactive maps with real-time tracking
+- **Alerts**: Toast notifications and alert components
+- **Modals**: Dialog and modal components
+- **Navigation**: Sidebar, breadcrumbs, and pagination
 
-## Update Logs
+## 🌙 Theme Support
 
-### Version 1.2.1 - [Mar 20, 2025]
-- Fix Peer dependency issues and NextConfig warning.
-- Updated apexcharts and react-apexhcarts to the latest version.
+- **Light Mode** - Clean, professional light theme
+- **Dark Mode** - Modern dark theme for low-light environments
+- **System Theme** - Automatic theme detection based on system preferences
 
-### Version 1.2.0 - Major Upgrade and UI Improvements - [Jan 27, 2025]
+## 📱 Responsive Design
 
-- Upgraded to Next.js v15 and updated dependencies
-- API integration with loading skeleton for tables and charts.
-- Improved code structure for better readability.
-- Rebuilt components like dropdown, sidebar, and all ui-elements using accessibility practices.
-- Using search-params to store dropdown selection and refetch data.
-- Semantic markups, better separation of concerns and more.
+The dashboard is fully responsive and optimized for:
+- **Desktop** - Full-featured dashboard experience
+- **Tablet** - Optimized layout for tablet devices
+- **Mobile** - Mobile-first design with touch-friendly interfaces
 
-### Version 1.1.0
-- Updated Dependencies
-- Removed Unused Integrations
-- Optimized App
+## 🔐 Authentication
 
-### Version 1.0
-- Initial Release - [May 13, 2024]
+- **JWT-based Authentication** - Secure token-based authentication
+- **Role-based Access Control** - Admin, Manager, Operator, and Viewer roles
+- **Protected Routes** - Secure page access based on user roles
+- **Session Management** - Automatic token refresh and session handling
+
+## 📊 Analytics & Reporting
+
+- **Fleet Overview** - Key performance indicators and metrics
+- **Vehicle Status** - Real-time vehicle status breakdown
+- **Trip Analytics** - Trip performance and efficiency metrics
+- **Maintenance Reports** - Maintenance scheduling and history
+- **Alert Trends** - Alert frequency and resolution analytics
+- **Fuel Efficiency** - Fuel consumption and efficiency tracking
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Built with [Next.js](https://nextjs.org/)
+- Styled with [Tailwind CSS](https://tailwindcss.com/)
+- State management with [Redux Toolkit](https://redux-toolkit.js.org/)
+- Charts powered by [ApexCharts](https://apexcharts.com/)
+- Icons by [Lucide](https://lucide.dev/)
+
+## 📞 Support
+
+For support and questions, please open an issue in the GitHub repository or contact the development team.
+
+---
+
+**Built with ❤️ for modern fleet management**
