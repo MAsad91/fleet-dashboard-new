@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: fleet-admin-dashboard
+    env: node
+    plan: free
+    nodeVersion: 18
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NEXT_PUBLIC_API_BASE_URL
+        value: https://oem.platform-api-test.joulepoint.com
+      - key: NEXT_PUBLIC_DEMO_USER_MAIL
+        value: testadmin
+      - key: NEXT_PUBLIC_DEMO_USER_PASS
+        value: testadmin123
+    healthCheckPath: /
+    autoDeploy: true
