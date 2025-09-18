@@ -7,7 +7,7 @@ interface User {
   id: string;
   email: string;
   name: string;
-  role: 'admin' | 'manager' | 'operator' | 'viewer';
+  role: 'admin' | 'manager' | 'operator' | 'viewer' | 'FLEET_USER';
   avatar?: string;
   created_at: string;
   updated_at: string;
@@ -17,7 +17,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   hasRole: (role: string) => boolean;
@@ -41,45 +41,44 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   const isAuthenticated = !!user;
 
-  const login = async (email: string, password: string) => {
+  const login = async (username: string, password: string) => {
     try {
+      console.log('🔐 AuthContext: Starting login process');
       setLoading(true);
       
-      // For testing: Use mock login if credentials are provided
-      if (email && password) {
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Mock successful login
-        const mockUser = {
-          id: "1",
-          email: email,
-          name: "Fleet Admin",
-          role: "admin" as const,
-          avatar: "/images/user/user-03.png",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
-        
-        // Set mock tokens
-        localStorage.setItem('access_token', 'mock_access_token');
-        localStorage.setItem('refresh_token', 'mock_refresh_token');
-        
-        setUser(mockUser);
-        return { success: true };
-      } else {
-        return { success: false, error: 'Please enter both email and password' };
-      }
+      // Real API authentication
+      console.log('🔐 AuthContext: Calling apiClient.login');
+      const { user: userData } = await apiClient.login(username, password);
+      console.log('🔐 AuthContext: API response received:', userData);
       
-      // TODO: Uncomment when backend is ready
-      // const { user: userData } = await apiClient.login(email, password);
-      // setUser(userData);
-      // return { success: true };
+      // Map API response to expected user format
+      const mappedUser = {
+        id: userData.id.toString(),
+        email: userData.email || userData.username,
+        name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim() || userData.username,
+        role: userData.profile?.role || 'FLEET_USER',
+        avatar: userData.profile?.avatar || '/images/user/user-03.png',
+        created_at: userData.created_at || new Date().toISOString(),
+        updated_at: userData.updated_at || new Date().toISOString(),
+      };
+      
+      console.log('🔐 AuthContext: Mapped user data:', mappedUser);
+      
+      // Store user data in localStorage for persistence
+      localStorage.setItem('user_data', JSON.stringify(mappedUser));
+      console.log('🔐 AuthContext: User data stored in localStorage');
+      
+      setUser(mappedUser);
+      console.log('✅ AuthContext: Login successful, user set');
+      return { success: true };
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
+      console.error('❌ AuthContext: Login error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Login failed. Please try again.';
+      console.error('❌ AuthContext: Error message:', errorMessage);
       return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
@@ -92,17 +91,43 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
+      // Clear all stored data
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('user_data');
       setUser(null);
     }
   };
 
   const refreshUser = async () => {
     try {
+      // Try to get fresh user data, but fallback to stored data if it fails
       const userData = await apiClient.getCurrentUser();
       setUser(userData);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to refresh user:', error);
-      setUser(null);
+      // If it's a 401 error, clear tokens and redirect to login
+      if (error.response?.status === 401) {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user_data');
+        setUser(null);
+      } else {
+        // For other errors, try to use stored user data
+        const storedUser = localStorage.getItem('user_data');
+        if (storedUser) {
+          try {
+            const userData = JSON.parse(storedUser);
+            setUser(userData);
+          } catch (parseError) {
+            setUser(null);
+          }
+        } else {
+          setUser(null);
+        }
+      }
     }
   };
 
@@ -116,13 +141,47 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return roles.includes(user.role);
   };
 
-  // Check if user is authenticated on mount
+  // Hydration effect
   useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  // Check if user is authenticated on mount (only after hydration)
+  useEffect(() => {
+    if (!isHydrated) return;
+
     const checkAuth = async () => {
       try {
-        const userData = await apiClient.getCurrentUser();
-        setUser(userData);
+        // Check if we have a token in localStorage first
+        const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
+        if (token) {
+          // Check if we have user data in localStorage
+          const storedUser = localStorage.getItem('user_data');
+          if (storedUser) {
+            try {
+              const userData = JSON.parse(storedUser);
+              setUser(userData);
+              console.log('✅ AuthContext: User loaded from localStorage:', userData);
+            } catch (error) {
+              console.error('Failed to parse stored user data:', error);
+              localStorage.removeItem('access_token');
+              localStorage.removeItem('authToken');
+              localStorage.removeItem('refresh_token');
+              localStorage.removeItem('user_data');
+              setUser(null);
+            }
+          } else {
+            // If no stored user data, clear tokens
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('refresh_token');
+            setUser(null);
+          }
+        } else {
+          setUser(null);
+        }
       } catch (error) {
+        console.error('Auth check error:', error);
         setUser(null);
       } finally {
         setLoading(false);
@@ -130,7 +189,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     checkAuth();
-  }, []);
+  }, [isHydrated]);
 
   const value: AuthContextType = {
     user,

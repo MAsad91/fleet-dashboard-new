@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetDashboardSummaryQuery } from "@/store/api/fleetApi";
+import { useDashboard } from "@/contexts/DashboardContext";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 
@@ -12,7 +12,7 @@ interface SimUsageCardProps {
 }
 
 export function SimUsageCard({ className }: SimUsageCardProps) {
-  const { data: summary, isLoading: loading } = useGetDashboardSummaryQuery('today');
+  const { summary, loading } = useDashboard();
 
   if (loading) {
     return (
@@ -31,10 +31,12 @@ export function SimUsageCard({ className }: SimUsageCardProps) {
   };
 
   const simUsageData = {
-    series: [
-      diagnostics.sim_cards.high_usage,
-      diagnostics.sim_cards.inactive,
-    ],
+    series: [{
+      data: [
+        diagnostics.sim_cards.high_usage,
+        diagnostics.sim_cards.inactive,
+      ]
+    }],
     labels: ["High Usage", "Inactive"],
   };
 

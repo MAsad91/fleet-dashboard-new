@@ -29,7 +29,7 @@ export interface TripsResponse {
 export const tripsApi = createApi({
   reducerPath: 'tripsApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api',
+    baseUrl: '/api/proxy',
     prepareHeaders: (headers) => {
       const token = localStorage.getItem('authToken') || 
                    (typeof document !== 'undefined' ? 

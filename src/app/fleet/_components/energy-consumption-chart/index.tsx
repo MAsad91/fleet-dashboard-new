@@ -1,6 +1,6 @@
 "use client";
 
-import { useDashboardData } from "@/hooks/useDashboardData";
+import { useDashboard } from "@/contexts/DashboardContext";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 
@@ -12,7 +12,7 @@ interface EnergyConsumptionChartProps {
 }
 
 export function EnergyConsumptionChart({ className }: EnergyConsumptionChartProps) {
-  const { summary, loading } = useDashboardData('today');
+  const { summary, loading } = useDashboard();
 
   if (loading) {
     return (
@@ -26,12 +26,12 @@ export function EnergyConsumptionChart({ className }: EnergyConsumptionChartProp
     );
   }
 
-  // Mock data for energy consumption - in real app this would come from API
+  // Use real data from API
   const energyData = {
     series: [
       {
         name: "Energy Consumption",
-        data: [45, 52, 38, 24, 33, 26, 45, 50, 48, 61, 55, 67, 75, 82, 78, 85, 88, 92, 89, 95, 88, 91, 87, 89]
+        data: summary?.energy_consumption_data || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
       }
     ],
     categories: Array.from({ length: 24 }, (_, i) => `${i}:00`)

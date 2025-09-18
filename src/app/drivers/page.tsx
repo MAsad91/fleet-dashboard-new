@@ -5,6 +5,7 @@ import { useListDriversQuery, useSuspendDriversMutation } from "@/store/api/driv
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setDriverFilters } from "@/store/slices/driversSlice";
 import { cn } from "@/lib/utils";
+import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 
 export default function DriversPage() {
   const dispatch = useAppDispatch();
@@ -48,7 +49,8 @@ export default function DriversPage() {
   };
 
   return (
-    <div className="space-y-4">
+    <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
+      <div className="space-y-4">
       <div>
         <h1 className="text-title-md2 font-bold text-black dark:text-white">Drivers</h1>
         <p className="text-sm text-body-color dark:text-body-color-dark">Manage drivers, documents, and status.</p>
@@ -146,6 +148,7 @@ export default function DriversPage() {
         </div>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }
 

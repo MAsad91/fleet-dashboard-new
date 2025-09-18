@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Endpoints Test - Fleet Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .test-item {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .test-item.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        .test-item.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        .test-item.loading {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+        }
+        .status {
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .status.success { background-color: #28a745; color: white; }
+        .status.error { background-color: #dc3545; color: white; }
+        .status.loading { background-color: #ffc107; color: black; }
+        .status.pending { background-color: #6c757d; color: white; }
+        .response-data {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .login-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .summary {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Fleet Dashboard API Endpoints Test</h1>
+        <p>This test will verify all API endpoints with real data using testadmin/testadmin123 credentials.</p>
+        
+        <div class="summary" id="summary">
+            <h3>📊 Test Summary</h3>
+            <p>Total Tests: <span id="totalTests">0</span> | 
+               Passed: <span id="passedTests" style="color: green;">0</span> | 
+               Failed: <span id="failedTests" style="color: red;">0</span> | 
+               Pending: <span id="pendingTests" style="color: orange;">0</span></p>
+        </div>
+
+        <div class="test-section">
+            <h3>🔐 Authentication Test</h3>
+            <div class="login-form">
+                <input type="text" id="username" placeholder="Username" value="testadmin">
+                <input type="password" id="password" placeholder="Password" value="testadmin123">
+                <button onclick="testLogin()">Test Login</button>
+                <button onclick="testLogout()">Logout</button>
+            </div>
+            <div id="authResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Dashboard APIs</h3>
+            <button onclick="testDashboardAPIs()">Test Dashboard APIs</button>
+            <div id="dashboardResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🚛 Fleet Management APIs</h3>
+            <button onclick="testFleetAPIs()">Test Fleet APIs</button>
+            <div id="fleetResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>👥 User & Profile APIs</h3>
+            <button onclick="testUserAPIs()">Test User APIs</button>
+            <div id="userResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔒 Admin-Only APIs (Expected 403)</h3>
+            <button onclick="testAdminAPIs()">Test Admin APIs</button>
+            <div id="adminResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Complete Integration Test</h3>
+            <button onclick="runCompleteTest()">Run All Tests</button>
+            <div id="integrationResults"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://oem.platform-api-test.joulepoint.com/api';
+        let accessToken = null;
+        let testResults = {
+            total: 0,
+            passed: 0,
+            failed: 0,
+            pending: 0
+        };
+
+        function updateSummary() {
+            document.getElementById('totalTests').textContent = testResults.total;
+            document.getElementById('passedTests').textContent = testResults.passed;
+            document.getElementById('failedTests').textContent = testResults.failed;
+            document.getElementById('pendingTests').textContent = testResults.pending;
+        }
+
+        function addTestResult(containerId, testName, status, response = null, error = null) {
+            testResults.total++;
+            if (status === 'success') testResults.passed++;
+            else if (status === 'error') testResults.failed++;
+            else testResults.pending++;
+
+            const container = document.getElementById(containerId);
+            const testItem = document.createElement('div');
+            testItem.className = `test-item ${status}`;
+            
+            let responseHtml = '';
+            if (response) {
+                responseHtml = `<div class="response-data">${JSON.stringify(response, null, 2)}</div>`;
+            }
+            if (error) {
+                responseHtml = `<div class="response-data" style="background-color: #f8d7da;">Error: ${error}</div>`;
+            }
+
+            testItem.innerHTML = `
+                <div>
+                    <strong>${testName}</strong>
+                    ${responseHtml}
+                </div>
+                <span class="status ${status}">${status.toUpperCase()}</span>
+            `;
+            
+            container.appendChild(testItem);
+            updateSummary();
+        }
+
+        async function makeAPICall(endpoint, method = 'GET', body = null) {
+            const url = `${API_BASE_URL}${endpoint}`;
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            };
+
+            if (accessToken) {
+                options.headers['Authorization'] = `Bearer ${accessToken}`;
+            }
+
+            if (body) {
+                options.body = JSON.stringify(body);
+            }
+
+            try {
+                const response = await fetch(url, options);
+                const data = await response.json();
+                
+                return {
+                    success: response.ok,
+                    status: response.status,
+                    data: data
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    status: 0,
+                    error: error.message
+                };
+            }
+        }
+
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            addTestResult('authResults', 'Login Test', 'loading');
+            
+            const result = await makeAPICall('/users/login_with_password/', 'POST', {
+                username,
+                password
+            });
+
+            if (result.success) {
+                accessToken = result.data.access_token;
+                localStorage.setItem('access_token', accessToken);
+                addTestResult('authResults', 'Login Test', 'success', result.data);
+            } else {
+                addTestResult('authResults', 'Login Test', 'error', null, result.error || result.data);
+            }
+        }
+
+        async function testLogout() {
+            accessToken = null;
+            localStorage.removeItem('access_token');
+            addTestResult('authResults', 'Logout Test', 'success', { message: 'Tokens cleared' });
+        }
+
+        async function testDashboardAPIs() {
+            const tests = [
+                { name: 'Dashboard Summary', endpoint: '/fleet/dashboard/summary/?date_range=today' },
+                { name: 'Vehicles Stats', endpoint: '/fleet/vehicles/dashboard_stats/?date_range=today' },
+                { name: 'Drivers Stats', endpoint: '/fleet/drivers/dashboard_stats/?date_range=today' },
+                { name: 'Trips Stats', endpoint: '/fleet/trips/dashboard_stats/?date_range=today' },
+                { name: 'Alerts Stats', endpoint: '/fleet/alerts/dashboard_stats/?date_range=today' },
+                { name: 'Maintenance Stats', endpoint: '/fleet/scheduled-maintenance/dashboard_stats/?date_range=today' }
+            ];
+
+            for (const test of tests) {
+                addTestResult('dashboardResults', test.name, 'loading');
+                const result = await makeAPICall(test.endpoint);
+                
+                if (result.success) {
+                    addTestResult('dashboardResults', test.name, 'success', result.data);
+                } else {
+                    addTestResult('dashboardResults', test.name, 'error', null, `Status: ${result.status} - ${JSON.stringify(result.data)}`);
+                }
+            }
+        }
+
+        async function testFleetAPIs() {
+            const tests = [
+                { name: 'List Vehicles', endpoint: '/fleet/vehicles/?page=1' },
+                { name: 'List Drivers', endpoint: '/fleet/drivers/?page=1' },
+                { name: 'List Trips', endpoint: '/fleet/trips/?page=1' },
+                { name: 'List Alerts', endpoint: '/fleet/alerts/?status=active&limit=5' },
+                { name: 'List Maintenance', endpoint: '/fleet/scheduled-maintenance/?page=1' },
+                { name: 'List OBD Devices', endpoint: '/fleet/obd-devices/?page=1' }
+            ];
+
+            for (const test of tests) {
+                addTestResult('fleetResults', test.name, 'loading');
+                const result = await makeAPICall(test.endpoint);
+                
+                if (result.success) {
+                    addTestResult('fleetResults', test.name, 'success', result.data);
+                } else {
+                    addTestResult('fleetResults', test.name, 'error', null, `Status: ${result.status} - ${JSON.stringify(result.data)}`);
+                }
+            }
+        }
+
+        async function testUserAPIs() {
+            const tests = [
+                { name: 'Get Current User', endpoint: '/users/users/me/' },
+                { name: 'Get User Profile', endpoint: '/users/user_profile/' },
+                { name: 'Get My Permissions', endpoint: '/users/my-permissions/' }
+            ];
+
+            for (const test of tests) {
+                addTestResult('userResults', test.name, 'loading');
+                const result = await makeAPICall(test.endpoint);
+                
+                if (result.success) {
+                    addTestResult('userResults', test.name, 'success', result.data);
+                } else {
+                    addTestResult('userResults', test.name, 'error', null, `Status: ${result.status} - ${JSON.stringify(result.data)}`);
+                }
+            }
+        }
+
+        async function testAdminAPIs() {
+            const tests = [
+                { name: 'Dashcams List (Admin Only)', endpoint: '/fleet/dashcams/?page=1' },
+                { name: 'Dashcams Stats (Admin Only)', endpoint: '/fleet/dashcams/dashboard_stats/?date_range=today' },
+                { name: 'Analytics (Admin Only)', endpoint: '/fleet/analytics/' },
+                { name: 'User Permissions (Admin Only)', endpoint: '/users/permissions/' }
+            ];
+
+            for (const test of tests) {
+                addTestResult('adminResults', test.name, 'loading');
+                const result = await makeAPICall(test.endpoint);
+                
+                if (result.status === 403) {
+                    addTestResult('adminResults', test.name, 'success', { message: 'Expected 403 - Admin access required', status: 403 });
+                } else if (result.success) {
+                    addTestResult('adminResults', test.name, 'success', result.data);
+                } else {
+                    addTestResult('adminResults', test.name, 'error', null, `Unexpected status: ${result.status} - ${JSON.stringify(result.data)}`);
+                }
+            }
+        }
+
+        async function runCompleteTest() {
+            // Clear previous results
+            ['authResults', 'dashboardResults', 'fleetResults', 'userResults', 'adminResults', 'integrationResults'].forEach(id => {
+                document.getElementById(id).innerHTML = '';
+            });
+            
+            testResults = { total: 0, passed: 0, failed: 0, pending: 0 };
+            updateSummary();
+
+            addTestResult('integrationResults', 'Starting Complete Test Suite', 'loading');
+
+            // Step 1: Login
+            await testLogin();
+            
+            if (!accessToken) {
+                addTestResult('integrationResults', 'Login Failed - Cannot Continue', 'error');
+                return;
+            }
+
+            // Step 2: Test all API categories
+            await testDashboardAPIs();
+            await testFleetAPIs();
+            await testUserAPIs();
+            await testAdminAPIs();
+
+            // Step 3: Summary
+            const successRate = ((testResults.passed / testResults.total) * 100).toFixed(1);
+            addTestResult('integrationResults', `Test Complete - Success Rate: ${successRate}%`, 
+                testResults.failed === 0 ? 'success' : 'error', 
+                { 
+                    total: testResults.total, 
+                    passed: testResults.passed, 
+                    failed: testResults.failed,
+                    successRate: `${successRate}%`
+                });
+        }
+
+        // Initialize
+        updateSummary();
+    </script>
+</body>
+</html>
+

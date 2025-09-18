@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetDashboardSummaryQuery } from "@/store/api/fleetApi";
+import { useDashboard } from "@/contexts/DashboardContext";
 import { cn } from "@/lib/utils";
 
 interface OBDMetricsSnapshotProps {
@@ -8,7 +8,7 @@ interface OBDMetricsSnapshotProps {
 }
 
 export function OBDMetricsSnapshot({ className }: OBDMetricsSnapshotProps) {
-  const { data: summary, isLoading: loading } = useGetDashboardSummaryQuery('today');
+  const { summary, loading } = useDashboard();
 
   if (loading) {
     return (
@@ -38,40 +38,50 @@ export function OBDMetricsSnapshot({ className }: OBDMetricsSnapshotProps) {
     vehicles_reporting_errors: 0,
   };
 
+  // Ensure all values are numbers, not null/undefined
+  const safeObdMetrics = {
+    average_speed_kph: obdMetrics.average_speed_kph ?? 0,
+    average_motor_temp_c: obdMetrics.average_motor_temp_c ?? 0,
+    average_estimated_range_km: obdMetrics.average_estimated_range_km ?? 0,
+    average_battery_voltage: obdMetrics.average_battery_voltage ?? 0,
+    average_tire_pressure_kpa: obdMetrics.average_tire_pressure_kpa ?? 0,
+    vehicles_reporting_errors: obdMetrics.vehicles_reporting_errors ?? 0,
+  };
+
   const metrics = [
     {
       label: "Avg Speed",
-      value: obdMetrics.average_speed_kph,
+      value: safeObdMetrics.average_speed_kph,
       unit: "kph",
       icon: "🚗",
     },
     {
       label: "Avg Motor Temp",
-      value: obdMetrics.average_motor_temp_c,
+      value: safeObdMetrics.average_motor_temp_c,
       unit: "°C",
       icon: "🌡️",
     },
     {
       label: "Avg Range",
-      value: obdMetrics.average_estimated_range_km,
+      value: safeObdMetrics.average_estimated_range_km,
       unit: "km",
       icon: "🔋",
     },
     {
       label: "Avg Voltage",
-      value: obdMetrics.average_battery_voltage,
+      value: safeObdMetrics.average_battery_voltage,
       unit: "V",
       icon: "⚡",
     },
     {
       label: "Avg Tire Pressure",
-      value: obdMetrics.average_tire_pressure_kpa,
+      value: safeObdMetrics.average_tire_pressure_kpa,
       unit: "kPa",
       icon: "🛞",
     },
     {
       label: "Vehicles with Errors",
-      value: obdMetrics.vehicles_reporting_errors,
+      value: safeObdMetrics.vehicles_reporting_errors,
       unit: "",
       icon: "⚠️",
       isError: true,
@@ -107,7 +117,7 @@ export function OBDMetricsSnapshot({ className }: OBDMetricsSnapshotProps) {
                   : "text-dark dark:text-white"
               )}
             >
-              {metric.value.toFixed(1)}
+              {typeof metric.value === 'number' ? metric.value.toFixed(1) : '0.0'}
               {metric.unit && <span className="text-xs ml-1">{metric.unit}</span>}
             </div>
           </div>

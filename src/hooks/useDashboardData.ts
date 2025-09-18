@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/api-client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 export interface DashboardSummary {
   total_vehicles: number;
@@ -71,13 +71,14 @@ export function useDashboardData(
   const [dateRange, setDateRange] = useState(initialDateRange);
   const [startDate, setStartDate] = useState(initialStartDate);
   const [endDate, setEndDate] = useState(initialEndDate);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Fetch all dashboard data in parallel
+      // Fetch all dashboard data in parallel with timeout and error handling
       const [
         summaryData,
         vehiclesStats,
@@ -85,7 +86,7 @@ export function useDashboardData(
         tripsStats,
         alertsStats,
         maintenanceStats
-      ] = await Promise.all([
+      ] = await Promise.allSettled([
         apiClient.getDashboardSummary(dateRange, startDate, endDate),
         apiClient.getVehiclesStats(dateRange, startDate, endDate),
         apiClient.getDriversStats(dateRange, startDate, endDate),
@@ -94,13 +95,35 @@ export function useDashboardData(
         apiClient.getMaintenanceStats(dateRange, startDate, endDate),
       ]);
 
-      setSummary(summaryData);
+      // Handle successful responses
+      const summary = summaryData.status === 'fulfilled' ? summaryData.value : null;
+      const vehicles = vehiclesStats.status === 'fulfilled' ? vehiclesStats.value : null;
+      const drivers = driversStats.status === 'fulfilled' ? driversStats.value : null;
+      const trips = tripsStats.status === 'fulfilled' ? tripsStats.value : null;
+      const alerts = alertsStats.status === 'fulfilled' ? alertsStats.value : null;
+      const maintenance = maintenanceStats.status === 'fulfilled' ? maintenanceStats.value : null;
+
+      // Log any failed requests
+      const failedRequests = [
+        summaryData.status === 'rejected' && 'Summary',
+        vehiclesStats.status === 'rejected' && 'Vehicles Stats',
+        driversStats.status === 'rejected' && 'Drivers Stats',
+        tripsStats.status === 'rejected' && 'Trips Stats',
+        alertsStats.status === 'rejected' && 'Alerts Stats',
+        maintenanceStats.status === 'rejected' && 'Maintenance Stats',
+      ].filter(Boolean);
+
+      if (failedRequests.length > 0) {
+        console.warn(`Some dashboard data failed to load: ${failedRequests.join(', ')}`);
+      }
+
+      setSummary(summary);
       setStats({
-        vehicles: vehiclesStats,
-        drivers: driversStats,
-        trips: tripsStats,
-        alerts: alertsStats,
-        maintenance: maintenanceStats,
+        vehicles,
+        drivers,
+        trips,
+        alerts,
+        maintenance,
       });
     } catch (err: any) {
       console.error('Failed to fetch dashboard data:', err);
@@ -115,10 +138,21 @@ export function useDashboardData(
     newStartDate?: string, 
     newEndDate?: string
   ) => {
+    // Clear existing timeout
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    // Set new values immediately for UI responsiveness
     setDateRange(newDateRange);
     setStartDate(newStartDate);
     setEndDate(newEndDate);
-  }, []);
+
+    // Debounce the API call to prevent excessive requests
+    debounceTimeoutRef.current = setTimeout(() => {
+      fetchDashboardData();
+    }, 300); // 300ms debounce
+  }, [fetchDashboardData]);
 
   const refetch = useCallback(async () => {
     await fetchDashboardData();
@@ -127,6 +161,15 @@ export function useDashboardData(
   useEffect(() => {
     fetchDashboardData();
   }, [fetchDashboardData]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return {
     summary,

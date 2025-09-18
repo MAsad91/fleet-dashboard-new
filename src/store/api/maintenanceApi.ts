@@ -10,7 +10,7 @@ export interface PaginatedResponse<T> {
 export const maintenanceApi = createApi({
   reducerPath: 'maintenanceApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api',
+    baseUrl: '/api/proxy',
     prepareHeaders: (headers) => {
       const token = localStorage.getItem('authToken') || 
                    (typeof document !== 'undefined' ? 

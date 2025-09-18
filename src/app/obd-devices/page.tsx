@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { useListObdDevicesQuery, useDeleteObdDeviceMutation } from "@/store/api/obdApi";
+import { useListObdDevicesQuery, useDeleteObdDeviceMutation } from "@/store/api/fleetApi";
 import { setOBDFilters, setOBDPagination } from "@/store/slices/obdUISlice";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 import { Button } from "@/components/ui-elements/button";
@@ -87,7 +87,7 @@ export default function OBDDevicesPage() {
   }
 
   return (
-    <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer']}>
+    <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">

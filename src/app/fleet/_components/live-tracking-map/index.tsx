@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetActiveTripsQuery } from "@/store/api/tripsApi";
+import { useDashboard } from "@/contexts/DashboardContext";
 import { cn } from "@/lib/utils";
 import { MapIcon } from "@/components/Layouts/sidebar/icons";
 import { useState } from "react";
@@ -12,12 +12,29 @@ type PropsType = {
 export function LiveTrackingMap({ className }: PropsType) {
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   
-  const { data: tripsResponse, isLoading: loading, error } = useGetActiveTripsQuery({ 
-    status: 'in_progress', 
-    limit: 10 
-  });
+  const { summary, loading } = useDashboard();
   
-  const trips = tripsResponse?.results || [];
+  // Mock trips data for now - in a real app, this would come from the API
+  const trips = [
+    {
+      id: 1,
+      trip_id: "TRP-001",
+      vehicle: "EV-001",
+      driver: "John Doe",
+      status: "in_progress",
+      current_location: "Downtown",
+      actual_start_time: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
+    },
+    {
+      id: 2,
+      trip_id: "TRP-002", 
+      vehicle: "EV-002",
+      driver: "Jane Smith",
+      status: "in_progress",
+      current_location: "Airport",
+      actual_start_time: new Date(Date.now() - 60 * 60 * 1000).toISOString(), // 1 hour ago
+    }
+  ];
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {

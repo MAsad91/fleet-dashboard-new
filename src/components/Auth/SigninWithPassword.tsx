@@ -11,8 +11,8 @@ export default function SigninWithPassword() {
   const { login } = useAuth();
   const router = useRouter();
   const [data, setData] = useState({
-    email: process.env.NEXT_PUBLIC_DEMO_USER_MAIL || "",
-    password: process.env.NEXT_PUBLIC_DEMO_USER_PASS || "",
+    username: process.env.NEXT_PUBLIC_DEMO_USER_MAIL || "testadmin",
+    password: process.env.NEXT_PUBLIC_DEMO_USER_PASS || "testadmin123",
     remember: false,
   });
 
@@ -33,14 +33,19 @@ export default function SigninWithPassword() {
     setError("");
 
     try {
-      const result = await login(data.email, data.password);
+      console.log('🔐 Attempting login with:', { username: data.username, password: '***' });
+      const result = await login(data.username, data.password);
+      console.log('🔐 Login result:', result);
       
       if (result.success) {
+        console.log('✅ Login successful, redirecting to /fleet');
         router.push('/fleet'); // Redirect to fleet dashboard
       } else {
+        console.error('❌ Login failed:', result.error);
         setError(result.error || 'Login failed');
       }
     } catch (error) {
+      console.error('❌ Login error:', error);
       setError('An unexpected error occurred');
     } finally {
       setLoading(false);
@@ -56,13 +61,13 @@ export default function SigninWithPassword() {
       )}
       
       <InputGroup
-        type="email"
-        label="Email"
+        type="text"
+        label="Username"
         className="mb-4 [&_input]:py-[15px]"
-        placeholder="Enter your email"
-        name="email"
+        placeholder="Enter your username"
+        name="username"
         handleChange={handleChange}
-        value={data.email}
+        value={data.username}
         icon={<EmailIcon />}
       />
 

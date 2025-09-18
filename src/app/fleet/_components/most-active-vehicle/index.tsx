@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetDashboardSummaryQuery } from "@/store/api/fleetApi";
+import { useDashboard } from "@/contexts/DashboardContext";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -9,7 +9,7 @@ interface MostActiveVehicleProps {
 }
 
 export function MostActiveVehicle({ className }: MostActiveVehicleProps) {
-  const { data: summary, isLoading: loading } = useGetDashboardSummaryQuery('today');
+  const { summary, loading } = useDashboard();
 
   if (loading) {
     return (

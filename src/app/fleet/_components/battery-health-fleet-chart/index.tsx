@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetDashboardSummaryQuery } from "@/store/api/fleetApi";
+import { useDashboard } from "@/contexts/DashboardContext";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 
@@ -12,7 +12,7 @@ interface BatteryHealthFleetChartProps {
 }
 
 export function BatteryHealthFleetChart({ className }: BatteryHealthFleetChartProps) {
-  const { data: summary, isLoading: loading } = useGetDashboardSummaryQuery('today');
+  const { summary, loading } = useDashboard();
 
   if (loading) {
     return (
@@ -26,19 +26,19 @@ export function BatteryHealthFleetChart({ className }: BatteryHealthFleetChartPr
     );
   }
 
-  // Mock data for battery health fleet - in real app this would come from API
+  // Use real data from API
   const batteryData = {
     series: [
       {
         name: "Current Capacity",
-        data: [89, 87, 92, 88, 91]
+        data: summary?.battery_health_data?.current_capacity || [0, 0, 0, 0, 0]
       },
       {
         name: "Optimal Capacity",
-        data: [65, 68, 72, 70, 75]
+        data: summary?.battery_health_data?.optimal_capacity || [0, 0, 0, 0, 0]
       }
     ],
-    categories: ["EV-001", "EV-002", "EV-003", "EV-004", "EV-005"]
+    categories: summary?.battery_health_data?.vehicle_ids || ["EV-001", "EV-002", "EV-003", "EV-004", "EV-005"]
   };
 
   const options = {

@@ -87,7 +87,7 @@ export interface TripsResponse {
 export const fleetApi = createApi({
   reducerPath: 'fleetApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api',
+    baseUrl: '/api/proxy',
     prepareHeaders: (headers) => {
       // Get token from localStorage or cookies
       const token = localStorage.getItem('authToken') || 
@@ -111,6 +111,7 @@ export const fleetApi = createApi({
     'Dashcams',
     'VehicleDocuments',
     'VehicleTypes',
+    'OBDDevices',
   ],
   endpoints: (builder) => ({
     // Dashboard summary (Postman uses date_range param)
@@ -333,6 +334,95 @@ export const fleetApi = createApi({
       query: () => `/fleet/vehicle-types/`,
       providesTags: ['VehicleTypes'],
     }),
+
+    // Dashcams
+    listDashcams: builder.query<PaginatedResponse<any>, { page?: number; status?: string }>({
+      query: ({ page, status }) => {
+        const params = new URLSearchParams();
+        if (page !== undefined) params.set('page', String(page));
+        if (status !== undefined) params.set('status', status);
+        return `/fleet/dashcams/?${params.toString()}`;
+      },
+      providesTags: ['Dashcams'],
+    }),
+    createDashcam: builder.mutation<any, any>({
+      query: (body) => ({ url: `/fleet/dashcams/`, method: 'POST', body }),
+      invalidatesTags: ['Dashcams'],
+    }),
+    getDashcamById: builder.query<any, string>({
+      query: (id) => `/fleet/dashcams/${id}/`,
+      providesTags: ['Dashcams'],
+    }),
+    updateDashcam: builder.mutation<any, { id: string; body: any }>({
+      query: ({ id, body }) => ({ url: `/fleet/dashcams/${id}/`, method: 'PATCH', body }),
+      invalidatesTags: ['Dashcams'],
+    }),
+    deleteDashcam: builder.mutation<any, string>({
+      query: (id) => ({ url: `/fleet/dashcams/${id}/`, method: 'DELETE' }),
+      invalidatesTags: ['Dashcams'],
+    }),
+    refreshDashcamApiKey: builder.mutation<any, { id: string }>({
+      query: ({ id }) => ({ url: `/fleet/dashcams/${id}/refresh_api_key/`, method: 'POST' }),
+      invalidatesTags: ['Dashcams'],
+    }),
+
+    // Maintenance
+    listScheduledMaintenance: builder.query<PaginatedResponse<any>, { page?: number; status?: string }>({
+      query: ({ page, status }) => {
+        const params = new URLSearchParams();
+        if (page !== undefined) params.set('page', String(page));
+        if (status !== undefined) params.set('status', status);
+        return `/fleet/scheduled-maintenance/?${params.toString()}`;
+      },
+      providesTags: ['Maintenance'],
+    }),
+    createScheduledMaintenance: builder.mutation<any, any>({
+      query: (body) => ({ url: `/fleet/scheduled-maintenance/`, method: 'POST', body }),
+      invalidatesTags: ['Maintenance'],
+    }),
+    getScheduledMaintenanceById: builder.query<any, string>({
+      query: (id) => `/fleet/scheduled-maintenance/${id}/`,
+      providesTags: ['Maintenance'],
+    }),
+    updateScheduledMaintenance: builder.mutation<any, { id: string; body: any }>({
+      query: ({ id, body }) => ({ url: `/fleet/scheduled-maintenance/${id}/`, method: 'PATCH', body }),
+      invalidatesTags: ['Maintenance'],
+    }),
+    deleteScheduledMaintenance: builder.mutation<any, string>({
+      query: (id) => ({ url: `/fleet/scheduled-maintenance/${id}/`, method: 'DELETE' }),
+      invalidatesTags: ['Maintenance'],
+    }),
+    markServiceDone: builder.mutation<any, { id: string }>({
+      query: ({ id }) => ({ url: `/fleet/scheduled-maintenance/${id}/mark_done/`, method: 'POST' }),
+      invalidatesTags: ['Maintenance'],
+    }),
+
+    // OBD Devices
+    listObdDevices: builder.query<PaginatedResponse<any>, { page?: number; status?: string }>({
+      query: ({ page, status }) => {
+        const params = new URLSearchParams();
+        if (page !== undefined) params.set('page', String(page));
+        if (status !== undefined) params.set('status', status);
+        return `/fleet/obd-devices/?${params.toString()}`;
+      },
+      providesTags: ['OBDDevices'],
+    }),
+    createObdDevice: builder.mutation<any, any>({
+      query: (body) => ({ url: `/fleet/obd-devices/`, method: 'POST', body }),
+      invalidatesTags: ['OBDDevices'],
+    }),
+    getObdDeviceById: builder.query<any, string>({
+      query: (id) => `/fleet/obd-devices/${id}/`,
+      providesTags: ['OBDDevices'],
+    }),
+    updateObdDevice: builder.mutation<any, { id: string; body: any }>({
+      query: ({ id, body }) => ({ url: `/fleet/obd-devices/${id}/`, method: 'PATCH', body }),
+      invalidatesTags: ['OBDDevices'],
+    }),
+    deleteObdDevice: builder.mutation<any, string>({
+      query: (id) => ({ url: `/fleet/obd-devices/${id}/`, method: 'DELETE' }),
+      invalidatesTags: ['OBDDevices'],
+    }),
   }),
 });
 
@@ -381,4 +471,21 @@ export const {
   useUpdateVehicleDocumentMutation,
   useDeleteVehicleDocumentMutation,
   useListVehicleTypesQuery,
+  useListDashcamsQuery,
+  useCreateDashcamMutation,
+  useGetDashcamByIdQuery,
+  useUpdateDashcamMutation,
+  useDeleteDashcamMutation,
+  useRefreshDashcamApiKeyMutation,
+  useListScheduledMaintenanceQuery,
+  useCreateScheduledMaintenanceMutation,
+  useGetScheduledMaintenanceByIdQuery,
+  useUpdateScheduledMaintenanceMutation,
+  useDeleteScheduledMaintenanceMutation,
+  useMarkServiceDoneMutation,
+  useListObdDevicesQuery,
+  useCreateObdDeviceMutation,
+  useGetObdDeviceByIdQuery,
+  useUpdateObdDeviceMutation,
+  useDeleteObdDeviceMutation,
 } = fleetApi;

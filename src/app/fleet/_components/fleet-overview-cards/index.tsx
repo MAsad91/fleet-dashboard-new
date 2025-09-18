@@ -1,12 +1,12 @@
 "use client";
 
-import { useGetDashboardSummaryQuery } from "@/store/api/fleetApi";
+import { useDashboard } from "@/contexts/DashboardContext";
 import { compactFormat } from "@/lib/format-number";
 import { FleetOverviewCard } from "./card";
 import * as icons from "./icons";
 
 export function FleetOverviewCards() {
-  const { data: summary, isLoading: loading } = useGetDashboardSummaryQuery('today');
+  const { summary, loading } = useDashboard();
 
   if (loading) {
     return (
@@ -31,22 +31,22 @@ export function FleetOverviewCards() {
   const fleetData = {
     totalVehicles: { 
       value: summary?.total_vehicles || 0, 
-      growthRate: 12.5, // This would come from comparison data
+      growthRate: summary?.vehicle_growth_rate || 0,
       description: "Active fleet vehicles" 
     },
     activeDrivers: { 
       value: summary?.total_active_trips || 0,
-      growthRate: 8.2, 
+      growthRate: summary?.trips_growth_rate || 0, 
       description: "Active trips" 
     },
     chargingStations: { 
       value: summary?.open_maintenance || 0, 
-      growthRate: -2.0, 
+      growthRate: summary?.maintenance_growth_rate || 0, 
       description: "Maintenance due" 
     },
     totalRevenue: { 
       value: summary?.total_distance_travelled_km || 0, 
-      growthRate: 15.0, 
+      growthRate: summary?.distance_growth_rate || 0, 
       description: "Total distance (km)" 
     },
   };

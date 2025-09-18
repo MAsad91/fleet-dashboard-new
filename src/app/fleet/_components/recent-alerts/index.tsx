@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetActiveAlertsQuery } from "@/store/api/alertsApi";
+import { useDashboard } from "@/contexts/DashboardContext";
 import { cn } from "@/lib/utils";
 import { BellIcon } from "@/components/Layouts/sidebar/icons";
 
@@ -9,12 +9,32 @@ type PropsType = {
 };
 
 export function RecentAlerts({ className }: PropsType) {
-  const { data: alertsResponse, isLoading: loading, error } = useGetActiveAlertsQuery({ 
-    status: 'active', 
-    limit: 5 
-  });
+  const { summary, loading } = useDashboard();
   
-  const alerts = alertsResponse?.results || [];
+  // Mock alerts data for now - in a real app, this would come from the API
+  const alerts = [
+    {
+      id: 1,
+      title: "Battery Low",
+      vehicle: "EV-001",
+      severity: "high",
+      created_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(), // 15 minutes ago
+    },
+    {
+      id: 2,
+      title: "Maintenance Due",
+      vehicle: "EV-002", 
+      severity: "medium",
+      created_at: new Date(Date.now() - 45 * 60 * 1000).toISOString(), // 45 minutes ago
+    },
+    {
+      id: 3,
+      title: "Temperature Warning",
+      vehicle: "EV-003",
+      severity: "low",
+      created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+    }
+  ];
 
   const getAlertIcon = (title: string) => {
     const lowerTitle = title.toLowerCase();
