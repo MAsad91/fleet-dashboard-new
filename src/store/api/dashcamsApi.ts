@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { API_CONFIG } from '@/config/api';
 
 export interface PaginatedResponse<T> {
   results: T[];
@@ -10,7 +11,7 @@ export interface PaginatedResponse<T> {
 export const dashcamsApi = createApi({
   reducerPath: 'dashcamsApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: '/api/proxy',
+    baseUrl: API_CONFIG.PROXY_URL,
     prepareHeaders: (headers) => {
       const token = localStorage.getItem('authToken') || 
                    (typeof document !== 'undefined' ? 

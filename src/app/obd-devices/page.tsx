@@ -10,12 +10,17 @@ import InputGroup from "@/components/FormElements/InputGroup";
 import { Select } from "@/components/FormElements/select";
 import { Search, Plus, Edit, Trash2, Eye, Wifi, WifiOff, Activity, Battery } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AddObdDeviceModal } from "@/components/Modals/AddObdDeviceModal";
 
 export default function OBDDevicesPage() {
   const dispatch = useAppDispatch();
   const { filters, pagination } = useAppSelector((state) => state.obdUI);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   
-  const { data: devicesData, isLoading, error } = useListObdDevicesQuery();
+  const { data: devicesData, isLoading, error } = useListObdDevicesQuery({
+    page: pagination.page,
+    status: filters.status
+  });
 
   const [deleteDevice] = useDeleteObdDeviceMutation();
 
@@ -101,6 +106,7 @@ export default function OBDDevicesPage() {
             label="Add Device"
             variant="primary"
             icon={<Plus className="h-4 w-4" />}
+            onClick={() => setIsAddModalOpen(true)}
           />
         </div>
 
@@ -332,6 +338,12 @@ export default function OBDDevicesPage() {
           )}
         </div>
       </div>
+
+      {/* Add OBD Device Modal */}
+      <AddObdDeviceModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+      />
     </ProtectedRoute>
   );
 }

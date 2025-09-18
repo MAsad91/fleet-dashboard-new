@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { API_CONFIG } from '@/config/api';
 
 // Define types for our API responses
 export interface DashboardSummary {
@@ -87,7 +88,7 @@ export interface TripsResponse {
 export const fleetApi = createApi({
   reducerPath: 'fleetApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: '/api/proxy',
+    baseUrl: API_CONFIG.PROXY_URL,
     prepareHeaders: (headers) => {
       // Get token from localStorage or cookies
       const token = localStorage.getItem('authToken') || 

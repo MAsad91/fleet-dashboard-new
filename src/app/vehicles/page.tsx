@@ -10,10 +10,19 @@ import InputGroup from "@/components/FormElements/InputGroup";
 import { Select } from "@/components/FormElements/select";
 import { Search, Plus, Edit, Trash2, Eye, Car, Wrench, Fuel } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AddVehicleModal } from "@/components/Modals/AddVehicleModal";
+import { VehicleViewModal } from "@/components/Modals/VehicleViewModal";
+import { VehicleEditModal } from "@/components/Modals/VehicleEditModal";
+import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
 
 export default function VehiclesPage() {
   const dispatch = useAppDispatch();
   const { filters, pagination } = useAppSelector((state) => state.vehiclesUI);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [selectedVehicleId, setSelectedVehicleId] = useState<number | null>(null);
   
   const { data: vehiclesData, isLoading, error } = useListVehiclesQuery({
     page: pagination.page,
@@ -38,20 +47,37 @@ export default function VehiclesPage() {
     dispatch(setVehiclesPagination({ page }));
   };
 
-  const handleDeleteVehicle = async (vehicleId: string) => {
-    if (confirm("Are you sure you want to delete this vehicle?")) {
-      try {
-        await deleteVehicle(vehicleId).unwrap();
-      } catch (error) {
-        console.error("Failed to delete vehicle:", error);
-      }
+  const handleViewVehicle = (vehicleId: number) => {
+    setSelectedVehicleId(vehicleId);
+    setIsViewModalOpen(true);
+  };
+
+  const handleEditVehicle = (vehicleId: number) => {
+    setSelectedVehicleId(vehicleId);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDeleteVehicle = (vehicleId: number) => {
+    setSelectedVehicleId(vehicleId);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const confirmDeleteVehicle = async () => {
+    if (!selectedVehicleId) return;
+    
+    try {
+      await deleteVehicle(selectedVehicleId.toString()).unwrap();
+      setIsDeleteConfirmOpen(false);
+      setSelectedVehicleId(null);
+    } catch (error) {
+      console.error("Failed to delete vehicle:", error);
     }
   };
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      active: { className: "bg-green-100 text-green-800", label: "Active" },
-      inactive: { className: "bg-gray-100 text-gray-800", label: "Inactive" },
+      available: { className: "bg-green-100 text-green-800", label: "Available" },
+      in_service: { className: "bg-blue-100 text-blue-800", label: "In Service" },
       maintenance: { className: "bg-yellow-100 text-yellow-800", label: "Maintenance" },
       retired: { className: "bg-red-100 text-red-800", label: "Retired" },
     };
@@ -105,6 +131,7 @@ export default function VehiclesPage() {
             label="Add Vehicle"
             variant="primary"
             icon={<Plus className="h-4 w-4" />}
+            onClick={() => setIsAddModalOpen(true)}
           />
         </div>
 
@@ -126,8 +153,8 @@ export default function VehiclesPage() {
               label="Status"
               items={[
                 { value: "all", label: "All Status" },
-                { value: "active", label: "Active" },
-                { value: "inactive", label: "Inactive" },
+                { value: "available", label: "Available" },
+                { value: "in_service", label: "In Service" },
                 { value: "maintenance", label: "Maintenance" },
                 { value: "retired", label: "Retired" },
               ]}
@@ -271,12 +298,14 @@ export default function VehiclesPage() {
                             variant="outlineDark"
                             size="small"
                             icon={<Eye className="h-4 w-4" />}
+                            onClick={() => handleViewVehicle(vehicle.id)}
                           />
                           <Button
                             label=""
                             variant="outlineDark"
                             size="small"
                             icon={<Edit className="h-4 w-4" />}
+                            onClick={() => handleEditVehicle(vehicle.id)}
                           />
                           <Button
                             label=""
@@ -343,6 +372,48 @@ export default function VehiclesPage() {
           )}
         </div>
       </div>
+
+      {/* Add Vehicle Modal */}
+      <AddVehicleModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+      />
+
+      {/* Vehicle View Modal */}
+      <VehicleViewModal
+        isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false);
+          setSelectedVehicleId(null);
+        }}
+        vehicleId={selectedVehicleId}
+        onEdit={handleEditVehicle}
+      />
+
+      {/* Vehicle Edit Modal */}
+      <VehicleEditModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedVehicleId(null);
+        }}
+        vehicleId={selectedVehicleId}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => {
+          setIsDeleteConfirmOpen(false);
+          setSelectedVehicleId(null);
+        }}
+        onConfirm={confirmDeleteVehicle}
+        title="Delete Vehicle"
+        message={`Are you sure you want to delete this vehicle? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
     </ProtectedRoute>
   );
 }

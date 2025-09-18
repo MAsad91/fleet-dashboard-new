@@ -31,22 +31,22 @@ export function FleetOverviewCards() {
   const fleetData = {
     totalVehicles: { 
       value: summary?.total_vehicles || 0, 
-      growthRate: summary?.vehicle_growth_rate || 0,
+      growthRate: 12.5, // Mock growth rate
       description: "Active fleet vehicles" 
     },
     activeDrivers: { 
       value: summary?.total_active_trips || 0,
-      growthRate: summary?.trips_growth_rate || 0, 
+      growthRate: 8.3, // Mock growth rate
       description: "Active trips" 
     },
     chargingStations: { 
       value: summary?.open_maintenance || 0, 
-      growthRate: summary?.maintenance_growth_rate || 0, 
+      growthRate: -2.1, // Mock growth rate
       description: "Maintenance due" 
     },
     totalRevenue: { 
       value: summary?.total_distance_travelled_km || 0, 
-      growthRate: summary?.distance_growth_rate || 0, 
+      growthRate: 15.7, // Mock growth rate
       description: "Total distance (km)" 
     },
   };

@@ -30,9 +30,6 @@ const nextConfig = {
   
   // Render deployment configuration
   output: 'standalone',
-  experimental: {
-    outputFileTracingRoot: undefined,
-  },
   
   // API Proxy Configuration - Using API routes instead of rewrites
   // async rewrites() {

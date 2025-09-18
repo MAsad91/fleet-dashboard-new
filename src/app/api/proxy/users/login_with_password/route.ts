@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { API_CONFIG } from '@/config/api';
 
-const API_BASE_URL = 'https://oem.platform-api-test.joulepoint.com';
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 export async function POST(request: NextRequest) {
   try {
     console.log('🔐 Direct login route called');
     
-    const fullUrl = `${API_BASE_URL}/api/users/login_with_password/`;
+    const fullUrl = `${API_BASE_URL.replace(/\/$/, '')}/api/users/login_with_password/`;
     console.log(`🔐 Proxying to: ${fullUrl}`);
     
     const headers: Record<string, string> = {

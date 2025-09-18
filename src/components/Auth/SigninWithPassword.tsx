@@ -1,5 +1,5 @@
 "use client";
-import { EmailIcon, PasswordIcon } from "@/assets/icons";
+import { EmailIcon, PasswordIcon, CompanyIcon } from "@/assets/icons";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -11,6 +11,7 @@ export default function SigninWithPassword() {
   const { login } = useAuth();
   const router = useRouter();
   const [data, setData] = useState({
+    companyName: "",
     username: process.env.NEXT_PUBLIC_DEMO_USER_MAIL || "testadmin",
     password: process.env.NEXT_PUBLIC_DEMO_USER_PASS || "testadmin123",
     remember: false,
@@ -33,7 +34,7 @@ export default function SigninWithPassword() {
     setError("");
 
     try {
-      console.log('🔐 Attempting login with:', { username: data.username, password: '***' });
+      console.log('🔐 Attempting login with:', { companyName: data.companyName, username: data.username, password: '***' });
       const result = await login(data.username, data.password);
       console.log('🔐 Login result:', result);
       
@@ -60,6 +61,17 @@ export default function SigninWithPassword() {
         </div>
       )}
       
+      <InputGroup
+        type="text"
+        label="Company Name"
+        className="mb-4 [&_input]:py-[15px]"
+        placeholder="Enter your company name"
+        name="companyName"
+        handleChange={handleChange}
+        value={data.companyName}
+        icon={<CompanyIcon />}
+      />
+
       <InputGroup
         type="text"
         label="Username"

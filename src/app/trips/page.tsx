@@ -10,10 +10,12 @@ import InputGroup from "@/components/FormElements/InputGroup";
 import { Select } from "@/components/FormElements/select";
 import { Search, Plus, Play, Square, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AddTripModal } from "@/components/Modals/AddTripModal";
 
 export default function TripsPage() {
   const dispatch = useAppDispatch();
   const { filters, pagination } = useAppSelector((state) => state.tripsUI);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   
   const { data: tripsData, isLoading, error } = useGetTripsQuery({
     page: pagination.page,
@@ -140,6 +142,7 @@ export default function TripsPage() {
             label="Create Trip"
             variant="primary"
             icon={<Plus className="h-4 w-4" />}
+            onClick={() => setIsAddModalOpen(true)}
           />
         </div>
 
@@ -309,6 +312,12 @@ export default function TripsPage() {
           )}
         </div>
       </div>
+
+      {/* Add Trip Modal */}
+      <AddTripModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+      />
     </ProtectedRoute>
   );
 }

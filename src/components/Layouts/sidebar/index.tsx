@@ -28,16 +28,21 @@ export function Sidebar() {
     // Keep collapsible open, when it's subpage is active
     NAV_DATA.some((section) => {
       return section.items.some((item) => {
-        return item.items.some((subItem) => {
-          if (subItem.url === pathname) {
-            if (!expandedItems.includes(item.title)) {
-              toggleExpanded(item.title);
-            }
+        // Check if item has submenu items
+        if (item.items && item.items.length > 0) {
+          return item.items.some((subItem: any) => {
+            if (subItem && subItem.url === pathname) {
+              if (!expandedItems.includes(item.title)) {
+                toggleExpanded(item.title);
+              }
 
-            // Break the loop
-            return true;
-          }
-        });
+              // Break the loop
+              return true;
+            }
+            return false;
+          });
+        }
+        return false;
       });
     });
   }, [pathname, expandedItems, toggleExpanded]);
@@ -127,7 +132,7 @@ export function Sidebar() {
                                 className="ml-9 mr-0 space-y-1.5 pb-[15px] pr-0 pt-2"
                                 role="menu"
                               >
-                                {item.items.map((subItem) => (
+                                {item.items.map((subItem: any) => (
                                   <li key={subItem.title} role="none">
                                     <MenuItem
                                       as="link"
@@ -144,10 +149,10 @@ export function Sidebar() {
                         ) : (
                           (() => {
                             const href =
-                              "url" in item
+                              "url" in item && item.url
                                 ? item.url + ""
                                 : "/" +
-                                  item.title.toLowerCase().split(" ").join("-");
+                                  (item as any).title.toLowerCase().split(" ").join("-");
 
                             return (
                               <MenuItem

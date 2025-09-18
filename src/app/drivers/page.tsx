@@ -1,15 +1,26 @@
 "use client";
 
-import { useEffect } from "react";
-import { useListDriversQuery, useSuspendDriversMutation } from "@/store/api/driversApi";
+import { useEffect, useState } from "react";
+import { useListDriversQuery, useSuspendDriversMutation, useDeleteDriverMutation } from "@/store/api/driversApi";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setDriverFilters } from "@/store/slices/driversSlice";
 import { cn } from "@/lib/utils";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
+import { Button } from "@/components/ui-elements/button";
+import { Plus, Eye, Edit, Trash2 } from "lucide-react";
+import { AddDriverModal } from "@/components/Modals/AddDriverModal";
+import { DriverViewModal } from "@/components/Modals/DriverViewModal";
+import { DriverEditModal } from "@/components/Modals/DriverEditModal";
+import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
 
 export default function DriversPage() {
   const dispatch = useAppDispatch();
   const filters = useAppSelector((s) => s.driversUI.filters);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [selectedDriverId, setSelectedDriverId] = useState<number | null>(null);
 
   const { data, isLoading, refetch } = useListDriversQuery({
     page: filters.page,
@@ -18,6 +29,34 @@ export default function DriversPage() {
   });
 
   const [suspendDrivers, { isLoading: isSuspending }] = useSuspendDriversMutation();
+  const [deleteDriver] = useDeleteDriverMutation();
+
+  const handleViewDriver = (driverId: number) => {
+    setSelectedDriverId(driverId);
+    setIsViewModalOpen(true);
+  };
+
+  const handleEditDriver = (driverId: number) => {
+    setSelectedDriverId(driverId);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDeleteDriver = (driverId: number) => {
+    setSelectedDriverId(driverId);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const confirmDeleteDriver = async () => {
+    if (!selectedDriverId) return;
+    
+    try {
+      await deleteDriver(selectedDriverId.toString()).unwrap();
+      setIsDeleteConfirmOpen(false);
+      setSelectedDriverId(null);
+    } catch (error) {
+      console.error("Failed to delete driver:", error);
+    }
+  };
 
   useEffect(() => {
     // Ensure page defaults
@@ -51,9 +90,17 @@ export default function DriversPage() {
   return (
     <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
       <div className="space-y-4">
-      <div>
-        <h1 className="text-title-md2 font-bold text-black dark:text-white">Drivers</h1>
-        <p className="text-sm text-body-color dark:text-body-color-dark">Manage drivers, documents, and status.</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-title-md2 font-bold text-black dark:text-white">Drivers</h1>
+          <p className="text-sm text-body-color dark:text-body-color-dark">Manage drivers, documents, and status.</p>
+        </div>
+        <Button
+          label="Add Driver"
+          variant="primary"
+          icon={<Plus className="h-4 w-4" />}
+          onClick={() => setIsAddModalOpen(true)}
+        />
       </div>
 
       {/* Filters */}
@@ -101,6 +148,7 @@ export default function DriversPage() {
                 <th className="px-4 py-3 font-medium text-dark dark:text-white">Phone</th>
                 <th className="px-4 py-3 font-medium text-dark dark:text-white">Status</th>
                 <th className="px-4 py-3 font-medium text-dark dark:text-white">Trips</th>
+                <th className="px-4 py-3 font-medium text-dark dark:text-white">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -127,11 +175,36 @@ export default function DriversPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm text-body-color dark:text-body-color-dark">{driver.total_trips ?? "—"}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          label=""
+                          variant="outlineDark"
+                          size="small"
+                          icon={<Eye className="h-4 w-4" />}
+                          onClick={() => handleViewDriver(driver.id)}
+                        />
+                        <Button
+                          label=""
+                          variant="outlineDark"
+                          size="small"
+                          icon={<Edit className="h-4 w-4" />}
+                          onClick={() => handleEditDriver(driver.id)}
+                        />
+                        <Button
+                          label=""
+                          variant="outlineDark"
+                          size="small"
+                          icon={<Trash2 className="h-4 w-4" />}
+                          onClick={() => handleDeleteDriver(driver.id)}
+                        />
+                      </div>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td className="px-4 py-10 text-center text-sm text-body-color dark:text-body-color-dark" colSpan={4}>
+                  <td className="px-4 py-10 text-center text-sm text-body-color dark:text-body-color-dark" colSpan={5}>
                     No drivers found
                   </td>
                 </tr>
@@ -148,6 +221,48 @@ export default function DriversPage() {
         </div>
       </div>
     </div>
+
+    {/* Add Driver Modal */}
+    <AddDriverModal
+      isOpen={isAddModalOpen}
+      onClose={() => setIsAddModalOpen(false)}
+    />
+
+    {/* Driver View Modal */}
+    <DriverViewModal
+      isOpen={isViewModalOpen}
+      onClose={() => {
+        setIsViewModalOpen(false);
+        setSelectedDriverId(null);
+      }}
+      driverId={selectedDriverId}
+      onEdit={handleEditDriver}
+    />
+
+    {/* Driver Edit Modal */}
+    <DriverEditModal
+      isOpen={isEditModalOpen}
+      onClose={() => {
+        setIsEditModalOpen(false);
+        setSelectedDriverId(null);
+      }}
+      driverId={selectedDriverId}
+    />
+
+    {/* Delete Confirmation Modal */}
+    <ConfirmationModal
+      isOpen={isDeleteConfirmOpen}
+      onClose={() => {
+        setIsDeleteConfirmOpen(false);
+        setSelectedDriverId(null);
+      }}
+      onConfirm={confirmDeleteDriver}
+      title="Delete Driver"
+      message={`Are you sure you want to delete this driver? This action cannot be undone.`}
+      confirmText="Delete"
+      cancelText="Cancel"
+      type="danger"
+    />
     </ProtectedRoute>
   );
 }

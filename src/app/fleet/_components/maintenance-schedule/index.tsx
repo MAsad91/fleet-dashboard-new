@@ -32,8 +32,54 @@ export function MaintenanceSchedule({ className }: PropsType) {
     );
   }
 
-  // Use real maintenance data from API
-  const maintenanceData = summary?.maintenance_schedule || [];
+  // Use mock maintenance data (API doesn't provide this data yet)
+  const maintenanceData = [
+    {
+      id: 1,
+      vehicle: "EV-001",
+      type: "Battery Check",
+      dueDate: "2024-01-15",
+      status: "overdue",
+      priority: "high",
+      assignedTo: "John Smith"
+    },
+    {
+      id: 2,
+      vehicle: "EV-002",
+      type: "Tire Rotation",
+      dueDate: "2024-01-20",
+      status: "scheduled",
+      priority: "medium",
+      assignedTo: "Sarah Johnson"
+    },
+    {
+      id: 3,
+      vehicle: "EV-003",
+      type: "Software Update",
+      dueDate: "2024-01-18",
+      status: "in-progress",
+      priority: "low",
+      assignedTo: "Mike Davis"
+    },
+    {
+      id: 4,
+      vehicle: "EV-004",
+      type: "Brake Inspection",
+      dueDate: "2024-01-12",
+      status: "completed",
+      priority: "high",
+      assignedTo: "Lisa Wilson"
+    },
+    {
+      id: 5,
+      vehicle: "EV-005",
+      type: "Charging Port Check",
+      dueDate: "2024-01-25",
+      status: "scheduled",
+      priority: "medium",
+      assignedTo: "Tom Brown"
+    }
+  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {

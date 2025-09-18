@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { API_CONFIG } from '@/config/api';
 
-const API_BASE_URL = 'https://oem.platform-api-test.joulepoint.com';
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 export async function GET(request: NextRequest) {
   return handleRequest(request, 'GET');
@@ -39,8 +40,8 @@ async function handleRequest(request: NextRequest, method: string) {
     const pathSegments = url.pathname.split('/').filter(Boolean);
     
     // Remove 'api' and 'proxy' from the path segments
-    // Original: /api/proxy/users/login_with_password/
-    // We want: /api/users/login_with_password/
+    // Original: /api/proxy/fleet/vehicles/
+    // We want: /api/fleet/vehicles/
     let apiPath = pathSegments.slice(2).join('/');
     
     // Ensure we have the /api prefix for Django
@@ -51,7 +52,10 @@ async function handleRequest(request: NextRequest, method: string) {
     // Preserve trailing slashes - they are critical for Django
     const originalPath = url.pathname;
     const hasTrailingSlash = originalPath.endsWith('/') && originalPath.length > 1;
-    if (hasTrailingSlash && !apiPath.endsWith('/')) {
+    
+    // For Django REST framework, most endpoints expect trailing slashes
+    // Add trailing slash if not present and the path doesn't end with a query parameter
+    if (!apiPath.endsWith('/') && !apiPath.includes('?')) {
       apiPath = apiPath + '/';
     }
     
@@ -60,7 +64,7 @@ async function handleRequest(request: NextRequest, method: string) {
     console.log(`🔐 Processed path: ${apiPath}`);
     
     // Build the full URL with query parameters
-    const fullUrl = new URL(`${API_BASE_URL}/${apiPath}`);
+    const fullUrl = new URL(`${API_BASE_URL.replace(/\/$/, '')}/${apiPath}`);
     
     // Copy query parameters from the original request
     url.searchParams.forEach((value, key) => {

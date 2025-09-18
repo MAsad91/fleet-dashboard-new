@@ -26,19 +26,19 @@ export function BatteryHealthFleetChart({ className }: BatteryHealthFleetChartPr
     );
   }
 
-  // Use real data from API
+  // Use mock data for battery health chart (API doesn't provide this data yet)
   const batteryData = {
     series: [
       {
         name: "Current Capacity",
-        data: summary?.battery_health_data?.current_capacity || [0, 0, 0, 0, 0]
+        data: [85, 92, 78, 88, 95]
       },
       {
         name: "Optimal Capacity",
-        data: summary?.battery_health_data?.optimal_capacity || [0, 0, 0, 0, 0]
+        data: [100, 100, 100, 100, 100]
       }
     ],
-    categories: summary?.battery_health_data?.vehicle_ids || ["EV-001", "EV-002", "EV-003", "EV-004", "EV-005"]
+    categories: ["EV-001", "EV-002", "EV-003", "EV-004", "EV-005"]
   };
 
   const options = {

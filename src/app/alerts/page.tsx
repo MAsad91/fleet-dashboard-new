@@ -10,10 +10,12 @@ import InputGroup from "@/components/FormElements/InputGroup";
 import { Select } from "@/components/FormElements/select";
 import { Search, Plus, Check, X, Eye, AlertTriangle, AlertCircle, AlertOctagon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AddAlertModal } from "@/components/Modals/AddAlertModal";
 
 export default function AlertsPage() {
   const dispatch = useAppDispatch();
   const { filters, pagination } = useAppSelector((state) => state.alertsUI);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   
   const { data: alertsData, isLoading, error } = useGetAlertsQuery({
     page: pagination.page,
@@ -182,6 +184,7 @@ export default function AlertsPage() {
             label="Create Alert"
             variant="primary"
             icon={<Plus className="h-4 w-4" />}
+            onClick={() => setIsAddModalOpen(true)}
           />
         </div>
 
@@ -412,6 +415,12 @@ export default function AlertsPage() {
           )}
         </div>
       </div>
+
+      {/* Add Alert Modal */}
+      <AddAlertModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+      />
     </ProtectedRoute>
   );
 }

@@ -1,12 +1,13 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
+import { API_CONFIG } from '@/config/api';
 
 class ApiClient {
   private client: AxiosInstance;
   private baseURL: string;
 
   constructor() {
-    this.baseURL = '/api/proxy';
+    this.baseURL = API_CONFIG.PROXY_URL;
     
     this.client = axios.create({
       baseURL: this.baseURL,

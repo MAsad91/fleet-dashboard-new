@@ -10,10 +10,12 @@ import InputGroup from "@/components/FormElements/InputGroup";
 import { Select } from "@/components/FormElements/select";
 import { Search, Plus, Check, Eye, Edit, Wrench, Calendar, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AddMaintenanceModal } from "@/components/Modals/AddMaintenanceModal";
 
 export default function MaintenancePage() {
   const dispatch = useAppDispatch();
   const { filters, pagination } = useAppSelector((state) => state.maintenanceUI);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   
   const { data: maintenanceData, isLoading, error } = useListScheduledMaintenanceQuery({
     page: pagination.page,
@@ -127,6 +129,7 @@ export default function MaintenancePage() {
             label="Schedule Maintenance"
             variant="primary"
             icon={<Plus className="h-4 w-4" />}
+            onClick={() => setIsAddModalOpen(true)}
           />
         </div>
 
@@ -375,6 +378,12 @@ export default function MaintenancePage() {
           )}
         </div>
       </div>
+
+      {/* Add Maintenance Modal */}
+      <AddMaintenanceModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+      />
     </ProtectedRoute>
   );
 }

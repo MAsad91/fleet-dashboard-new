@@ -58,17 +58,17 @@ export function MostActiveVehicle({ className }: MostActiveVehicleProps) {
             <div className="text-2xl">🚗</div>
             <div>
               <div className="text-lg font-semibold text-dark dark:text-white">
-                {mostActiveVehicle.vehicle_name}
+                {mostActiveVehicle.license_plate}
               </div>
               <div className="text-sm text-body-color dark:text-body-color-dark">
-                Vehicle ID: {mostActiveVehicle.vehicle_id}
+                Vehicle ID: {mostActiveVehicle.id}
               </div>
             </div>
           </div>
           
           <div className="mt-3">
             <div className="text-2xl font-bold text-primary mb-1">
-              {mostActiveVehicle.total_distance.toLocaleString()} km
+              {mostActiveVehicle.total_distance_km.toLocaleString()} km
             </div>
             <div className="text-sm text-body-color dark:text-body-color-dark">
               Distance traveled (last 7 days)
@@ -78,7 +78,7 @@ export function MostActiveVehicle({ className }: MostActiveVehicleProps) {
         
         <div className="ml-4">
           <Link
-            href={`/vehicles/${mostActiveVehicle.vehicle_id}`}
+            href={`/vehicles/${mostActiveVehicle.id}`}
             className="inline-flex items-center px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors"
           >
             View Vehicle

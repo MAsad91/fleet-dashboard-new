@@ -13,20 +13,8 @@ export const NAV_DATA = [
       {
         title: "Vehicles",
         icon: Icons.TruckIcon,
-        items: [
-          {
-            title: "All Vehicles",
-            url: "/fleet/vehicles",
-          },
-          {
-            title: "Vehicle Details",
-            url: "/fleet/vehicles/details",
-          },
-          {
-            title: "Add Vehicle",
-            url: "/fleet/vehicles/add",
-          },
-        ],
+        url: "/vehicles",
+        items: [],
       },
       {
         title: "Drivers",
