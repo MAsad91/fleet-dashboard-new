@@ -23,7 +23,12 @@ const nextConfig = {
         port: ""
       }
     ]
-  }
+  },
+  // Render deployment configuration
+  output: 'standalone',
+  experimental: {
+    outputFileTracingRoot: undefined,
+  },
 };
 
 export default nextConfig;
