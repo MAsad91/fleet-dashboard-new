@@ -27,7 +27,16 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   // Redirect unauthenticated users to sign-in
   useEffect(() => {
     if (isHydrated && !loading && !isAuthenticated && !isAuthPage) {
+      console.log('🔄 ConditionalLayout: Redirecting to sign-in');
       router.replace('/auth/sign-in');
+    }
+  }, [isHydrated, loading, isAuthenticated, isAuthPage, router]);
+
+  // Redirect authenticated users away from auth pages
+  useEffect(() => {
+    if (isHydrated && !loading && isAuthenticated && isAuthPage) {
+      console.log('🔄 ConditionalLayout: Redirecting authenticated user to fleet');
+      router.replace('/fleet');
     }
   }, [isHydrated, loading, isAuthenticated, isAuthPage, router]);
 
@@ -44,11 +53,14 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   }
 
   if (loading) {
+    console.log('🔄 ConditionalLayout: Showing loading spinner', { loading, isAuthenticated, isAuthPage });
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Loading...</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {isAuthPage ? 'Signing in...' : 'Loading...'}
+          </p>
         </div>
       </div>
     );
@@ -73,6 +85,8 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
     );
   }
 
+  console.log('🔄 ConditionalLayout: Rendering main layout', { loading, isAuthenticated, isAuthPage });
+  
   return (
     <div className="flex min-h-screen">
       <Sidebar />

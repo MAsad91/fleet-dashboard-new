@@ -3,13 +3,13 @@ import { EmailIcon, PasswordIcon, CompanyIcon } from "@/assets/icons";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import InputGroup from "../FormElements/InputGroup";
 import { Checkbox } from "../FormElements/checkbox";
 import { ErrorModal } from "../Modals/ErrorModal";
 
 export default function SigninWithPassword() {
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const router = useRouter();
   const [data, setData] = useState({
     companyName: "",
@@ -22,6 +22,40 @@ export default function SigninWithPassword() {
   const [error, setError] = useState("");
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [modalError, setModalError] = useState({ title: "", message: "" });
+  const [isMounted, setIsMounted] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Handle hydration
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isMounted && isAuthenticated) {
+      router.replace('/fleet');
+    }
+  }, [isMounted, isAuthenticated, router]);
+
+  // Force re-mount of form inputs after redirect to ensure they're editable
+  useEffect(() => {
+    if (isMounted && formRef.current) {
+      // Small delay to ensure DOM is ready after redirect
+      const timer = setTimeout(() => {
+        const inputs = formRef.current?.querySelectorAll('input');
+        inputs?.forEach(input => {
+          // Force input to be focusable and editable
+          input.removeAttribute('readonly');
+          input.removeAttribute('disabled');
+          // Ensure the input is properly initialized
+          input.style.pointerEvents = 'auto';
+          input.style.opacity = '1';
+        });
+      }, 200);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isMounted]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setData({
@@ -30,6 +64,15 @@ export default function SigninWithPassword() {
     });
     setError(""); // Clear error when user types
     setShowErrorModal(false); // Close modal when user types
+  };
+
+  const handleInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
+    // Ensure input is editable when clicked
+    const input = e.target as HTMLInputElement;
+    input.removeAttribute('readonly');
+    input.removeAttribute('disabled');
+    input.style.pointerEvents = 'auto';
+    input.style.opacity = '1';
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -43,6 +86,7 @@ export default function SigninWithPassword() {
       // Validate that company name is provided
       if (!data.companyName || data.companyName.trim() === '') {
         setError('Company name is required');
+        setLoading(false);
         return;
       }
       
@@ -51,7 +95,9 @@ export default function SigninWithPassword() {
       
       if (result.success) {
         console.log('✅ Login successful, redirecting to /fleet');
-        router.push('/fleet'); // Redirect to fleet dashboard
+        // Don't set loading to false here - let the redirect happen
+        router.replace('/fleet'); // Use replace instead of push to prevent back button issues
+        return; // Exit early to prevent setting loading to false
       } else {
         console.error('❌ Login failed:', result.error);
         
@@ -97,8 +143,17 @@ export default function SigninWithPassword() {
     }
   };
 
+  // Don't render until mounted to prevent hydration issues
+  if (!isMounted) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+      </div>
+    );
+  }
+
   return (
-    <form onSubmit={handleSubmit}>
+    <form ref={formRef} key={isMounted ? 'mounted' : 'loading'} onSubmit={handleSubmit}>
       {error && (
         <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
           {error}
@@ -114,6 +169,7 @@ export default function SigninWithPassword() {
         handleChange={handleChange}
         value={data.companyName}
         icon={<CompanyIcon />}
+        onClick={handleInputClick}
       />
 
       <InputGroup
@@ -125,6 +181,7 @@ export default function SigninWithPassword() {
         handleChange={handleChange}
         value={data.username}
         icon={<EmailIcon />}
+        onClick={handleInputClick}
       />
 
       <InputGroup
@@ -136,6 +193,7 @@ export default function SigninWithPassword() {
         handleChange={handleChange}
         value={data.password}
         icon={<PasswordIcon />}
+        onClick={handleInputClick}
       />
 
       <div className="mb-6 flex items-center justify-between gap-2 py-2 font-medium">
@@ -164,7 +222,8 @@ export default function SigninWithPassword() {
       <div className="mb-4.5">
         <button
           type="submit"
-          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary p-4 font-medium text-white transition hover:bg-opacity-90"
+          disabled={loading}
+          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary p-4 font-medium text-white transition hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Sign In
           {loading && (

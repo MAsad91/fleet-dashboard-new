@@ -56,6 +56,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.log('🔐 AuthContext: Using company-based login for:', companyName);
         const result = await apiClient.loginWithCompany(companyName, username, password);
         userData = result.user;
+        // Store company name for future use
+        localStorage.setItem('company_name', companyName);
       } else {
         console.log('🔐 AuthContext: Using standard login');
         const result = await apiClient.login(username, password);
@@ -81,21 +83,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem('user_data', JSON.stringify(mappedUser));
       console.log('🔐 AuthContext: User data stored in localStorage');
       
+      // Set user immediately to prevent double login page
       setUser(mappedUser);
       console.log('✅ AuthContext: Login successful, user set');
+      
+      // Set loading to false after successful login
+      setLoading(false);
+      console.log('✅ AuthContext: Loading set to false, isAuthenticated:', !!mappedUser);
+      
       return { success: true };
     } catch (error: any) {
       console.error('❌ AuthContext: Login error:', error);
       const errorMessage = error.message || 'Login failed. Please try again.';
       console.error('❌ AuthContext: Error message:', errorMessage);
+      setLoading(false); // Only set loading false on error
       return { success: false, error: errorMessage };
-    } finally {
-      setLoading(false);
     }
   };
 
   const logout = async () => {
     try {
+      console.log('🔓 AuthContext: Starting logout process');
+      setLoading(true);
       await apiClient.logout();
     } catch (error) {
       console.error('Logout error:', error);
@@ -107,6 +116,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.removeItem('user_data');
       localStorage.removeItem('company_name');
       setUser(null);
+      setLoading(false);
+      console.log('🔓 AuthContext: Logout completed, user cleared');
     }
   };
 

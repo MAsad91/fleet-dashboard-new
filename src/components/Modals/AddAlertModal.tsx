@@ -5,6 +5,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui-elements/button";
 import InputGroup from "@/components/FormElements/InputGroup";
 import { Select } from "@/components/FormElements/select";
+import { useCreateAlertMutation } from "@/store/api/fleetApi";
 import { AlertTriangle, Loader2 } from "lucide-react";
 
 interface AddAlertModalProps {
@@ -13,7 +14,7 @@ interface AddAlertModalProps {
 }
 
 export function AddAlertModal({ isOpen, onClose }: AddAlertModalProps) {
-  const [isLoading, setIsLoading] = useState(false);
+  const [createAlert, { isLoading }] = useCreateAlertMutation();
   
   const [formData, setFormData] = useState({
     title: "",
@@ -84,11 +85,8 @@ export function AddAlertModal({ isOpen, onClose }: AddAlertModalProps) {
       return;
     }
 
-    setIsLoading(true);
     try {
-      // Note: This would need to be connected to an actual create alert endpoint
-      // For now, we'll simulate the API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await createAlert(formData).unwrap();
       
       // Reset form and close modal
       setFormData({
@@ -106,11 +104,30 @@ export function AddAlertModal({ isOpen, onClose }: AddAlertModalProps) {
       });
       setErrors({});
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to create alert:", error);
+      
+      // Handle specific API validation errors
+      if (error?.data) {
+        const apiError = error.data;
+        if (typeof apiError === 'object') {
+          const newErrors: Record<string, string> = {};
+          
+          // Map API field errors to form field errors
+          Object.keys(apiError).forEach(field => {
+            if (Array.isArray(apiError[field])) {
+              newErrors[field] = apiError[field][0];
+            } else {
+              newErrors[field] = apiError[field];
+            }
+          });
+          
+          setErrors(newErrors);
+          return;
+        }
+      }
+      
       setErrors({ submit: "Failed to create alert. Please try again." });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -276,11 +293,12 @@ export function AddAlertModal({ isOpen, onClose }: AddAlertModalProps) {
                 }`}
               >
                 <option value="">Select alert type</option>
-                <option value="warning">Warning</option>
-                <option value="error">Error</option>
-                <option value="critical">Critical</option>
-                <option value="info">Information</option>
-                <option value="system">System Alert</option>
+                <option value="maintenance">Maintenance</option>
+                <option value="safety">Safety</option>
+                <option value="performance">Performance</option>
+                <option value="fuel">Fuel</option>
+                <option value="location">Location</option>
+                <option value="system">System</option>
               </select>
               {errors.alert_type && (
                 <p className="text-red-500 text-sm mt-1">{errors.alert_type}</p>

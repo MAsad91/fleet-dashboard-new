@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { useListScheduledMaintenanceQuery, useMarkServiceDoneMutation } from "@/store/api/fleetApi";
+import { useListScheduledMaintenanceQuery, useMarkServiceDoneMutation, useGetScheduledMaintenanceByIdQuery } from "@/store/api/fleetApi";
 import { setMaintenanceFilters, setMaintenancePagination } from "@/store/slices/maintenanceUISlice";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 import { Button } from "@/components/ui-elements/button";
@@ -10,6 +10,9 @@ import InputGroup from "@/components/FormElements/InputGroup";
 import { Select } from "@/components/FormElements/select";
 import { Search, Plus, Check, Eye, Edit, Wrench, Calendar, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MaintenanceViewModal } from "@/components/Modals/MaintenanceViewModal";
+import { MaintenanceEditModal } from "@/components/Modals/MaintenanceEditModal";
+import { DeleteConfirmationModal } from "@/components/Modals/DeleteConfirmationModal";
 import { AddMaintenanceModal } from "@/components/Modals/AddMaintenanceModal";
 
 export default function MaintenancePage() {
@@ -38,6 +41,22 @@ export default function MaintenancePage() {
 
   const handlePageChange = (page: number) => {
     dispatch(setMaintenancePagination({ page }));
+  };
+
+  const handleViewMaintenance = (maintenanceId: string) => {
+    // TODO: Implement view maintenance modal
+    console.log("View maintenance:", maintenanceId);
+    // For now, we can show a message
+    // In a real implementation, this would open a modal with maintenance details
+    alert(`Viewing maintenance: ${maintenanceId}\n\nThis would open a detailed view modal with maintenance information.`);
+  };
+
+  const handleEditMaintenance = (maintenanceId: string) => {
+    // TODO: Implement edit maintenance modal
+    console.log("Edit maintenance:", maintenanceId);
+    // For now, we can show a message
+    // In a real implementation, this would open an edit modal
+    alert(`Editing maintenance: ${maintenanceId}\n\nThis would open an edit modal to modify maintenance details.`);
   };
 
   const handleMarkServiceDone = async (maintenanceId: string) => {
@@ -159,6 +178,7 @@ export default function MaintenancePage() {
               ]}
               defaultValue={filters.status || "all"}
               placeholder="Select status"
+              onChange={handleStatusFilter}
             />
 
             <Select
@@ -173,6 +193,7 @@ export default function MaintenancePage() {
               ]}
               defaultValue={filters.maintenance_type || "all"}
               placeholder="Select type"
+              onChange={handleMaintenanceTypeFilter}
             />
 
             <InputGroup
@@ -206,7 +227,7 @@ export default function MaintenancePage() {
             </p>
           </div>
           
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             {isLoading ? (
               <div className="p-6">
                 <div className="animate-pulse space-y-4">
@@ -220,8 +241,16 @@ export default function MaintenancePage() {
                   ))}
                 </div>
               </div>
+            ) : error ? (
+              <div className="p-6 text-red-600">
+                Error: {error.message}
+              </div>
+            ) : maintenanceData?.results?.length === 0 ? (
+              <div className="p-6 text-center text-gray-500">
+                No maintenance records found.
+              </div>
             ) : (
-              <table className="w-full">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700" style={{ minWidth: '1000px' }}>
                 <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -304,12 +333,14 @@ export default function MaintenancePage() {
                             variant="outlineDark"
                             size="small"
                             icon={<Eye className="h-4 w-4" />}
+                            onClick={() => handleViewMaintenance(maintenance.id)}
                           />
                           <Button
                             label=""
                             variant="outlineDark"
                             size="small"
                             icon={<Edit className="h-4 w-4" />}
+                            onClick={() => handleEditMaintenance(maintenance.id)}
                           />
                           {maintenance.status === "scheduled" && (
                             <Button

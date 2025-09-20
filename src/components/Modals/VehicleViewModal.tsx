@@ -48,11 +48,11 @@ export function VehicleViewModal({ isOpen, onClose, vehicleId, onEdit }: Vehicle
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       available: { className: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400", label: "Available" },
-      in_use: { className: "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400", label: "In Use" },
+      in_service: { className: "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400", label: "In Service" },
       maintenance: { className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400", label: "Maintenance" },
-      out_of_service: { className: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400", label: "Out of Service" },
+      retired: { className: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400", label: "Retired" },
     };
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.available;
+    const config = statusConfig[status as keyof typeof statusConfig] || { className: "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400", label: status || "Unknown" };
     return (
       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.className}`}>
         {config.label}
@@ -61,19 +61,8 @@ export function VehicleViewModal({ isOpen, onClose, vehicleId, onEdit }: Vehicle
   };
 
   const getVehicleTypeLabel = (type: string) => {
-    const typeMap: Record<string, string> = {
-      "1": "Sedan",
-      "2": "SUV", 
-      "3": "Truck",
-      "4": "Van",
-      "5": "Motorcycle",
-      "6": "Bus",
-      "7": "Electric Vehicle",
-      "8": "Hybrid Vehicle",
-      "4W": "4-Wheeler",
-      "2W": "2-Wheeler"
-    };
-    return typeMap[type] || type || "Unknown";
+    // API returns vehicle_type as category string directly
+    return type || "Unknown";
   };
 
   const getFuelTypeLabel = (fuelType: string) => {
@@ -86,6 +75,20 @@ export function VehicleViewModal({ isOpen, onClose, vehicleId, onEdit }: Vehicle
       "cng": "CNG"
     };
     return fuelMap[fuelType] || fuelType;
+  };
+
+  const getHealthBadge = (healthStatus: string) => {
+    const healthConfig = {
+      Good: { className: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400", label: "Good" },
+      Warning: { className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400", label: "Warning" },
+      Critical: { className: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400", label: "Critical" },
+    };
+    const config = healthConfig[healthStatus as keyof typeof healthConfig] || { className: "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400", label: healthStatus || "Unknown" };
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.className}`}>
+        {config.label}
+      </span>
+    );
   };
 
   if (!isOpen || !vehicleId) return null;
@@ -158,6 +161,10 @@ export function VehicleViewModal({ isOpen, onClose, vehicleId, onEdit }: Vehicle
                     <p className="text-gray-900 dark:text-white font-medium">{getVehicleTypeLabel(vehicleData.vehicle_type)}</p>
                   </div>
                   <div>
+                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Health Status</label>
+                    <div className="mt-1">{getHealthBadge(vehicleData.health_status)}</div>
+                  </div>
+                  <div>
                     <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Fuel Type</label>
                     <p className="text-gray-900 dark:text-white font-medium">{getFuelTypeLabel(vehicleData.fuel_type)}</p>
                   </div>
@@ -196,73 +203,83 @@ export function VehicleViewModal({ isOpen, onClose, vehicleId, onEdit }: Vehicle
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Mileage</label>
-                    <p className="text-gray-900 dark:text-white font-medium">{vehicleData.mileage_km ? `${vehicleData.mileage_km.toLocaleString()} km` : "—"}</p>
-                  </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Engine Number</label>
-                  <p className="text-gray-900 dark:text-white font-medium">{vehicleData.engine_number || "—"}</p>
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Mileage</label>
+                  <p className="text-gray-900 dark:text-white font-medium">{vehicleData.mileage_km ? `${vehicleData.mileage_km.toLocaleString()} km` : "—"}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Efficiency</label>
+                  <p className="text-gray-900 dark:text-white font-medium">{vehicleData.efficiency_km_per_kwh ? `${vehicleData.efficiency_km_per_kwh} km/kWh` : "—"}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Seating Capacity</label>
+                  <p className="text-gray-900 dark:text-white font-medium">{vehicleData.seating_capacity || "—"}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Transmission Type</label>
+                  <p className="text-gray-900 dark:text-white font-medium">{vehicleData.transmission_type || "—"}</p>
                 </div>
               </div>
             </div>
 
-            {/* Purchase Information Card */}
+            {/* Warranty Information Card */}
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <DollarSign className="h-5 w-5" />
-                Purchase Information
+                <Calendar className="h-5 w-5" />
+                Warranty Information
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Purchase Date</label>
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Warranty Expiry Date</label>
                   <p className="text-gray-900 dark:text-white font-medium">
-                    {vehicleData.purchase_date ? new Date(vehicleData.purchase_date).toLocaleDateString() : "—"}
+                    {vehicleData.warranty_expiry_date ? new Date(vehicleData.warranty_expiry_date).toLocaleDateString() : "—"}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Purchase Price</label>
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Created Date</label>
                   <p className="text-gray-900 dark:text-white font-medium">
-                    {vehicleData.purchase_price ? `$${vehicleData.purchase_price.toLocaleString()}` : "—"}
+                    {vehicleData.created_at ? new Date(vehicleData.created_at).toLocaleDateString() : "—"}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Legal Information Card */}
+            {/* System Information Card */}
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                Legal Information
+                System Information
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Insurance Expiry</label>
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Alerts Enabled</label>
                   <p className="text-gray-900 dark:text-white font-medium">
-                    {vehicleData.insurance_expiry ? new Date(vehicleData.insurance_expiry).toLocaleDateString() : "—"}
+                    {vehicleData.alerts_enabled ? "Yes" : "No"}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Registration Expiry</label>
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">OTA Enabled</label>
                   <p className="text-gray-900 dark:text-white font-medium">
-                    {vehicleData.registration_expiry ? new Date(vehicleData.registration_expiry).toLocaleDateString() : "—"}
+                    {vehicleData.ota_enabled ? "Yes" : "No"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Online Status</label>
+                  <p className="text-gray-900 dark:text-white font-medium">
+                    {vehicleData.online_status ? "Online" : "Offline"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Speed (kph)</label>
+                  <p className="text-gray-900 dark:text-white font-medium">
+                    {vehicleData.speed_kph ? `${vehicleData.speed_kph} km/h` : "—"}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Notes Card */}
-            {vehicleData.notes && (
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                  <Wrench className="h-5 w-5" />
-                  Additional Notes
-                </h3>
-                <p className="text-gray-700 dark:text-gray-300">{vehicleData.notes}</p>
-              </div>
-            )}
           </div>
         ) : null}
       </Modal>

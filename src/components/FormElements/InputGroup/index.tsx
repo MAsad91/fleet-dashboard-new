@@ -11,6 +11,7 @@ type InputGroupProps = {
   disabled?: boolean;
   active?: boolean;
   handleChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onClick?: (e: React.MouseEvent<HTMLInputElement>) => void;
   value?: string;
   name?: string;
   icon?: React.ReactNode;
@@ -28,6 +29,7 @@ const InputGroup: React.FC<InputGroupProps> = ({
   disabled,
   active,
   handleChange,
+  onClick,
   icon,
   ...props
 }) => {
@@ -57,6 +59,7 @@ const InputGroup: React.FC<InputGroupProps> = ({
           name={props.name}
           placeholder={placeholder}
           onChange={handleChange}
+          onClick={onClick}
           value={props.value}
           defaultValue={props.defaultValue}
           className={cn(

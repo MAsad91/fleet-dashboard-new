@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useCreateVehicleMutation } from "@/store/api/fleetApi";
+import { useCreateVehicleMutation, useListVehicleTypesQuery } from "@/store/api/fleetApi";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui-elements/button";
 import InputGroup from "@/components/FormElements/InputGroup";
@@ -11,10 +11,13 @@ import { Car, Loader2 } from "lucide-react";
 interface AddVehicleModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
+  fleetOperator?: number;
 }
 
-export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
+export function AddVehicleModal({ isOpen, onClose, onSuccess, fleetOperator }: AddVehicleModalProps) {
   const [createVehicle, { isLoading }] = useCreateVehicleMutation();
+  const { data: vehicleTypesData, isLoading: vehicleTypesLoading } = useListVehicleTypesQuery();
   
   const [formData, setFormData] = useState({
     license_plate: "",
@@ -25,18 +28,18 @@ export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
     fuel_type: "",
     color: "",
     vin: "",
-    engine_number: "",
-    mileage: "",
-    status: "available", // Changed from "active" to "available" (valid choice)
-    purchase_date: "",
-    purchase_price: "",
-    insurance_expiry: "",
-    registration_expiry: "",
-    notes: "",
+    mileage_km: "",
+    status: "available",
+    warranty_expiry_date: "",
+    seating_capacity: "",
+    transmission_type: "",
+    efficiency_km_per_kwh: "",
     // Required fields from API
-    fleet_operator: 1, // Default fleet operator ID
+    fleet_operator: fleetOperator || 1, // Use provided fleet operator or default to 1
     battery_capacity_kwh: "",
     current_battery_level: "",
+    alerts_enabled: true,
+    ota_enabled: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -100,14 +103,34 @@ export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
     }
 
     try {
-      const vehicleData = {
-        ...formData,
+      // Transform the form data to match API expectations
+      const apiData = {
+        license_plate: formData.license_plate,
+        make: formData.make,
+        model: formData.model,
         year: parseInt(formData.year),
-        mileage: formData.mileage ? parseInt(formData.mileage) : 0,
-        purchase_price: formData.purchase_price ? parseFloat(formData.purchase_price) : 0,
+        vehicle_type: parseInt(formData.vehicle_type),
+        fuel_type: formData.fuel_type,
+        color: formData.color,
+        vin: formData.vin,
+        mileage_km: parseFloat(formData.mileage_km) || 0,
+        status: formData.status,
+        warranty_expiry_date: formData.warranty_expiry_date || null,
+        seating_capacity: parseInt(formData.seating_capacity) || null,
+        transmission_type: formData.transmission_type || null,
+        efficiency_km_per_kwh: parseFloat(formData.efficiency_km_per_kwh) || null,
+        fleet_operator: fleetOperator || formData.fleet_operator,
+        battery_capacity_kwh: parseFloat(formData.battery_capacity_kwh) || 0,
+        current_battery_level: parseFloat(formData.current_battery_level) || 0,
+        alerts_enabled: formData.alerts_enabled,
+        ota_enabled: formData.ota_enabled,
       };
 
-      await createVehicle(vehicleData).unwrap();
+      const result = await createVehicle(apiData).unwrap();
+      console.log('Vehicle created successfully:', result);
+      
+      // Call success callback to refresh the vehicles list
+      onSuccess?.();
       
       // Reset form and close modal
       setFormData({
@@ -119,17 +142,17 @@ export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
         fuel_type: "",
         color: "",
         vin: "",
-        engine_number: "",
-        mileage: "",
+        mileage_km: "",
         status: "available",
-        purchase_date: "",
-        purchase_price: "",
-        insurance_expiry: "",
-        registration_expiry: "",
-        notes: "",
-        fleet_operator: 1,
+        warranty_expiry_date: "",
+        seating_capacity: "",
+        transmission_type: "",
+        efficiency_km_per_kwh: "",
+        fleet_operator: fleetOperator || 1,
         battery_capacity_kwh: "",
         current_battery_level: "",
+        alerts_enabled: true,
+        ota_enabled: false,
       });
       setErrors({});
       onClose();
@@ -257,19 +280,19 @@ export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
                 name="vehicle_type"
                 value={formData.vehicle_type}
                 onChange={handleInputChange}
+                disabled={vehicleTypesLoading}
                 className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
                   errors.vehicle_type ? "border-red-500" : "border-gray-300 dark:border-gray-600"
-                }`}
+                } ${vehicleTypesLoading ? "opacity-50 cursor-not-allowed" : ""}`}
               >
-                <option value="">Select vehicle type</option>
-                <option value="1">Sedan</option>
-                <option value="2">SUV</option>
-                <option value="3">Truck</option>
-                <option value="4">Van</option>
-                <option value="5">Motorcycle</option>
-                <option value="6">Bus</option>
-                <option value="7">Electric Vehicle</option>
-                <option value="8">Hybrid Vehicle</option>
+                <option value="">
+                  {vehicleTypesLoading ? "Loading vehicle types..." : "Select vehicle type"}
+                </option>
+                {vehicleTypesData?.results?.map((type: any) => (
+                  <option key={type.id} value={type.id}>
+                    {type.name} ({type.category})
+                  </option>
+                ))}
               </select>
               {errors.vehicle_type && (
                 <p className="text-red-500 text-sm mt-1">{errors.vehicle_type}</p>
@@ -302,97 +325,87 @@ export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
             </div>
             
             <InputGroup
-              label="Engine Number"
-              type="text"
-              name="engine_number"
-              value={formData.engine_number}
-              handleChange={handleInputChange}
-              placeholder="Enter engine number"
-            />
-            
-            <InputGroup
               label="Mileage (km)"
               type="number"
-              name="mileage"
-              value={formData.mileage}
+              name="mileage_km"
+              value={formData.mileage_km}
               handleChange={handleInputChange}
               placeholder="Enter current mileage"
             />
-          </div>
-        </div>
-
-        {/* Purchase Information */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-            Purchase Information
-          </h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InputGroup
-              label="Purchase Date"
-              type="date"
-              name="purchase_date"
-              value={formData.purchase_date}
-              handleChange={handleInputChange}
-              placeholder=""
-            />
             
             <InputGroup
-              label="Purchase Price"
+              label="Seating Capacity"
               type="number"
-              name="purchase_price"
-              value={formData.purchase_price}
+              name="seating_capacity"
+              value={formData.seating_capacity}
               handleChange={handleInputChange}
-              placeholder="Enter purchase price"
+              placeholder="Enter seating capacity"
+            />
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Transmission Type
+              </label>
+              <select
+                name="transmission_type"
+                value={formData.transmission_type}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">Select transmission type</option>
+                <option value="Manual">Manual</option>
+                <option value="Automatic">Automatic</option>
+                <option value="CVT">CVT</option>
+                <option value="Semi-Automatic">Semi-Automatic</option>
+              </select>
+            </div>
+            
+            <InputGroup
+              label="Efficiency (km/kWh)"
+              type="number"
+              name="efficiency_km_per_kwh"
+              value={formData.efficiency_km_per_kwh}
+              handleChange={handleInputChange}
+              placeholder="Enter efficiency"
+              step="0.1"
             />
           </div>
         </div>
 
-        {/* Legal Information */}
+        {/* System Settings */}
         <div className="space-y-4">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-            Legal Information
+            System Settings
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InputGroup
-              label="Insurance Expiry"
-              type="date"
-              name="insurance_expiry"
-              value={formData.insurance_expiry}
-              handleChange={handleInputChange}
-              placeholder=""
-            />
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="alerts_enabled"
+                name="alerts_enabled"
+                checked={formData.alerts_enabled}
+                onChange={(e) => setFormData(prev => ({ ...prev, alerts_enabled: e.target.checked }))}
+                className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+              />
+              <label htmlFor="alerts_enabled" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Alerts Enabled
+              </label>
+            </div>
             
-            <InputGroup
-              label="Registration Expiry"
-              type="date"
-              name="registration_expiry"
-              value={formData.registration_expiry}
-              handleChange={handleInputChange}
-              placeholder=""
-            />
-          </div>
-        </div>
-
-        {/* Additional Information */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-            Additional Information
-          </h3>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Notes
-            </label>
-            <textarea
-              name="notes"
-              value={formData.notes}
-              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
-              placeholder="Enter any additional notes..."
-            />
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="ota_enabled"
+                name="ota_enabled"
+                checked={formData.ota_enabled}
+                onChange={(e) => setFormData(prev => ({ ...prev, ota_enabled: e.target.checked }))}
+                className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+              />
+              <label htmlFor="ota_enabled" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                OTA Updates Enabled
+              </label>
+            </div>
           </div>
         </div>
 

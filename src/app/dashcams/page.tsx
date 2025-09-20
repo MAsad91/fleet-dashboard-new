@@ -173,6 +173,7 @@ export default function DashcamsPage() {
               ]}
               defaultValue={filters.status || "all"}
               placeholder="Select status"
+              onChange={handleStatusFilter}
             />
 
             <InputGroup
@@ -205,7 +206,7 @@ export default function DashcamsPage() {
             </p>
           </div>
           
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             {isLoading ? (
               <div className="p-6">
                 <div className="animate-pulse space-y-4">
@@ -219,8 +220,16 @@ export default function DashcamsPage() {
                   ))}
                 </div>
               </div>
+            ) : error ? (
+              <div className="p-6 text-red-600">
+                Error: {error.message}
+              </div>
+            ) : dashcamsData?.results?.length === 0 ? (
+              <div className="p-6 text-center text-gray-500">
+                No dashcams found.
+              </div>
             ) : (
-              <table className="w-full">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700" style={{ minWidth: '1000px' }}>
                 <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">

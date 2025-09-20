@@ -3,10 +3,11 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 interface VehiclesFilters {
   search?: string;
   status?: string;
-  vehicle_type_id?: string;
-  make?: string;
-  model?: string;
-  year?: string;
+  vehicle_type?: string;
+  has_obd?: string;
+  online?: string;
+  health_status?: string;
+  fleet?: string;
 }
 
 interface VehiclesPagination {
@@ -24,10 +25,11 @@ const initialState: VehiclesUIState = {
   filters: {
     search: '',
     status: undefined,
-    vehicle_type_id: undefined,
-    make: undefined,
-    model: undefined,
-    year: undefined,
+    vehicle_type: undefined,
+    has_obd: undefined,
+    online: undefined,
+    health_status: undefined,
+    fleet: undefined,
   },
   pagination: {
     page: 1,

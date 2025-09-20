@@ -2,8 +2,10 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface OBDFilters {
   search?: string;
-  status?: string;
-  device_type?: string;
+  status?: string; // active/inactive
+  online?: string; // online/offline (computed from last_communication_at)
+  model?: string;
+  firmware_version?: string;
 }
 
 interface OBDPagination {
@@ -21,7 +23,9 @@ const initialState: OBDUIState = {
   filters: {
     search: '',
     status: undefined,
-    device_type: undefined,
+    online: undefined,
+    model: undefined,
+    firmware_version: undefined,
   },
   pagination: {
     page: 1,

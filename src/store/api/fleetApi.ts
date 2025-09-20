@@ -170,8 +170,16 @@ export const fleetApi = createApi({
       query: (alertId) => `/fleet/alerts/${alertId}/`,
       providesTags: ['Alerts'],
     }),
+    createAlert: builder.mutation<Alert, any>({
+      query: (body) => ({ url: `/fleet/alerts/`, method: 'POST', body }),
+      invalidatesTags: ['Alerts'],
+    }),
     updateAlert: builder.mutation<Alert, { id: number; body: Partial<Alert> }>({
       query: ({ id, body }) => ({ url: `/fleet/alerts/${id}/`, method: 'PATCH', body }),
+      invalidatesTags: ['Alerts'],
+    }),
+    deleteAlert: builder.mutation<any, number>({
+      query: (id) => ({ url: `/fleet/alerts/${id}/`, method: 'DELETE' }),
       invalidatesTags: ['Alerts'],
     }),
     markAlertsRead: builder.mutation<any, { ids: number[] }>({
@@ -439,7 +447,9 @@ export const {
   useGetActiveAlertsQuery,
   useGetAlertsQuery,
   useGetAlertByIdQuery,
+  useCreateAlertMutation,
   useUpdateAlertMutation,
+  useDeleteAlertMutation,
   useMarkAlertsReadMutation,
   useResolveAlertActionMutation,
   useAcknowledgeAlertMutation,
