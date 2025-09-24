@@ -28,6 +28,11 @@ export function FleetOverviewCards() {
     );
   }
 
+  // Debug logging to identify the issue
+  console.log('🔍 Fleet Overview Cards - Summary data:', summary);
+  console.log('🔍 Fleet Overview Cards - Online vehicles:', summary?.online_vehicles);
+  console.log('🔍 Fleet Overview Cards - Type of online_vehicles:', typeof summary?.online_vehicles);
+
   const fleetData = {
     totalVehicles: { 
       value: summary?.total_vehicles || 128, 
@@ -35,7 +40,7 @@ export function FleetOverviewCards() {
       description: "Total fleet vehicles" 
     },
     onlineVehicles: { 
-      value: summary?.online_vehicles || 114,
+      value: summary?.online_vehicles ?? 114, // Use nullish coalescing to handle 0 values
       growthRate: null, // No growth rate from API
       description: "Currently online" 
     },

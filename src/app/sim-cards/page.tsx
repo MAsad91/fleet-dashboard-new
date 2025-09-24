@@ -186,7 +186,7 @@ export default function SimCardsPage() {
 
         {/* Filters */}
         <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Status
@@ -218,7 +218,7 @@ export default function SimCardsPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Device (no‑SIM only if backend filter exists; else all)
+                Device
               </label>
               <select
                 value={deviceFilter}
@@ -354,24 +354,24 @@ export default function SimCardsPage() {
               </table>
             )}
           </div>
+        </div>
 
-          {/* Row Actions */}
-          {filteredSimCards.length > 0 && (
-            <div className="bg-gray-50 dark:bg-gray-800 px-6 py-3 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <Button
-                    label="View"
-                    variant="outlineDark"
-                    size="small"
-                    onClick={() => {}}
-                    className="text-sm"
-                  />
-                </div>
+        {/* Row Actions */}
+        {filteredSimCards.length > 0 && (
+          <div className="bg-gray-50 dark:bg-gray-800 px-6 py-3 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Button
+                  label="View"
+                  variant="outlineDark"
+                  size="small"
+                  onClick={() => {}}
+                  className="text-sm"
+                />
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Modals */}

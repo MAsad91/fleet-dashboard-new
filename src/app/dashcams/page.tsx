@@ -3,13 +3,13 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { useListDashcamsQuery, useRefreshDashcamApiKeyMutation, useDeleteDashcamMutation, useGetDashcamByIdQuery, useUpdateDashcamMutation, useGetDashcamsDashboardStatsQuery, useListVehiclesQuery, useBulkRefreshDashcamApiKeysMutation } from "@/store/api/fleetApi";
+import { useListDashcamsQuery, useRefreshDashcamApiKeyMutation, useDeleteDashcamMutation, useGetDashcamByIdQuery, useUpdateDashcamMutation, useGetDashcamsDashboardStatsQuery, useListVehiclesQuery, useBulkRefreshDashcamApiKeysMutation, useListVideoSegmentsQuery } from "@/store/api/fleetApi";
 import { setDashcamsFilters, setDashcamsPagination } from "@/store/slices/dashcamsUISlice";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 import { Button } from "@/components/ui-elements/button";
 import InputGroup from "@/components/FormElements/InputGroup";
 import { Select } from "@/components/FormElements/select";
-import { Search, Plus, RefreshCw, Trash2, Eye, Edit, Video, Wifi, WifiOff, Copy, Check, ArrowLeft, Save, X } from "lucide-react";
+import { Search, Plus, RefreshCw, Trash2, Eye, Edit, Video, Wifi, WifiOff, Copy, Check, ArrowLeft, Save, X, Download, Play, Grid3X3, List, Calendar, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function DashcamsPage() {
@@ -20,16 +20,34 @@ export default function DashcamsPage() {
   const [selectedDashcams, setSelectedDashcams] = useState<string[]>([]);
   
   // Full-page view states
-  const [currentView, setCurrentView] = useState<'list' | 'view' | 'edit'>('list');
+  const [currentView, setCurrentView] = useState<'dashcams' | 'video-segments' | 'view' | 'edit' | 'list'>('dashcams');
   const [selectedDashcamId, setSelectedDashcamId] = useState<string | null>(null);
   const [dashcamData, setDashcamData] = useState<any>(null);
   const [formData, setFormData] = useState<any>({});
   const [errors, setErrors] = useState<any>({});
   
+  // Video segments states
+  const [videoSegmentsView, setVideoSegmentsView] = useState<'grid' | 'table'>('table');
+  const [selectedSegmentId, setSelectedSegmentId] = useState<string | null>(null);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [videoSegmentFilters, setVideoSegmentFilters] = useState({
+    vehicle: '',
+    dashcam: '',
+    uploaded: '',
+    startDate: '',
+    endDate: '',
+    searchId: ''
+  });
+  
   const { data: dashcamsData, isLoading, error } = useListDashcamsQuery({
     page: pagination.page,
     search: filters.search,
     vehicle_id: filters.vehicle_id,
+  });
+
+  const { data: videoSegmentsData, isLoading: videoSegmentsLoading } = useListVideoSegmentsQuery({
+    vehicle: videoSegmentFilters.vehicle,
+    dashcam: videoSegmentFilters.dashcam,
   });
 
   const { data: dashboardStatsData } = useGetDashcamsDashboardStatsQuery();
@@ -156,8 +174,35 @@ export default function DashcamsPage() {
 
   const handleBackToList = () => {
     console.log('Back to list');
-    setCurrentView('list');
+    setCurrentView('dashcams');
     // Don't reset selectedDashcamId to allow re-navigation
+  };
+
+  // Video segments handlers
+  const handlePreviewSegment = (segmentId: string) => {
+    setSelectedSegmentId(segmentId);
+    setIsPreviewModalOpen(true);
+  };
+
+  const handleDownloadSegment = async (segmentId: string) => {
+    try {
+      // Call download API endpoint
+      const response = await fetch(`/api/fleet/video-segments/${segmentId}/download/`);
+      const data = await response.json();
+      
+      if (data.s3_url) {
+        // Create download link
+        const link = document.createElement('a');
+        link.href = data.s3_url;
+        link.download = `segment-${segmentId}.mp4`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (error) {
+      console.error('Failed to download segment:', error);
+      alert('Failed to download video segment');
+    }
   };
 
   const handleClearSelection = () => {
@@ -671,105 +716,156 @@ export default function DashcamsPage() {
             </p>
           </div>
           <div className="flex space-x-2">
-            <Button
-              label="Add Dashcam"
-              variant="primary"
-              icon={<Plus className="h-4 w-4" />}
-            />
-            {selectedDashcams.length > 0 && (
-              <Button
-                label={`Bulk (${selectedDashcams.length})`}
-                variant="outlineDark"
-                icon={<RefreshCw className="h-4 w-4" />}
-              />
+            {currentView === 'dashcams' && (
+              <>
+                <Button
+                  label="+ Create"
+                  variant="primary"
+                  icon={<Plus className="h-4 w-4" />}
+                />
+                {selectedDashcams.length > 0 && (
+                  <Button
+                    label={`Bulk ▼`}
+                    variant="outlineDark"
+                    icon={<RefreshCw className="h-4 w-4" />}
+                    onClick={handleBulkRefreshApiKey}
+                  />
+                )}
+              </>
             )}
           </div>
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {(dashboardStatsData as any)?.total || 0}
-                </p>
-              </div>
-              <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <Video className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {(dashboardStatsData as any)?.active || 0}
-                </p>
-              </div>
-              <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-                <Wifi className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Inactive</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {(dashboardStatsData as any)?.inactive || 0}
-                </p>
-              </div>
-              <div className="p-3 bg-red-100 dark:bg-red-900 rounded-lg">
-                <WifiOff className="h-6 w-6 text-red-600" />
-              </div>
-            </div>
-          </div>
+        {/* Tab Navigation */}
+        <div className="border-b border-gray-200 dark:border-gray-700">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setCurrentView('dashcams')}
+              className={cn(
+                "py-2 px-1 border-b-2 font-medium text-sm",
+                currentView === 'dashcams'
+                  ? "border-primary text-primary"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              )}
+            >
+              Dashcams — List
+            </button>
+            <button
+              onClick={() => setCurrentView('video-segments')}
+              className={cn(
+                "py-2 px-1 border-b-2 font-medium text-sm",
+                currentView === 'video-segments'
+                  ? "border-primary text-primary"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              )}
+            >
+              Video Segments — List
+            </button>
+          </nav>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-          <h3 className="text-lg font-semibold mb-4">Filters</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            Note: Entire Dashcams section is admin-only (403 for non-admins).
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Select
-              label="Active"
-              items={[
-                { value: "all", label: "All" },
-                { value: "active", label: "Active" },
-                { value: "inactive", label: "Inactive" },
-              ]}
-              defaultValue={filters.status || "all"}
-              placeholder="Select status"
-              onChange={handleStatusFilter}
-            />
+        {/* Conditional Content Based on View */}
+        {currentView === 'dashcams' && (
+          <>
+            {/* KPI Cards for Dashcams */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {(dashboardStatsData as any)?.total || 0}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                    <Video className="h-6 w-6 text-blue-600" />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {(dashboardStatsData as any)?.active || 0}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
+                    <Wifi className="h-6 w-6 text-green-600" />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Inactive</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {(dashboardStatsData as any)?.inactive || 0}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-red-100 dark:bg-red-900 rounded-lg">
+                    <WifiOff className="h-6 w-6 text-red-600" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
 
-            <Select
-              label="Vehicle"
-              items={[
-                { value: "all", label: "All Vehicles" },
-                ...(vehiclesData?.results?.map((vehicle: any) => ({
-                  value: vehicle.id.toString(),
-                  label: `${vehicle.license_plate} - ${vehicle.make} ${vehicle.model}`
-                })) || [])
-              ]}
-              defaultValue={filters.vehicle_id || "all"}
-              placeholder="Select vehicle"
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => 
-                dispatch(setDashcamsFilters({ vehicle_id: e.target.value === "all" ? undefined : e.target.value }))
-              }
-            />
-          </div>
-        </div>
+        {/* Dashcams Filters */}
+        {currentView === 'dashcams' && (
+          <>
+            <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+              <h3 className="text-lg font-semibold mb-4">Filters</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Note: Entire Dashcams section is admin-only (403 for non-admins).
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Select
+                  label="Active"
+                  items={[
+                    { value: "all", label: "All" },
+                    { value: "active", label: "Active" },
+                    { value: "inactive", label: "Inactive" },
+                  ]}
+                  defaultValue={filters.status || "all"}
+                  placeholder="Select status"
+                  onChange={handleStatusFilter}
+                />
 
-        {/* Bulk Actions */}
-        {selectedDashcams.length > 0 && (
+                <Select
+                  label="Vehicle"
+                  items={[
+                    { value: "all", label: "All Vehicles" },
+                    ...(vehiclesData?.results?.map((vehicle: any) => ({
+                      value: vehicle.id.toString(),
+                      label: `${vehicle.license_plate} - ${vehicle.make} ${vehicle.model}`
+                    })) || [])
+                  ]}
+                  defaultValue={filters.vehicle_id || "all"}
+                  placeholder="Select vehicle"
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => 
+                    dispatch(setDashcamsFilters({ vehicle_id: e.target.value === "all" ? undefined : e.target.value }))
+                  }
+                />
+              </div>
+              
+              <div className="flex justify-end mt-4">
+                <Button
+                  label="Apply"
+                  variant="primary"
+                  size="small"
+                  onClick={() => {}}
+                />
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Bulk Actions for Dashcams */}
+        {currentView === 'dashcams' && selectedDashcams.length > 0 && (
           <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
@@ -791,7 +887,8 @@ export default function DashcamsPage() {
         )}
 
         {/* Dashcams Table */}
-        <div className="bg-white dark:bg-gray-dark rounded-lg shadow-1">
+        {currentView === 'dashcams' && (
+          <div className="bg-white dark:bg-gray-dark rounded-lg shadow-1">
           <div className="p-6 border-b border-stroke dark:border-dark-3">
             <h3 className="text-lg font-semibold">Dashcam List</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -979,6 +1076,258 @@ export default function DashcamsPage() {
             </div>
           )}
         </div>
+        )}
+
+        {/* Video Segments Section */}
+        {currentView === 'video-segments' && (
+          <>
+            {/* Video Segments Header */}
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Video Segments</h2>
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  label={videoSegmentsView === 'grid' ? 'Grid ▢' : 'Grid ☐'}
+                  variant={videoSegmentsView === 'grid' ? 'primary' : 'outlineDark'}
+                  size="small"
+                  icon={<Grid3X3 className="h-4 w-4" />}
+                  onClick={() => setVideoSegmentsView('grid')}
+                />
+                <Button
+                  label={videoSegmentsView === 'table' ? 'Table ☑' : 'Table ☐'}
+                  variant={videoSegmentsView === 'table' ? 'primary' : 'outlineDark'}
+                  size="small"
+                  icon={<List className="h-4 w-4" />}
+                  onClick={() => setVideoSegmentsView('table')}
+                />
+              </div>
+            </div>
+
+            {/* Video Segments Filters */}
+            <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+              <h3 className="text-lg font-semibold mb-4">Filters</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Select
+                  label="Vehicle"
+                  items={[
+                    { value: "", label: "All Vehicles" },
+                    ...(vehiclesData?.results?.map((vehicle: any) => ({
+                      value: vehicle.id.toString(),
+                      label: `${vehicle.license_plate} - ${vehicle.make} ${vehicle.model}`
+                    })) || [])
+                  ]}
+                  defaultValue={videoSegmentFilters.vehicle}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => 
+                    setVideoSegmentFilters({...videoSegmentFilters, vehicle: e.target.value})
+                  }
+                />
+
+                <Select
+                  label="Dashcam"
+                  items={[
+                    { value: "", label: "All Dashcams" },
+                    ...(dashcamsData?.results?.map((dashcam: any) => ({
+                      value: dashcam.id,
+                      label: dashcam.device_id
+                    })) || [])
+                  ]}
+                  defaultValue={videoSegmentFilters.dashcam}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => 
+                    setVideoSegmentFilters({...videoSegmentFilters, dashcam: e.target.value})
+                  }
+                />
+
+                <Select
+                  label="Uploaded"
+                  items={[
+                    { value: "", label: "All" },
+                    { value: "uploaded", label: "Uploaded ▢" },
+                    { value: "not_uploaded", label: "Not Uploaded" },
+                  ]}
+                  defaultValue={videoSegmentFilters.uploaded}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => 
+                    setVideoSegmentFilters({...videoSegmentFilters, uploaded: e.target.value})
+                  }
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                <InputGroup
+                  label="Start ⏱"
+                  type="datetime-local"
+                  placeholder="Select start date"
+                  value={videoSegmentFilters.startDate}
+                  handleChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                    setVideoSegmentFilters({...videoSegmentFilters, startDate: e.target.value})
+                  }
+                  icon={<Clock className="h-4 w-4" />}
+                />
+
+                <InputGroup
+                  label="End ⏱"
+                  type="datetime-local"
+                  placeholder="Select end date"
+                  value={videoSegmentFilters.endDate}
+                  handleChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                    setVideoSegmentFilters({...videoSegmentFilters, endDate: e.target.value})
+                  }
+                  icon={<Clock className="h-4 w-4" />}
+                />
+
+                <InputGroup
+                  label="Search ID"
+                  type="text"
+                  placeholder="Search by segment ID..."
+                  value={videoSegmentFilters.searchId}
+                  handleChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                    setVideoSegmentFilters({...videoSegmentFilters, searchId: e.target.value})
+                  }
+                  icon={<Search className="h-4 w-4" />}
+                />
+              </div>
+
+              <div className="flex justify-end mt-4">
+                <Button
+                  label="Apply"
+                  variant="primary"
+                  size="small"
+                  onClick={() => {}}
+                />
+              </div>
+            </div>
+
+            {/* Video Segments Table */}
+            <div className="bg-white dark:bg-gray-dark rounded-lg shadow-1">
+              <div className="p-6 border-b border-stroke dark:border-dark-3">
+                <h3 className="text-lg font-semibold">Video Segments</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {videoSegmentsData?.count || 0} video segments found
+                </p>
+              </div>
+              
+              <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                {videoSegmentsLoading ? (
+                  <div className="p-6">
+                    <div className="animate-pulse space-y-4">
+                      {[...Array(5)].map((_, i) => (
+                        <div key={i} className="flex items-center space-x-4">
+                          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : videoSegmentsData?.results?.length === 0 ? (
+                  <div className="p-6 text-center text-gray-500">
+                    No video segments found.
+                  </div>
+                ) : (
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700" style={{ minWidth: '1200px' }}>
+                    <thead className="bg-gray-50 dark:bg-gray-800">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Thumb
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Segment ID
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Dashcam
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Start → End
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Duration
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Uploaded
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-dark divide-y divide-gray-200 dark:divide-gray-700">
+                      {videoSegmentsData?.results?.map((segment: any) => (
+                        <tr key={segment.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center justify-center w-12 h-8 bg-gray-100 dark:bg-gray-700 rounded">
+                              <Play className="h-4 w-4 text-gray-500" />
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white font-mono">
+                            {segment.segment_id ? `${segment.segment_id.substring(0, 8)}...` : 'N/A'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                            {segment.dashcam?.device_id || 'N/A'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                            <div className="flex items-center space-x-1">
+                              <Calendar className="h-4 w-4 text-gray-400" />
+                              <span>
+                                {segment.start_time ? new Date(segment.start_time).toLocaleTimeString() : 'N/A'}
+                              </span>
+                              <span>→</span>
+                              <span>
+                                {segment.end_time ? new Date(segment.end_time).toLocaleTimeString() : 'N/A'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                            {segment.start_time && segment.end_time 
+                              ? `${Math.round((new Date(segment.end_time).getTime() - new Date(segment.start_time).getTime()) / 60000)}:00`
+                              : 'N/A'
+                            }
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              segment.is_uploaded 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {segment.is_uploaded ? '✓' : '✗'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                label="Preview"
+                                variant="outlineDark"
+                                size="small"
+                                icon={<Play className="h-4 w-4" />}
+                                onClick={() => handlePreviewSegment(segment.id)}
+                              />
+                              <Button
+                                label="Download"
+                                variant="outlineDark"
+                                size="small"
+                                icon={<Download className="h-4 w-4" />}
+                                onClick={() => handleDownloadSegment(segment.id)}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+
+              {/* Pagination */}
+              {videoSegmentsData && videoSegmentsData.count > 0 && (
+                <div className="px-6 py-4 border-t border-stroke dark:border-dark-3">
+                  <div className="text-sm text-gray-700 dark:text-gray-300 text-center">
+                    Page 1/5
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </ProtectedRoute>
   );

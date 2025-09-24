@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useGetSimCardByIdQuery, useUpdateSimCardMutation, useDeleteSimCardMutation, useActivateSimCardMutation, useDeactivateSimCardMutation, useSuspendSimCardMutation, useUpdateSimCardUsageMutation } from "@/store/api/fleetApi";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 import { Button } from "@/components/ui-elements/button";
 import { ArrowLeft, CreditCard, Wifi, Signal, Calendar, DollarSign, Activity, Edit, Trash2, Save, Power, PowerOff, Pause, Play } from "lucide-react";
@@ -11,33 +12,44 @@ export default function SimCardDetailPage() {
   const params = useParams();
   const simCardId = params.id as string;
 
-  // Mock data since API hooks don't exist yet
-  const simCardData = {
-    id: parseInt(simCardId),
-    sim_id: "SIM-001-2025",
-    iccid: "8991101200003204512",
-    status: "active",
-    plan_name: "IoT 2GB/mo",
-    plan_data_limit_gb: 2.0,
-    plan_cost: 6.99,
-    current_data_used_gb: 1.6,
-    current_cycle_start: "2025-01-01T00:00:00Z",
-    overage_threshold: 0.9,
-    device: 42,
-    created_at: "2024-12-01T10:30:00Z",
-    last_activity: "2025-01-12T09:45:00Z",
-    signal_strength: -75
-  };
+  const { data: simCardData, isLoading, error, refetch } = useGetSimCardByIdQuery(simCardId);
+  const [updateSimCard] = useUpdateSimCardMutation();
+  const [deleteSimCard] = useDeleteSimCardMutation();
+  const [activateSimCard] = useActivateSimCardMutation();
+  const [deactivateSimCard] = useDeactivateSimCardMutation();
+  const [suspendSimCard] = useSuspendSimCardMutation();
+  const [updateSimCardUsage] = useUpdateSimCardUsageMutation();
 
-  const [formData, setFormData] = useState(simCardData);
+  const [formData, setFormData] = useState({
+    sim_id: "",
+    iccid: "",
+    status: "inactive",
+    plan_name: "",
+    plan_data_limit_gb: 0,
+    plan_cost: 0,
+    current_data_used_gb: 0,
+    current_cycle_start: "",
+    overage_threshold: 0.9,
+    device: null,
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const isLoading = false;
-  const error = null;
-
   useEffect(() => {
-    setFormData(simCardData);
+    if (simCardData) {
+      setFormData({
+        sim_id: simCardData.sim_id || "",
+        iccid: simCardData.iccid || "",
+        status: simCardData.status || "inactive",
+        plan_name: simCardData.plan_name || "",
+        plan_data_limit_gb: simCardData.plan_data_limit_gb || 0,
+        plan_cost: simCardData.plan_cost || 0,
+        current_data_used_gb: simCardData.current_data_used_gb || 0,
+        current_cycle_start: simCardData.current_cycle_start || "",
+        overage_threshold: simCardData.overage_threshold || 0.9,
+        device: simCardData.device || null,
+      });
+    }
   }, [simCardId, simCardData]);
 
   if (isLoading) {
@@ -82,36 +94,64 @@ export default function SimCardDetailPage() {
     }
   };
 
-  const handleSave = () => {
-    console.log('Saving SIM card:', formData);
-    // TODO: Implement save API call
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      await updateSimCard({ id: simCardId, body: formData }).unwrap();
+      await refetch();
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating SIM card:', error);
+    }
   };
 
-  const handleDelete = () => {
-    console.log('Deleting SIM card:', simCardId);
-    // TODO: Implement delete API call
-    router.back();
+  const handleDelete = async () => {
+    if (confirm('Are you sure you want to delete this SIM card?')) {
+      try {
+        await deleteSimCard(simCardId).unwrap();
+        router.push('/sim-cards');
+      } catch (error) {
+        console.error('Error deleting SIM card:', error);
+      }
+    }
   };
 
-  const handleActivate = () => {
-    console.log('Activating SIM card:', simCardId);
-    // TODO: Implement POST /api/fleet/sim-cards/{id}/activate/
+  const handleActivate = async () => {
+    try {
+      await activateSimCard({ id: simCardId }).unwrap();
+      await refetch();
+    } catch (error) {
+      console.error('Error activating SIM card:', error);
+    }
   };
 
-  const handleDeactivate = () => {
-    console.log('Deactivating SIM card:', simCardId);
-    // TODO: Implement POST /api/fleet/sim-cards/{id}/deactivate/
+  const handleDeactivate = async () => {
+    try {
+      await deactivateSimCard({ id: simCardId }).unwrap();
+      await refetch();
+    } catch (error) {
+      console.error('Error deactivating SIM card:', error);
+    }
   };
 
-  const handleSuspend = () => {
-    console.log('Suspending SIM card:', simCardId);
-    // TODO: Implement POST /api/fleet/sim-cards/{id}/suspend/
+  const handleSuspend = async () => {
+    try {
+      await suspendSimCard({ id: simCardId }).unwrap();
+      await refetch();
+    } catch (error) {
+      console.error('Error suspending SIM card:', error);
+    }
   };
 
-  const handleUpdateUsage = () => {
-    console.log('Updating usage for SIM card:', simCardId);
-    // TODO: Implement POST /api/fleet/sim-cards/{id}/update-usage/
+  const handleUpdateUsage = async () => {
+    const newUsage = prompt('Enter new data usage (GB):');
+    if (newUsage && !isNaN(parseFloat(newUsage))) {
+      try {
+        await updateSimCardUsage({ id: simCardId, body: { current_data_used_gb: parseFloat(newUsage) } }).unwrap();
+        await refetch();
+      } catch (error) {
+        console.error('Error updating SIM card usage:', error);
+      }
+    }
   };
 
   const handleViewOBDDevice = () => {
@@ -124,7 +164,7 @@ export default function SimCardDetailPage() {
     return { label: 'none', className: 'text-red-600' };
   };
 
-  const signalInfo = getSignalStrength(formData.signal_strength);
+  const signalInfo = getSignalStrength(simCardData?.signal_strength || -100);
 
   return (
     <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
@@ -158,53 +198,10 @@ export default function SimCardDetailPage() {
                     </div>
                     <div>
                       <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                        SIM Card — Detail
+                        SIM Card — Detail/Edit
                       </h1>
                       <p className="text-lg text-gray-600 dark:text-gray-400">
-                        ICCID: {formData.iccid?.substring(0, 8)}… • SIM: {formData.sim_id} • Status: {formData.status} • Signal: {signalInfo.label}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Quick Info Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Plan Limit (GB)</span>
-                      </div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {formData.plan_data_limit_gb}
-                      </p>
-                    </div>
-                    
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Used (GB)</span>
-                      </div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {formData.current_data_used_gb}
-                      </p>
-                    </div>
-
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Overage Threshold (%)</span>
-                      </div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {Math.round(formData.overage_threshold * 100)}%
-                      </p>
-                    </div>
-
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Status</span>
-                      </div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {formData.status}
+                        ICCID: {simCardData?.iccid?.substring(0, 8)}… • SIM: {simCardData?.sim_id} • Status: {simCardData?.status} • Signal: {signalInfo.label}
                       </p>
                     </div>
                   </div>
@@ -269,7 +266,7 @@ export default function SimCardDetailPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Plan Limit (GB)</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formData.plan_data_limit_gb}
+                  {simCardData?.plan_data_limit_gb || 0}
                 </p>
               </div>
               <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
@@ -283,7 +280,7 @@ export default function SimCardDetailPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Used (GB)</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formData.current_data_used_gb}
+                  {simCardData?.current_data_used_gb || 0}
                 </p>
               </div>
               <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
@@ -297,7 +294,7 @@ export default function SimCardDetailPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Overage Threshold (%)</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {Math.round(formData.overage_threshold * 100)}%
+                  {Math.round((simCardData?.overage_threshold || 0.9) * 100)}%
                 </p>
               </div>
               <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-lg">
@@ -311,7 +308,7 @@ export default function SimCardDetailPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Status</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formData.status}
+                  {simCardData?.status || 'Unknown'}
                 </p>
               </div>
               <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
@@ -324,7 +321,34 @@ export default function SimCardDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Info (Left) */}
           <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <h3 className="text-lg font-semibold mb-4">Info</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Info</h3>
+              <Button
+                label={isEditing ? "Cancel" : "Edit"}
+                variant="outlineDark"
+                size="small"
+                icon={isEditing ? undefined : <Edit className="h-4 w-4" />}
+                onClick={() => {
+                  if (isEditing) {
+                    // Reset form data to original
+                    setFormData({
+                      sim_id: simCardData?.sim_id || "",
+                      iccid: simCardData?.iccid || "",
+                      status: simCardData?.status || "inactive",
+                      plan_name: simCardData?.plan_name || "",
+                      plan_data_limit_gb: simCardData?.plan_data_limit_gb || 0,
+                      plan_cost: simCardData?.plan_cost || 0,
+                      current_data_used_gb: simCardData?.current_data_used_gb || 0,
+                      current_cycle_start: simCardData?.current_cycle_start || "",
+                      overage_threshold: simCardData?.overage_threshold || 0.9,
+                      device: simCardData?.device || null,
+                    });
+                  }
+                  setIsEditing(!isEditing);
+                }}
+                className="text-xs"
+              />
+            </div>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">sim_id</label>
@@ -446,17 +470,19 @@ export default function SimCardDetailPage() {
                 <div className="flex items-center space-x-2">
                   <input
                     type="text"
-                    value={formData.device || 'Unassigned'}
+                    value={simCardData?.device || 'Unassigned'}
                     disabled
                     className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                   />
-                  <Button
-                    label="View OBD Device"
-                    variant="outlineDark"
-                    size="small"
-                    onClick={handleViewOBDDevice}
-                    className="text-xs"
-                  />
+                  {simCardData?.device && (
+                    <Button
+                      label="View OBD Device"
+                      variant="outlineDark"
+                      size="small"
+                      onClick={handleViewOBDDevice}
+                      className="text-xs"
+                    />
+                  )}
                 </div>
               </div>
               
@@ -464,7 +490,7 @@ export default function SimCardDetailPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">last_activity</label>
                 <input
                   type="text"
-                  value={formData.last_activity ? new Date(formData.last_activity).toLocaleString() : 'Never'}
+                  value={simCardData?.last_activity ? new Date(simCardData.last_activity).toLocaleString() : 'Never'}
                   disabled
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                 />
@@ -475,7 +501,7 @@ export default function SimCardDetailPage() {
                 <div className="flex items-center space-x-2">
                   <input
                     type="text"
-                    value={`${formData.signal_strength} dBm`}
+                    value={`${simCardData?.signal_strength || -100} dBm`}
                     disabled
                     className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                   />
@@ -489,7 +515,7 @@ export default function SimCardDetailPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">created_at</label>
                 <input
                   type="text"
-                  value={formData.created_at ? new Date(formData.created_at).toLocaleString() : 'N/A'}
+                  value={simCardData?.created_at ? new Date(simCardData.created_at).toLocaleString() : 'N/A'}
                   disabled
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                 />

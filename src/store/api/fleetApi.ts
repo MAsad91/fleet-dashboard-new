@@ -172,6 +172,7 @@ export const fleetApi = createApi({
     'Maintenance',
     'Insurance',
     'Dashcams',
+    'VideoSegments',
     'VehicleDocuments',
     'VehicleTypes',
     'FleetOperators',
@@ -213,6 +214,10 @@ export const fleetApi = createApi({
     getDashcamsDashboardStats: builder.query<any, void>({
       query: () => `/fleet/dashcams/dashboard_stats/`,
       providesTags: ['Dashcams'],
+    }),
+    getScheduledMaintenanceDashboardStats: builder.query<any, void>({
+      query: () => `/fleet/scheduled-maintenance/dashboard_stats/`,
+      providesTags: ['Maintenance'],
     }),
     
     // Alerts endpoints
@@ -566,6 +571,27 @@ export const fleetApi = createApi({
       invalidatesTags: ['Dashcams'],
     }),
 
+    // Video Segments endpoints
+    listVideoSegments: builder.query<PaginatedResponse<any>, { 
+      page?: number; 
+      vehicle?: string; 
+      dashcam?: string; 
+      uploaded_after?: string; 
+      uploaded_before?: string; 
+      start_date?: string; 
+      end_date?: string; 
+      search?: string; 
+    }>({
+      query: (params) => ({
+        url: `/fleet/video-segments/`,
+        params: {
+          page: params.page || 1,
+          ...params
+        }
+      }),
+      providesTags: ['VideoSegments'],
+    }),
+
     // Maintenance - Added missing endpoints from postman collection
     listScheduledMaintenance: builder.query<PaginatedResponse<any>, { page?: number; status?: string }>({
       query: ({ page, status }) => {
@@ -912,6 +938,8 @@ export const {
   useGetAlertsDashboardStatsQuery,
   useGetMaintenanceDashboardStatsQuery,
   useGetDashcamsDashboardStatsQuery,
+  useGetScheduledMaintenanceDashboardStatsQuery,
+  useListVideoSegmentsQuery,
   useGetActiveAlertsQuery,
   useGetAlertsQuery,
   useGetAlertByIdQuery,

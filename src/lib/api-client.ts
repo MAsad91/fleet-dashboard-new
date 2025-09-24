@@ -250,10 +250,14 @@ class ApiClient {
       }
       
       url += `?${params.toString()}`;
-          const response = await this.client.get(url);
+      console.log('🔍 API Client: Dashboard summary URL:', url);
+      const response = await this.client.get(url);
+      console.log('🔍 API Client: Dashboard summary response:', response.data);
+      console.log('🔍 API Client: Online vehicles in response:', response.data?.online_vehicles);
       return response.data;
     } catch (error: any) {
       console.error('❌ API Client: Dashboard summary error:', error.response?.data || error.message);
+      console.error('❌ API Client: Full error details:', error);
       throw error;
     }
   }

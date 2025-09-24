@@ -112,6 +112,13 @@ export function useDashboardData(
       const alerts = alertsStats.status === 'fulfilled' ? alertsStats.value : null;
       const maintenance = maintenanceStats.status === 'fulfilled' ? maintenanceStats.value : null;
 
+      // Debug logging
+      console.log('🔍 useDashboardData: Summary data received:', summary);
+      console.log('🔍 useDashboardData: Summary status:', summaryData.status);
+      if (summaryData.status === 'rejected') {
+        console.log('🔍 useDashboardData: Summary rejection reason:', summaryData.reason);
+      }
+
 
       // Log any failed requests with detailed error info
       const failedRequests = [];
