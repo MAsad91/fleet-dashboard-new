@@ -61,9 +61,14 @@ export function FallbackMapComponent({
           }}
         />
 
-        {/* Success Banner */}
-        <div className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold z-20">
-          ✅ Map Loaded Successfully
+        {/* Status Banner */}
+        <div className="absolute top-4 left-4 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-semibold z-20">
+          🗺️ Fallback Map Mode
+        </div>
+        
+        {/* HTTPS Warning */}
+        <div className="absolute top-4 right-4 bg-yellow-500 text-white px-3 py-1 rounded-full text-xs font-semibold z-20 max-w-xs">
+          ⚠️ Check API Key HTTPS Settings
         </div>
 
         {/* Center Marker */}
@@ -184,6 +189,17 @@ export function FallbackMapComponent({
         {/* Coordinates Display */}
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 px-3 py-1 text-xs text-gray-600 dark:text-gray-400 z-20">
           📍 {center.lat.toFixed(4)}, {center.lng.toFixed(4)}
+        </div>
+
+        {/* HTTPS Troubleshooting Info */}
+        <div className="absolute bottom-16 left-4 bg-red-50 dark:bg-red-900/20 rounded-lg shadow-lg border border-red-200 dark:border-red-800 p-3 text-xs max-w-sm z-20">
+          <div className="font-semibold text-red-800 dark:text-red-200 mb-2">🔧 HTTPS Troubleshooting</div>
+          <div className="text-red-700 dark:text-red-300 space-y-1">
+            <div>• Ensure API key allows HTTPS domains</div>
+            <div>• Check Google Cloud Console settings</div>
+            <div>• Verify domain restrictions</div>
+            <div>• Test at <a href="/api-test" className="underline">/api-test</a></div>
+          </div>
         </div>
       </div>
     </div>

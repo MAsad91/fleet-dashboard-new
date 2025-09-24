@@ -67,7 +67,7 @@ export default function ApiTestPage() {
           </div>
         </div>
 
-        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
+        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 mb-6">
           <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
             🚀 Next Steps
           </h3>
@@ -76,6 +76,32 @@ export default function ApiTestPage() {
             <li>• Check out <a href="/map-demo" className="underline">Map Demo</a> for interactive examples</li>
             <li>• All map components should now work properly</li>
           </ul>
+        </div>
+
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-yellow-900 dark:text-yellow-100 mb-2">
+            🔧 HTTPS Troubleshooting Guide
+          </h3>
+          <div className="text-yellow-800 dark:text-yellow-200 space-y-3">
+            <div>
+              <strong>If maps are not displaying on HTTPS:</strong>
+              <ul className="ml-4 mt-1 space-y-1">
+                <li>• Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" className="underline">Google Cloud Console</a></li>
+                <li>• Select your API key and click &quot;Edit&quot;</li>
+                <li>• Under &quot;Application restrictions&quot;, add your HTTPS domain</li>
+                <li>• Under &quot;API restrictions&quot;, ensure &quot;Maps JavaScript API&quot; is enabled</li>
+                <li>• Save changes and wait 5-10 minutes for propagation</li>
+              </ul>
+            </div>
+            <div>
+              <strong>Common HTTPS domains to add:</strong>
+              <ul className="ml-4 mt-1 space-y-1">
+                <li>• <code>https://yourdomain.com</code></li>
+                <li>• <code>https://*.yourdomain.com</code> (for subdomains)</li>
+                <li>• <code>localhost</code> (for development)</li>
+              </ul>
+            </div>
+          </div>
         </div>
     </div>
   );

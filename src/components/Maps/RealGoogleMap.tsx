@@ -49,6 +49,11 @@ export function RealGoogleMap({
           return;
         }
 
+        // Check if we're on HTTPS and provide specific guidance
+        if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+          console.log('🔒 HTTPS detected - ensuring API key allows HTTPS domains');
+        }
+
         // Check if script is already loading
         if (document.getElementById('google-maps-script')) {
           console.log('🔄 Google Maps script already loading, waiting...');
@@ -65,18 +70,23 @@ export function RealGoogleMap({
 
         console.log('🌍 Loading Google Maps API...');
         
-        // Load Google Maps API
+        // Load Google Maps API with proper HTTPS handling
         const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap&v=3.55`;
         script.async = true;
         script.defer = true;
         script.id = 'google-maps-script';
+        script.crossOrigin = 'anonymous';
 
         // Set a timeout for loading
         const timeout = setTimeout(() => {
           if (!mapLoaded) {
-            console.warn('⚠️ Google Maps loading timeout, using fallback');
-            setError('Google Maps loading timeout - using fallback mode');
+            console.warn('⚠️ Google Maps loading timeout - likely HTTPS API key issue');
+            console.error('🔍 HTTPS API Key Troubleshooting:');
+            console.error('• Check if your domain is added to API key restrictions');
+            console.error('• Ensure "Maps JavaScript API" is enabled');
+            console.error('• Verify API key works on HTTP (for testing)');
+            setError('Google Maps loading timeout - likely HTTPS API key configuration issue. Check console for troubleshooting steps.');
           }
         }, 15000); // 15 second timeout
 
@@ -89,7 +99,14 @@ export function RealGoogleMap({
         script.onerror = (error) => {
           clearTimeout(timeout);
           console.error('❌ Failed to load Google Maps API:', error);
-          setError('Failed to load Google Maps. Using fallback mode.');
+          console.error('🔍 HTTPS Issue Detected!');
+          console.error('📋 Troubleshooting Steps:');
+          console.error('1. Go to https://console.cloud.google.com/apis/credentials');
+          console.error('2. Select your API key and click "Edit"');
+          console.error('3. Under "Application restrictions", add your HTTPS domain');
+          console.error('4. Under "API restrictions", ensure "Maps JavaScript API" is enabled');
+          console.error('5. Save and wait 5-10 minutes for changes to propagate');
+          setError('Failed to load Google Maps on HTTPS. Check console for detailed troubleshooting steps.');
         };
 
         document.head.appendChild(script);
@@ -103,8 +120,8 @@ export function RealGoogleMap({
             const initializeMap = () => {
               const tryInitialize = () => {
                 if (!mapRef.current) {
-                  console.error('❌ Map ref not available');
-                  setError('Map container not found');
+                  console.error('❌ Map ref not available - this usually means Google Maps API failed to load on HTTPS');
+                  setError('Map container not found. Check API key HTTPS settings.');
                   return;
                 }
                 
