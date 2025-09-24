@@ -5,16 +5,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 // Type declarations for Google Maps
 declare global {
-  namespace google {
-    namespace maps {
-      class Map {
-        constructor(mapDiv: Element, opts?: any);
-      }
-      interface MapMouseEvent {
-        latLng?: any;
-        [key: string]: any;
-      }
-    }
+  interface Window {
+    google: any;
   }
 }
 
@@ -43,7 +35,7 @@ const MapComponent = ({
       const mapInstance = new window.google.maps.Map(ref.current, {
         center,
         zoom,
-        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        mapTypeId: 'roadmap' as any,
         mapTypeControl: true,
         streetViewControl: true,
         fullscreenControl: true,
