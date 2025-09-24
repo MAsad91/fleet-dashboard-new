@@ -14,6 +14,10 @@ export interface DashboardSummary {
     in_use: number;
     maintenance: number;
   };
+  energy_metrics?: {
+    total_energy_consumed_kwh: number;
+    average_efficiency_km_per_kwh: number;
+  };
   obd_metrics: {
     average_speed_kph: number;
     average_motor_temp_c: number;
@@ -40,6 +44,11 @@ export interface DashboardSummary {
     license_plate: string;
     total_distance_km: number;
   };
+  top_error_codes?: Array<{
+    code: string;
+    description: string;
+    count: number;
+  }>;
 }
 
 export interface DashboardStats {

@@ -9,8 +9,6 @@ import { Calendar, ChevronDown, User } from "lucide-react";
 import { FleetOverviewCards } from "./_components/fleet-overview-cards";
 import { FleetOverviewCardsSkeleton } from "./_components/fleet-overview-cards/skeleton";
 import { LiveTrackingMap } from "./_components/live-tracking-map";
-import { FleetStatus } from "./_components/fleet-status";
-import { RecentAlerts } from "./_components/recent-alerts";
 import { OBDMetricsSnapshot } from "./_components/obd-metrics-snapshot";
 import { DeviceHealthCard } from "./_components/device-health-card";
 import { SimUsageCard } from "./_components/sim-usage-card";
@@ -18,6 +16,13 @@ import { BatteryHealthCard } from "./_components/battery-health-card";
 import { EnergyConsumptionChart } from "./_components/energy-consumption-chart";
 import { BatteryHealthFleetChart } from "./_components/battery-health-fleet-chart";
 import { MostActiveVehicle } from "./_components/most-active-vehicle";
+import { VehicleStatusPieChart } from "./_components/vehicle-status-pie-chart";
+import { EnergyKPIs } from "./_components/energy-kpis";
+import { RecentAlertsTable } from "./_components/recent-alerts-table";
+import { ActiveTripsTable } from "./_components/active-trips-table";
+import { TopErrorCodesChart } from "./_components/top-error-codes-chart";
+import { DistanceChart } from "./_components/distance-chart";
+import { SpeedChart } from "./_components/speed-chart";
 
 // Dashboard content component that can use the dashboard context
 function DashboardContent() {
@@ -110,48 +115,94 @@ function DashboardContent() {
         </Suspense>
       </div>
 
-      {/* Row 2: Real-time Operations Center */}
+      {/* Row 2: Status & Energy Panel */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Real-time Operations Center</h2>
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
-          <div className="xl:col-span-8">
-            <LiveTrackingMap />
-          </div>
-          <div className="xl:col-span-4 space-y-4">
-            <FleetStatus />
-            <RecentAlerts />
-          </div>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Status & Energy Panel</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <VehicleStatusPieChart />
+          <EnergyKPIs />
         </div>
       </div>
 
-      {/* Row 3: Technical Metrics */}
+      {/* Row 3: OBD Metrics Snapshot */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Technical Metrics</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">OBD Metrics Snapshot</h2>
         <OBDMetricsSnapshot />
       </div>
 
-      {/* Row 4: System Health & Diagnostics */}
+      {/* Row 4: Diagnostics */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">System Health & Diagnostics</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Diagnostics</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <DeviceHealthCard />
           <SimUsageCard />
+          <BatteryHealthCard />
         </div>
       </div>
 
-      {/* Row 5: Analytics Charts */}
+      {/* Row 5: Most Active Vehicle */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Most Active Vehicle</h2>
+        <MostActiveVehicle />
+      </div>
+
+      {/* Row 6: Vehicles on Map */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Vehicles on Map</h2>
+        <LiveTrackingMap />
+      </div>
+
+      {/* Row 7: Live Telemetry */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Live Telemetry</h2>
+        <div className="bg-white dark:bg-gray-dark rounded-[10px] p-6 shadow-1">
+          <div className="text-center py-12">
+            <div className="text-gray-400 mb-4">
+              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Live Telemetry</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">Real-time vehicle data streaming</p>
+            <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
+              <span>Speed: 0 km/h</span>
+              <span>Battery: 0%</span>
+              <span>Range: 0 km</span>
+            </div>
+            <p className="text-xs text-gray-400 mt-2">WebSocket connection required</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Row 8: Charts & Tables */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Charts & Tables</h2>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <TopErrorCodesChart />
+          <RecentAlertsTable />
+          <ActiveTripsTable />
+        </div>
+      </div>
+
+      {/* Row 9: Distance/Speed Time Series Charts */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Analytics & Performance</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <EnergyConsumptionChart />
-          <BatteryHealthFleetChart />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="lg:col-span-1">
+            <DistanceChart />
+          </div>
+          <div className="lg:col-span-1">
+            <SpeedChart />
+          </div>
         </div>
-      </div>
-
-      {/* Row 6: Vehicle Spotlight */}
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Vehicle Spotlight</h2>
-        <MostActiveVehicle />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          <div className="lg:col-span-1">
+            <EnergyConsumptionChart />
+          </div>
+          <div className="lg:col-span-1">
+            <BatteryHealthFleetChart />
+          </div>
+        </div>
       </div>
 
 
