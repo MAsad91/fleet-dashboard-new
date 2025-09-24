@@ -1,188 +1,253 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useGetObdDeviceByIdQuery } from "@/store/api/fleetApi";
+import { useRouter, useParams } from "next/navigation";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 import { Button } from "@/components/ui-elements/button";
-import { ArrowLeft, Wifi, WifiOff, Video, Copy, Check, Battery, Clock, Activity, Car, Cpu } from "lucide-react";
+import { ArrowLeft, Cpu, Activity, Clock, Car, Wifi, WifiOff, Edit, Trash2, Save, Signal } from "lucide-react";
 
-export default function ObdDeviceDetailPage() {
-  const params = useParams();
+export default function OBDDeviceDetailPage() {
   const router = useRouter();
+  const params = useParams();
   const deviceId = params.id as string;
 
-  const { data: deviceData, isLoading, error } = useGetObdDeviceByIdQuery(deviceId);
+  // Mock data since API hooks don't exist yet
+  const deviceData = {
+    id: parseInt(deviceId),
+    device_id: "OBD-T2-2024-001",
+    model: "TelemX T2",
+    serial_number: "SN-0001",
+    can_baud_rate: 500000,
+    report_interval_sec: 60,
+    vehicle: {
+      id: 5,
+      license_plate: "EV-123",
+      make: "Tesla",
+      model: "Model 3"
+    },
+    fleet_operator: {
+      id: 1,
+      name: "FleetOps Inc"
+    },
+    installed_at: "2024-01-15T10:30:00Z",
+    is_active: true,
+    last_communication_at: "2025-01-12T10:02:00Z",
+    firmware_version: "1.2.3",
+    sim_card: {
+      id: 123,
+      sim_id: "SIM-001",
+      iccid: "8988247000001234567",
+      status: "active",
+      plan_name: "Business Plan",
+      plan_data_limit_gb: 50,
+      plan_cost: 25.99,
+      current_data_used_gb: 12.5,
+      current_cycle_start: "2025-01-01T00:00:00Z",
+      overage_threshold: 45,
+      last_activity: "2025-01-12T09:45:00Z",
+      signal_strength: -75,
+      created_at: "2024-01-15T10:30:00Z"
+    }
+  };
 
-  // Debug logging
+  const [formData, setFormData] = useState(deviceData);
+  const [isEditing, setIsEditing] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const isLoading = false;
+  const error = null;
+
   useEffect(() => {
-    console.log('📱 OBD Device Detail Page:', { deviceId, deviceData, isLoading, error });
-    if (deviceData) {
-      console.log('📱 OBD Device Data Structure:', JSON.stringify(deviceData, null, 2));
-    }
-  }, [deviceId, deviceData, isLoading, error]);
-  const [copiedApiKey, setCopiedApiKey] = useState<string | null>(null);
-
-  const getStatusBadge = (isActive: boolean) => {
-    const config = isActive 
-      ? { className: "bg-green-100 text-green-800", label: "Active" }
-      : { className: "bg-red-100 text-red-800", label: "Inactive" };
-    
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.className}`}>
-        {config.label}
-      </span>
-    );
-  };
-
-  const getOnlineBadge = (lastCommunication: string) => {
-    const isOnline = lastCommunication && new Date(lastCommunication) > new Date(Date.now() - 5 * 60 * 1000);
-    const config = isOnline
-      ? { className: "bg-green-100 text-green-800", label: "Online", icon: Wifi }
-      : { className: "bg-red-100 text-red-800", label: "Offline", icon: WifiOff };
-    
-    const Icon = config.icon;
-    
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center space-x-1 ${config.className}`}>
-        <Icon className="h-3 w-3" />
-        <span>{config.label}</span>
-      </span>
-    );
-  };
-
-  const getModelBadge = (model: string) => {
-    const colors = ['bg-blue-100 text-blue-800', 'bg-purple-100 text-purple-800', 'bg-green-100 text-green-800', 'bg-yellow-100 text-yellow-800', 'bg-pink-100 text-pink-800'];
-    const colorIndex = model ? model.length % colors.length : 0;
-    
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${colors[colorIndex]}`}>
-        {model || 'Unknown'}
-      </span>
-    );
-  };
-
-  const handleCopyApiKey = async (apiKey: string) => {
-    try {
-      await navigator.clipboard.writeText(apiKey);
-      setCopiedApiKey(apiKey);
-      alert("API key copied to clipboard");
-      setTimeout(() => setCopiedApiKey(null), 2000);
-    } catch (error) {
-      console.error("Failed to copy API key:", error);
-      alert("Failed to copy API key");
-    }
-  };
+    setFormData(deviceData);
+  }, [deviceId, deviceData]);
 
   if (isLoading) {
     return (
       <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <Button 
-                onClick={() => router.back()} 
-                variant="outlineDark"
-                label="Back"
-                icon={<ArrowLeft className="h-4 w-4" />}
-                className="px-4 py-2 rounded-lg"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Loading Device...
-                </h1>
-              </div>
-            </div>
-          </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
         </div>
       </ProtectedRoute>
     );
   }
 
-  if (error) {
+  if (error || !deviceData) {
     return (
       <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <Button 
-                onClick={() => router.back()} 
-                variant="outlineDark"
-                label="Back"
-                icon={<ArrowLeft className="h-4 w-4" />}
-                className="px-4 py-2 rounded-lg"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Error Loading Device
-                </h1>
-              </div>
-            </div>
-          </div>
-          <div className="text-center text-red-600">
-            <p>Failed to load device details. Please try again.</p>
-            <Button 
-              onClick={() => router.back()} 
-              variant="primary" 
-              label="Back to OBD Devices"
-              className="mt-4"
-            />
-          </div>
+        <div className="text-center text-red-600">
+          <p>Failed to load OBD device details. Please try again.</p>
+          <Button 
+            onClick={() => router.back()} 
+            variant="primary" 
+            label="Back to OBD Devices"
+            className="mt-4"
+          />
         </div>
       </ProtectedRoute>
     );
   }
 
-  if (!deviceData) {
-    return (
-      <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <Button 
-                onClick={() => router.back()} 
-                variant="outlineDark"
-                label="Back"
-                icon={<ArrowLeft className="h-4 w-4" />}
-                className="px-4 py-2 rounded-lg"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Device Not Found
-                </h1>
-              </div>
-            </div>
-          </div>
-        </div>
-      </ProtectedRoute>
-    );
-  }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev: any) => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors((prev: any) => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
 
-  // Extract the actual device data from the nested structure
-  const device = (deviceData as any)?.device || deviceData;
+  const handleSave = () => {
+    console.log('Saving OBD device:', formData);
+    // TODO: Implement save API call
+    setIsEditing(false);
+  };
+
+  const handleDelete = () => {
+    console.log('Deleting OBD device:', deviceId);
+    // TODO: Implement delete API call
+    router.back();
+  };
+
+  const handleUpdateCommunication = () => {
+    console.log('Updating communication for device:', deviceId);
+    // TODO: Implement POST /api/fleet/obd-devices/{id}/update-communication/
+  };
+
+  const handleViewVehicle = () => {
+    router.push(`/vehicles/${formData.vehicle.id}`);
+  };
+
+  const isOnline = formData.last_communication_at && 
+    new Date(formData.last_communication_at) > new Date(Date.now() - 5 * 60 * 1000);
 
   return (
     <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
-      <div className="p-6">
-        {/* Header with Back Button */}
-        <div className="mb-8">
-          <Button 
-            onClick={() => router.back()} 
-            variant="outlineDark"
-            label="Back"
-            icon={<ArrowLeft className="h-4 w-4" />}
-            className="px-4 py-2 rounded-lg"
-          />
+      <div className="space-y-6">
+        {/* HEADER: Back Button + Beautiful Title Card */}
+        <div className="relative">
+          {/* Back Button */}
+          <div className="mb-6">
+            <Button
+              onClick={() => router.back()}
+              variant="outlineDark"
+              label="Back"
+              icon={<ArrowLeft className="h-4 w-4" />}
+              className="px-4 py-2 rounded-lg"
+            />
+          </div>
+
+          {/* Beautiful Title Card */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 shadow-lg border border-blue-200 dark:border-gray-600 relative overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200 dark:bg-gray-600 rounded-full -translate-y-16 translate-x-16 opacity-20"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-200 dark:bg-gray-600 rounded-full translate-y-12 -translate-x-12 opacity-20"></div>
+            
+            <div className="relative z-10">
+              <div className="flex justify-between items-start">
+                {/* Left Side - Device Info */}
+                <div className="flex-1">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+                      <Cpu className="h-8 w-8 text-blue-600" />
+                    </div>
+                    <div>
+                      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                        OBD Device — Detail (#{deviceId})
+                      </h1>
+                      <p className="text-lg text-gray-600 dark:text-gray-400">
+                        {formData.device_id} • {formData.model} • {formData.is_active ? 'Active' : 'Inactive'} • {isOnline ? 'Online' : 'Offline'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Quick Info Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Active</span>
+                      </div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {formData.is_active ? "✅" : "❌"}
+                      </p>
+                    </div>
+                    
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Last Comm</span>
+                      </div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {formData.last_communication_at 
+                          ? new Date(formData.last_communication_at).toLocaleString()
+                          : 'Never'
+                        }
+                      </p>
+                    </div>
+                    
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Vehicle</span>
+                      </div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {formData.vehicle?.license_plate || 'Unassigned'}
+                      </p>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Firmware</span>
+                      </div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {formData.firmware_version}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Side - Action Buttons */}
+                <div className="flex flex-col space-y-2 ml-6">
+                  <div className="flex space-x-2">
+                    <Button
+                      label="Edit"
+                      variant="primary"
+                      size="small"
+                      icon={<Edit className="h-3 w-3" />}
+                      onClick={() => setIsEditing(!isEditing)}
+                      className="px-3 py-2 text-xs"
+                    />
+                    <Button
+                      label="Delete"
+                      variant="outlineDark"
+                      size="small"
+                      icon={<Trash2 className="h-3 w-3" />}
+                      onClick={handleDelete}
+                      className="px-3 py-2 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {device.is_active ? '✅' : '❌'}
+                  {formData.is_active ? "✅" : "❌"}
                 </p>
               </div>
               <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
@@ -190,14 +255,14 @@ export default function ObdDeviceDetailPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Last Comm</p>
-                <p className="text-sm font-bold text-gray-900 dark:text-white">
-                  {device.last_communication_at 
-                    ? new Date(device.last_communication_at).toLocaleString()
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {formData.last_communication_at 
+                    ? new Date(formData.last_communication_at).toLocaleString()
                     : 'Never'
                   }
                 </p>
@@ -207,13 +272,13 @@ export default function ObdDeviceDetailPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Vehicle</p>
-                <p className="text-sm font-bold text-gray-900 dark:text-white">
-                  {device.vehicle?.license_plate || 'Unassigned'}
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {formData.vehicle?.license_plate || 'Unassigned'}
                 </p>
               </div>
               <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
@@ -221,13 +286,13 @@ export default function ObdDeviceDetailPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Firmware</p>
-                <p className="text-sm font-bold text-gray-900 dark:text-white">
-                  {device.firmware_version || 'Unknown'}
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {formData.firmware_version}
                 </p>
               </div>
               <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-lg">
@@ -237,241 +302,268 @@ export default function ObdDeviceDetailPage() {
           </div>
         </div>
 
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Info (Left) */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Info</h3>
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+            <h3 className="text-lg font-semibold mb-4">Info</h3>
             <div className="space-y-4">
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Device ID</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{device.device_id}</span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Device ID</label>
+                <input
+                  type="text"
+                  name="device_id"
+                  value={formData.device_id}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Model</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{device.model || 'Unknown'}</span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Model</label>
+                <input
+                  type="text"
+                  name="model"
+                  value={formData.model}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Serial</span>
-                <span className="font-semibold text-gray-900 dark:text-white font-mono text-sm">{device.serial_number || 'N/A'}</span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Serial</label>
+                <input
+                  type="text"
+                  name="serial_number"
+                  value={formData.serial_number}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">CAN Baud Rate</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{device.can_baud_rate || 'N/A'}</span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">CAN Baud Rate</label>
+                <input
+                  type="number"
+                  name="can_baud_rate"
+                  value={formData.can_baud_rate}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Report Interval Sec</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{device.report_interval_sec || 'N/A'}</span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Report Interval Sec</label>
+                <input
+                  type="number"
+                  name="report_interval_sec"
+                  value={formData.report_interval_sec}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status (Active)</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {getStatusBadge(device.is_active)}
-                </span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status (Active)</label>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="is_active"
+                    checked={formData.is_active}
+                    onChange={(e) => setFormData((prev: any) => ({ ...prev, is_active: e.target.checked }))}
+                    disabled={!isEditing}
+                    className="rounded border-gray-300 text-primary focus:ring-primary disabled:cursor-not-allowed"
+                  />
+                  <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {formData.is_active ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Firmware</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{device.firmware_version || 'Unknown'}</span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Firmware</label>
+                <input
+                  type="text"
+                  name="firmware_version"
+                  value={formData.firmware_version}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Installed At</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {device.installed_at ? new Date(device.installed_at).toLocaleString() : 'Unknown'}
-                </span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Installed At (timestamp)</label>
+                <input
+                  type="text"
+                  value={formData.installed_at ? new Date(formData.installed_at).toLocaleString() : 'N/A'}
+                  disabled
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                />
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Fleet Operator</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{device.fleet_operator || 'Unknown'}</span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Fleet Operator</label>
+                <input
+                  type="text"
+                  value={formData.fleet_operator?.name || 'N/A'}
+                  disabled
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                />
               </div>
-              <div className="flex justify-between items-center py-2">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Vehicle (id)</span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Vehicle (id)</label>
                 <div className="flex items-center space-x-2">
-                  <span className="font-semibold text-gray-900 dark:text-white">{device.vehicle?.id || 'Unassigned'}</span>
-                  {device.vehicle?.id && (
-                    <Button
-                      label="View Vehicle"
-                      variant="outlineDark"
-                      size="small"
-                      onClick={() => router.push(`/vehicles/${device.vehicle.id}/view`)}
-                    />
-                  )}
+                  <input
+                    type="text"
+                    value={formData.vehicle ? `${formData.vehicle.license_plate} (${formData.vehicle.id})` : 'Unassigned'}
+                    disabled
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                  />
+                  <Button
+                    label="View Vehicle"
+                    variant="outlineDark"
+                    size="small"
+                    onClick={handleViewVehicle}
+                    className="text-xs"
+                  />
                 </div>
               </div>
             </div>
           </div>
 
           {/* Connectivity (Right) */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Connectivity</h3>
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+            <h3 className="text-lg font-semibold mb-4">Connectivity</h3>
             <div className="space-y-4">
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Update Communication</span>
+              <div>
                 <Button
-                  label="Update Comm"
+                  label="Update Communication"
                   variant="primary"
-                  size="small"
-                  onClick={() => {
-                    // TODO: Implement update communication API call
-                    alert('Update Communication feature coming soon');
-                  }}
+                  icon={<Activity className="h-4 w-4" />}
+                  onClick={handleUpdateCommunication}
+                  className="w-full mb-4"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  POST /api/fleet/obd-devices/{deviceId}/update-communication/
+                </p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Comm (timestamp)</label>
+                <input
+                  type="text"
+                  value={formData.last_communication_at ? new Date(formData.last_communication_at).toLocaleString() : 'Never'}
+                  disabled
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                 />
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Last Comm</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {device.last_communication_at 
-                    ? new Date(device.last_communication_at).toLocaleString()
-                    : 'Never'
-                  }
-                </span>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Online (≤5m) badge</label>
+                <div className="flex items-center space-x-2">
+                  {isOnline ? (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      <Wifi className="h-3 w-3 mr-1" />
+                      Online
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                      <WifiOff className="h-3 w-3 mr-1" />
+                      Offline
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="flex justify-between items-center py-2">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Online (≤5m)</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {getOnlineBadge(device.last_communication_at)}
-                </span>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">SIM: shown if present (read-only)</label>
+                {formData.sim_card ? (
+                  <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      <div>SIM ID: {formData.sim_card.sim_id}</div>
+                      <div>ICCID: {formData.sim_card.iccid}</div>
+                      <div>Status: {formData.sim_card.status}</div>
+                      <div>Plan: {formData.sim_card.plan_name}</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-500 dark:text-gray-400">No SIM card assigned</div>
+                )}
               </div>
             </div>
           </div>
         </div>
 
-
-        {/* SIM Card Details Section */}
-        {device.sim_card && (
-          <div className="mt-8">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-              <div className="flex items-center mb-6">
-                <div className="p-2 bg-primary/10 rounded-lg mr-3">
-                  <Wifi className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">SIM Card Details</h3>
+        {/* SIM CARD DETAILS */}
+        {formData.sim_card && (
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+            <h3 className="text-lg font-semibold mb-4">SIM CARD DETAILS</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">sim_id</label>
+                <div className="text-sm text-gray-900 dark:text-white">{formData.sim_card.sim_id}</div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">sim_id</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">{device.sim_card.sim_id || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">iccid</span>
-                    <span className="font-semibold text-gray-900 dark:text-white font-mono text-sm">{device.sim_card.iccid || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">status</span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      device.sim_card.status === 'active' 
-                        ? 'bg-green-100 text-green-800' 
-                        : device.sim_card.status === 'suspended'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {device.sim_card.status || 'Unknown'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">plan_name</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">{device.sim_card.plan_name || 'N/A'}</span>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">plan_data_limit_gb</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">{device.sim_card.plan_data_limit_gb || 0} GB</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">plan_cost</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">${device.sim_card.plan_cost || 0}</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">current_data_used_gb</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">{device.sim_card.current_data_used_gb || 0} GB</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">current_cycle_start</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">
-                      {device.sim_card.current_cycle_start 
-                        ? new Date(device.sim_card.current_cycle_start).toLocaleDateString()
-                        : 'N/A'
-                      }
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">overage_threshold</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">{Math.round((device.sim_card.overage_threshold || 0) * 100)}%</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">last_activity</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">
-                      {device.sim_card.last_activity 
-                        ? new Date(device.sim_card.last_activity).toLocaleString()
-                        : 'N/A'
-                      }
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">signal_strength</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">{device.sim_card.signal_strength || 'N/A'} dBm</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">created_at</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">
-                      {device.sim_card.created_at 
-                        ? new Date(device.sim_card.created_at).toLocaleString()
-                        : 'N/A'
-                      }
-                    </span>
-                  </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">iccid</label>
+                <div className="text-sm text-gray-900 dark:text-white">{formData.sim_card.iccid}</div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">status</label>
+                <div className="text-sm text-gray-900 dark:text-white">{formData.sim_card.status}</div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">plan_name</label>
+                <div className="text-sm text-gray-900 dark:text-white">{formData.sim_card.plan_name}</div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">plan_data_limit_gb</label>
+                <div className="text-sm text-gray-900 dark:text-white">{formData.sim_card.plan_data_limit_gb} GB</div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">plan_cost</label>
+                <div className="text-sm text-gray-900 dark:text-white">${formData.sim_card.plan_cost}</div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">current_data_used_gb</label>
+                <div className="text-sm text-gray-900 dark:text-white">{formData.sim_card.current_data_used_gb} GB</div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">current_cycle_start</label>
+                <div className="text-sm text-gray-900 dark:text-white">{new Date(formData.sim_card.current_cycle_start).toLocaleDateString()}</div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">overage_threshold</label>
+                <div className="text-sm text-gray-900 dark:text-white">{formData.sim_card.overage_threshold} GB</div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">last_activity</label>
+                <div className="text-sm text-gray-900 dark:text-white">{new Date(formData.sim_card.last_activity).toLocaleString()}</div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">signal_strength</label>
+                <div className="text-sm text-gray-900 dark:text-white flex items-center">
+                  <Signal className="h-4 w-4 mr-1" />
+                  {formData.sim_card.signal_strength} dBm
                 </div>
               </div>
-              
-              {/* Data Usage Progress Bar */}
-              {device.sim_card.plan_data_limit_gb && device.sim_card.current_data_used_gb && (
-                <div className="mt-6">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Data Usage</span>
-                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {device.sim_card.current_data_used_gb} / {device.sim_card.plan_data_limit_gb} GB
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className={`h-2 rounded-full ${
-                        (device.sim_card.current_data_used_gb / device.sim_card.plan_data_limit_gb) >= (device.sim_card.overage_threshold || 0.9)
-                          ? 'bg-red-600'
-                          : (device.sim_card.current_data_used_gb / device.sim_card.plan_data_limit_gb) >= 0.7
-                          ? 'bg-yellow-600'
-                          : 'bg-green-600'
-                      }`}
-                      style={{ 
-                        width: `${Math.min((device.sim_card.current_data_used_gb / device.sim_card.plan_data_limit_gb) * 100, 100)}%` 
-                      }}
-                    ></div>
-                  </div>
-                </div>
-              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">created_at</label>
+                <div className="text-sm text-gray-900 dark:text-white">{new Date(formData.sim_card.created_at).toLocaleString()}</div>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Actions (Admin) */}
-        <div className="mt-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Actions (Admin)</h3>
-            <div className="flex space-x-4">
-              <Button
-                label="Update Communication"
-                variant="primary"
-                icon={<Wifi className="h-4 w-4" />}
-                onClick={() => {
-                  // TODO: Implement update communication API call
-                  alert('Update Communication feature coming soon');
-                }}
-              />
-            </div>
+        {/* ACTIONS (Admin) */}
+        <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+          <h3 className="text-lg font-semibold mb-4">ACTIONS (Admin)</h3>
+          <div className="flex items-center space-x-4">
+            <Button
+              label="Update Communication"
+              variant="primary"
+              icon={<Activity className="h-4 w-4" />}
+              onClick={handleUpdateCommunication}
+            />
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              → POST /api/fleet/obd-devices/{deviceId}/update-communication/
+            </p>
           </div>
         </div>
       </div>

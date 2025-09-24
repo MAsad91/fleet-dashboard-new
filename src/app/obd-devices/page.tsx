@@ -164,12 +164,9 @@ export default function OBDDevicesPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">OBD Devices</h1>
-            <p className="text-muted-foreground">
-              Manage OBD devices and their configurations
-            </p>
           </div>
           <Button
-            label="Add Device"
+            label="+ Create"
             variant="primary"
             icon={<Plus className="h-4 w-4" />}
             onClick={() => router.push('/obd-devices/add')}
@@ -226,77 +223,110 @@ export default function OBDDevicesPage() {
 
         {/* Filters */}
         <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-          <h3 className="text-lg font-semibold mb-4">Filters</h3>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <InputGroup
-              label="Search"
-              type="text"
-              placeholder="Search devices..."
-              value={filters.search || ""}
-              handleChange={handleSearchChange}
-              icon={<Search className="h-4 w-4 text-gray-400" />}
-              iconPosition="left"
-            />
-            
-            <Select
-              label="Status"
-              items={[
-                { value: "all", label: "All Status" },
-                { value: "active", label: "Active" },
-                { value: "inactive", label: "Inactive" },
-              ]}
-              defaultValue={filters.status || "all"}
-              placeholder="Select status"
-              onChange={handleStatusFilter}
-            />
-
-            <Select
-              label="Model"
-              items={[
-                { value: "all", label: "All Models" },
-                ...uniqueModels.map(model => ({ value: model, label: model }))
-              ]}
-              defaultValue={filters.model || "all"}
-              placeholder="Select model"
-              onChange={handleModelFilter}
-            />
-
-            <Select
-              label="Firmware"
-              items={[
-                { value: "all", label: "All Versions" },
-                ...uniqueFirmwareVersions.map(version => ({ value: version, label: version }))
-              ]}
-              defaultValue={filters.firmware_version || "all"}
-              placeholder="Select firmware"
-              onChange={handleFirmwareFilter}
-            />
-
-            <div className="flex items-end">
-              <Button
-                label="Clear Filters"
-                variant="outlineDark"
-                size="small"
-                onClick={() => dispatch(setOBDFilters({ 
-                  search: "", 
-                  status: undefined, 
-                  model: undefined,
-                  firmware_version: undefined
-                }))}
-              />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Fleet
+              </label>
+              <select
+                value=""
+                onChange={() => {}}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">All Fleets</option>
+                {/* TODO: Populate from GET /api/fleet/fleet-operators/ */}
+              </select>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Vehicle
+              </label>
+              <select
+                value=""
+                onChange={() => {}}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">All Vehicles</option>
+                {/* TODO: Populate from GET /api/fleet/vehicles/?fleet={fleet_operator_id}&has_obd=false */}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Model
+              </label>
+              <select
+                value={filters.model || ""}
+                onChange={handleModelFilter}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">All Models</option>
+                {uniqueModels.map(model => (
+                  <option key={model} value={model}>{model}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Firmware
+              </label>
+              <select
+                value={filters.firmware_version || ""}
+                onChange={handleFirmwareFilter}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">All Versions</option>
+                {uniqueFirmwareVersions.map(version => (
+                  <option key={version} value={version}>{version}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Status
+              </label>
+              <select
+                value={filters.status || ""}
+                onChange={handleStatusFilter}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Online
+              </label>
+              <select
+                value=""
+                onChange={() => {}}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">All</option>
+                <option value="online">Online</option>
+                <option value="offline">Offline</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="flex justify-end mt-4">
+            <Button
+              label="Go"
+              variant="primary"
+              size="small"
+              onClick={() => {}} // Filters are applied automatically
+            />
           </div>
         </div>
 
-        {/* Devices Table */}
+        {/* Table */}
         <div className="bg-white dark:bg-gray-dark rounded-lg shadow-1">
-          <div className="p-6 border-b border-stroke dark:border-dark-3">
-            <h3 className="text-lg font-semibold">Device List</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {totalFilteredCount} devices found
-            </p>
-          </div>
-          
           <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             {isLoading ? (
               <div className="p-6">
@@ -317,13 +347,13 @@ export default function OBDDevicesPage() {
               </div>
             ) : paginatedDevices.length === 0 ? (
               <div className="p-6 text-center text-gray-500">
-                {allFilteredDevices.length === 0 && (filters.search || filters.status || filters.model || filters.firmware_version) 
+                {allFilteredDevices.length === 0 && (filters.status || filters.model || filters.firmware_version) 
                   ? "No devices found matching your filters." 
                   : "No devices found."
                 }
               </div>
             ) : (
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700" style={{ minWidth: '1200px' }}>
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -347,29 +377,35 @@ export default function OBDDevicesPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Online
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Actions
-                    </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-gray-dark divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                   {paginatedDevices.map((device) => (
-                    <tr key={device.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <tr 
+                      key={device.id} 
+                      className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-150"
+                      onClick={(e) => {
+                        // Don't navigate if clicking on action buttons
+                        const target = e.target as HTMLElement;
+                        const isButton = target.closest('button');
+                        
+                        if (!isButton) {
+                          router.push(`/obd-devices/${device.id}`);
+                        }
+                      }}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center space-x-3">
-                          <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                            <Cpu className="h-5 w-5 text-blue-600" />
-                          </div>
-                          <div className="font-medium text-gray-900 dark:text-white">
-                            {device.device_id}
-                          </div>
+                        <div className="font-medium text-gray-900 dark:text-white">
+                          {device.device_id}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                         {device.vehicle?.license_plate || 'Unassigned'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {getModelBadge(device.model)}
+                        <div className="text-sm text-gray-900 dark:text-white">
+                          {device.model || 'Unknown'}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                         {device.firmware_version || 'Unknown'}
@@ -381,35 +417,16 @@ export default function OBDDevicesPage() {
                         }
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {getStatusBadge(device.is_active)}
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          device.is_active 
+                            ? "bg-green-100 text-green-800" 
+                            : "bg-red-100 text-red-800"
+                        }`}>
+                          {device.is_active ? "✅" : "❌"}
+                        </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {getOnlineBadge(device.last_communication_at)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            label=""
-                            variant="outlineDark"
-                            size="small"
-                            icon={<Eye className="h-4 w-4" />}
-                            onClick={() => handleViewDevice(device.id)}
-                          />
-                          <Button
-                            label=""
-                            variant="outlineDark"
-                            size="small"
-                            icon={<Edit className="h-4 w-4" />}
-                            onClick={() => handleEditDevice(device.id)}
-                          />
-                          <Button
-                            label=""
-                            variant="outlineDark"
-                            size="small"
-                            icon={<Trash2 className="h-4 w-4" />}
-                            onClick={() => handleDeleteDevice(device.id)}
-                          />
-                        </div>
                       </td>
                     </tr>
                   ))}
@@ -418,30 +435,37 @@ export default function OBDDevicesPage() {
             )}
           </div>
 
-          {/* Pagination */}
-          {totalFilteredCount > 0 && (
-            <div className="px-6 py-4 border-t border-stroke dark:border-dark-3 flex items-center justify-between">
-              <div className="text-sm text-gray-700 dark:text-gray-300">
-                Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, totalFilteredCount)} of {totalFilteredCount} results
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  label="Previous"
-                  variant="outlineDark"
-                  size="small"
-                  onClick={pagination.page === 1 ? undefined : () => handlePageChange(pagination.page - 1)}
-                  className={pagination.page === 1 ? 'opacity-50 cursor-not-allowed' : ''}
-                />
-                <span className="text-sm text-gray-700 dark:text-gray-300">
-                  Page {pagination.page} of {Math.ceil(totalFilteredCount / pagination.limit)}
-                </span>
-                <Button
-                  label="Next"
-                  variant="outlineDark"
-                  size="small"
-                  onClick={pagination.page >= Math.ceil(totalFilteredCount / pagination.limit) ? undefined : () => handlePageChange(pagination.page + 1)}
-                  className={pagination.page >= Math.ceil(totalFilteredCount / pagination.limit) ? 'opacity-50 cursor-not-allowed' : ''}
-                />
+          {/* Bulk Actions and Pagination */}
+          {paginatedDevices.length > 0 && (
+            <div className="bg-gray-50 dark:bg-gray-800 px-6 py-3 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <Button
+                    label="Select All"
+                    variant="outlineDark"
+                    size="small"
+                    onClick={() => {}}
+                    className="text-sm"
+                  />
+                  <Button
+                    label="Update Comm"
+                    variant="outlineDark"
+                    size="small"
+                    onClick={() => {}}
+                    className="text-sm"
+                  />
+                  <Button
+                    label="Delete Selected"
+                    variant="outlineDark"
+                    size="small"
+                    onClick={() => {}}
+                    className="text-sm"
+                  />
+                </div>
+                
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  Page 1/2
+                </div>
               </div>
             </div>
           )}

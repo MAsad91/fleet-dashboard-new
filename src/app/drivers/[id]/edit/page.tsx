@@ -22,23 +22,19 @@ export default function DriverEditPage() {
   useEffect(() => {
     if (driverData) {
       setFormData({
-        name: driverData.name || '',
-        email: driverData.email || '',
-        phone: driverData.phone || '',
-        status: driverData.status || '',
-        date_of_birth: driverData.date_of_birth || '',
-        address: driverData.address || '',
+        // User fields (nested user object as per API)
+        username: driverData.user?.username || '',
+        first_name: driverData.user?.first_name || '',
+        last_name: driverData.user?.last_name || '',
+        email: driverData.user?.email || '',
+        // Driver fields
+        phone_number: driverData.phone_number || '',
         license_number: driverData.license_number || '',
-        license_class: driverData.license_class || '',
-        license_status: driverData.license_status || '',
-        license_expiry_date: driverData.license_expiry_date || '',
-        issuing_authority: driverData.issuing_authority || '',
-        employee_id: driverData.employee_id || '',
-        department: driverData.department || '',
-        position: driverData.position || '',
-        hire_date: driverData.hire_date || '',
-        emergency_contact_name: driverData.emergency_contact_name || '',
-        emergency_contact_phone: driverData.emergency_contact_phone || '',
+        experience_years: driverData.experience_years || '',
+        address: driverData.address || '',
+        date_of_birth: driverData.date_of_birth || '',
+        emergency_contact: driverData.emergency_contact || '',
+        fleet_operator: driverData.fleet_operator || '',
       });
     }
   }, [driverData]);
@@ -59,13 +55,16 @@ export default function DriverEditPage() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
-    if (!formData.name?.trim()) newErrors.name = 'Name is required';
+    // Required user fields (username is read-only, so no validation needed)
+    if (!formData.first_name?.trim()) newErrors.first_name = 'First name is required';
+    if (!formData.last_name?.trim()) newErrors.last_name = 'Last name is required';
     if (!formData.email?.trim()) newErrors.email = 'Email is required';
-    if (!formData.phone?.trim()) newErrors.phone = 'Phone is required';
-    if (!formData.status?.trim()) newErrors.status = 'Status is required';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
+
+    // Required driver fields
+    if (!formData.phone_number?.trim()) newErrors.phone_number = 'Phone number is required';
     if (!formData.license_number?.trim()) newErrors.license_number = 'License number is required';
-    if (!formData.license_class?.trim()) newErrors.license_class = 'License class is required';
-    if (!formData.license_status?.trim()) newErrors.license_status = 'License status is required';
+    if (!formData.fleet_operator) newErrors.fleet_operator = 'Fleet operator is required';
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -75,24 +74,21 @@ export default function DriverEditPage() {
     if (!validateForm()) return;
 
     try {
+      // Create the driver update with nested user object as per API structure
+      // Note: username is excluded as it cannot be changed after creation
       const apiData = {
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        status: formData.status,
-        date_of_birth: formData.date_of_birth || null,
-        address: formData.address || null,
+        user: {
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          email: formData.email,
+        },
+        phone_number: formData.phone_number,
         license_number: formData.license_number,
-        license_class: formData.license_class,
-        license_status: formData.license_status,
-        license_expiry_date: formData.license_expiry_date || null,
-        issuing_authority: formData.issuing_authority || null,
-        employee_id: formData.employee_id || null,
-        department: formData.department || null,
-        position: formData.position || null,
-        hire_date: formData.hire_date || null,
-        emergency_contact_name: formData.emergency_contact_name || null,
-        emergency_contact_phone: formData.emergency_contact_phone || null,
+        experience_years: formData.experience_years ? parseInt(formData.experience_years) : null,
+        address: formData.address || null,
+        date_of_birth: formData.date_of_birth || null,
+        emergency_contact: formData.emergency_contact || null,
+        fleet_operator: parseInt(formData.fleet_operator),
       };
 
       await updateDriver({ id: driverId, body: apiData }).unwrap();
@@ -214,289 +210,198 @@ export default function DriverEditPage() {
 
         {/* Edit Form */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-6">
             {/* Personal Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Personal Information</h3>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Name *
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name || ''}
-                  onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
-                    errors.name ? "border-red-500" : "border-gray-300 dark:border-gray-600"
-                  }`}
-                />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-                )}
-              </div>
+            <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Personal Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    name="username"
+                    value={formData.username || ''}
+                    disabled
+                    className="w-full px-3 py-2 border rounded-md shadow-sm bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed border-gray-300 dark:border-gray-600"
+                  />
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Username cannot be changed after creation
+                  </p>
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Email *
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email || ''}
-                  onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
-                    errors.email ? "border-red-500" : "border-gray-300 dark:border-gray-600"
-                  }`}
-                />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                )}
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    First Name *
+                  </label>
+                  <input
+                    type="text"
+                    name="first_name"
+                    value={formData.first_name || ''}
+                    onChange={handleInputChange}
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
+                      errors.first_name ? "border-red-500" : "border-gray-300 dark:border-gray-600"
+                    }`}
+                  />
+                  {errors.first_name && (
+                    <p className="mt-1 text-sm text-red-600">{errors.first_name}</p>
+                  )}
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Phone *
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone || ''}
-                  onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
-                    errors.phone ? "border-red-500" : "border-gray-300 dark:border-gray-600"
-                  }`}
-                />
-                {errors.phone && (
-                  <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
-                )}
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Last Name *
+                  </label>
+                  <input
+                    type="text"
+                    name="last_name"
+                    value={formData.last_name || ''}
+                    onChange={handleInputChange}
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
+                      errors.last_name ? "border-red-500" : "border-gray-300 dark:border-gray-600"
+                    }`}
+                  />
+                  {errors.last_name && (
+                    <p className="mt-1 text-sm text-red-600">{errors.last_name}</p>
+                  )}
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Status *
-                </label>
-                <select
-                  name="status"
-                  value={formData.status || ''}
-                  onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
-                    errors.status ? "border-red-500" : "border-gray-300 dark:border-gray-600"
-                  }`}
-                >
-                  <option value="">Select Status</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="suspended">Suspended</option>
-                  <option value="terminated">Terminated</option>
-                </select>
-                {errors.status && (
-                  <p className="mt-1 text-sm text-red-600">{errors.status}</p>
-                )}
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email || ''}
+                    onChange={handleInputChange}
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
+                      errors.email ? "border-red-500" : "border-gray-300 dark:border-gray-600"
+                    }`}
+                  />
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                  )}
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Date of Birth
-                </label>
-                <input
-                  type="date"
-                  name="date_of_birth"
-                  value={formData.date_of_birth || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
-                />
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone_number"
+                    value={formData.phone_number || ''}
+                    onChange={handleInputChange}
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
+                      errors.phone_number ? "border-red-500" : "border-gray-300 dark:border-gray-600"
+                    }`}
+                  />
+                  {errors.phone_number && (
+                    <p className="mt-1 text-sm text-red-600">{errors.phone_number}</p>
+                  )}
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Address
-                </label>
-                <textarea
-                  name="address"
-                  value={formData.address || ''}
-                  onChange={handleInputChange}
-                  rows={3}
-                  className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Date of Birth
+                  </label>
+                  <input
+                    type="date"
+                    name="date_of_birth"
+                    value={formData.date_of_birth || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Experience Years
+                  </label>
+                  <input
+                    type="number"
+                    name="experience_years"
+                    value={formData.experience_years || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Emergency Contact
+                  </label>
+                  <input
+                    type="text"
+                    name="emergency_contact"
+                    value={formData.emergency_contact || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
+                  />
+                </div>
               </div>
             </div>
 
             {/* License Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">License Information</h3>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  License Number *
-                </label>
-                <input
-                  type="text"
-                  name="license_number"
-                  value={formData.license_number || ''}
-                  onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
-                    errors.license_number ? "border-red-500" : "border-gray-300 dark:border-gray-600"
-                  }`}
-                />
-                {errors.license_number && (
-                  <p className="mt-1 text-sm text-red-600">{errors.license_number}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  License Class *
-                </label>
-                <input
-                  type="text"
-                  name="license_class"
-                  value={formData.license_class || ''}
-                  onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
-                    errors.license_class ? "border-red-500" : "border-gray-300 dark:border-gray-600"
-                  }`}
-                />
-                {errors.license_class && (
-                  <p className="mt-1 text-sm text-red-600">{errors.license_class}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  License Status *
-                </label>
-                <select
-                  name="license_status"
-                  value={formData.license_status || ''}
-                  onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
-                    errors.license_status ? "border-red-500" : "border-gray-300 dark:border-gray-600"
-                  }`}
-                >
-                  <option value="">Select Status</option>
-                  <option value="valid">Valid</option>
-                  <option value="expired">Expired</option>
-                  <option value="suspended">Suspended</option>
-                  <option value="revoked">Revoked</option>
-                </select>
-                {errors.license_status && (
-                  <p className="mt-1 text-sm text-red-600">{errors.license_status}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  License Expiry Date
-                </label>
-                <input
-                  type="date"
-                  name="license_expiry_date"
-                  value={formData.license_expiry_date || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Issuing Authority
-                </label>
-                <input
-                  type="text"
-                  name="issuing_authority"
-                  value={formData.issuing_authority || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
-                />
+            <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">License Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    License Number *
+                  </label>
+                  <input
+                    type="text"
+                    name="license_number"
+                    value={formData.license_number || ''}
+                    onChange={handleInputChange}
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
+                      errors.license_number ? "border-red-500" : "border-gray-300 dark:border-gray-600"
+                    }`}
+                  />
+                  {errors.license_number && (
+                    <p className="mt-1 text-sm text-red-600">{errors.license_number}</p>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Employment Information */}
-          <div className="mt-8">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Employment Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
+            {/* Additional Information */}
+            <div className="pb-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Additional Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Address
+                  </label>
+                  <textarea
+                    name="address"
+                    value={formData.address || ''}
+                    onChange={handleInputChange}
+                    rows={3}
+                    className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
+                  />
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Employee ID
+                    Fleet Operator *
                   </label>
                   <input
                     type="text"
-                    name="employee_id"
-                    value={formData.employee_id || ''}
+                    name="fleet_operator"
+                    value={formData.fleet_operator || ''}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
+                      errors.fleet_operator ? "border-red-500" : "border-gray-300 dark:border-gray-600"
+                    }`}
+                    disabled
                   />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Department
-                  </label>
-                  <input
-                    type="text"
-                    name="department"
-                    value={formData.department || ''}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Position
-                  </label>
-                  <input
-                    type="text"
-                    name="position"
-                    value={formData.position || ''}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Hire Date
-                  </label>
-                  <input
-                    type="date"
-                    name="hire_date"
-                    value={formData.hire_date || ''}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Emergency Contact Name
-                  </label>
-                  <input
-                    type="text"
-                    name="emergency_contact_name"
-                    value={formData.emergency_contact_name || ''}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Emergency Contact Phone
-                  </label>
-                  <input
-                    type="tel"
-                    name="emergency_contact_phone"
-                    value={formData.emergency_contact_phone || ''}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
-                  />
+                  {errors.fleet_operator && (
+                    <p className="mt-1 text-sm text-red-600">{errors.fleet_operator}</p>
+                  )}
                 </div>
               </div>
             </div>

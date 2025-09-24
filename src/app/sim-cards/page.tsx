@@ -130,12 +130,9 @@ export default function SimCardsPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">SIM Cards</h1>
-            <p className="text-muted-foreground">
-              Manage SIM card inventory and connectivity
-            </p>
           </div>
           <Button
-            label="Add SIM Card"
+            label="+ Create"
             variant="primary"
             icon={<Plus className="h-4 w-4" />}
             onClick={() => router.push('/sim-cards/add')}
@@ -189,147 +186,189 @@ export default function SimCardsPage() {
 
         {/* Filters */}
         <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-          <h3 className="text-lg font-semibold mb-4">Filters</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Select
-              label="Status"
-              items={[
-                { value: "", label: "All Status" },
-                { value: "active", label: "Active" },
-                { value: "inactive", label: "Inactive" },
-                { value: "suspended", label: "Suspended" },
-              ]}
-              defaultValue={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            />
-            
-            <InputGroup
-              type="text"
-              label="Plan"
-              placeholder="Search by plan name..."
-              value={planFilter}
-              handleChange={(e) => setPlanFilter(e.target.value)}
-              icon={<CreditCard className="h-4 w-4" />}
-            />
-            
-            <Select
-              label="Device"
-              items={[
-                { value: "", label: "All Devices" },
-                ...(obdDevicesData?.results?.map((device: any) => ({
-                  value: device.id.toString(),
-                  label: device.device_id || `Device ${device.id}`
-                })) || [])
-              ]}
-              defaultValue={deviceFilter}
-              onChange={(e) => setDeviceFilter(e.target.value)}
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Status
+              </label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="suspended">Suspended</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Plan
+              </label>
+              <input
+                type="text"
+                placeholder="Search by plan name..."
+                value={planFilter}
+                onChange={(e) => setPlanFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Device (no‑SIM only if backend filter exists; else all)
+              </label>
+              <select
+                value={deviceFilter}
+                onChange={(e) => setDeviceFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">All Devices</option>
+                {(obdDevicesData?.results?.filter((device: any) => !device.sim_card) || obdDevicesData?.results || []).map((device: any) => (
+                  <option key={device.id} value={device.id.toString()}>
+                    {device.device_id || `Device ${device.id}`}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-          <div className="mt-4">
+          
+          <div className="flex justify-between items-center mt-4">
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Legend: Signal = strong/weak/none
             </p>
+            <Button
+              label="Apply"
+              variant="primary"
+              size="small"
+              onClick={() => {}} // Filters are applied automatically
+            />
           </div>
 
-        {/* SIM Cards Table */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700" style={{ minWidth: '1200px' }}>
-              <thead className="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    ICCID
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Plan Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Limit (GB)
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Used (GB)
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Device
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Last Act.
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredSimCards.map((simCard: any) => {
-                  // Check for overage highlighting
-                  const hasOverage = simCard.plan_data_limit_gb && simCard.current_data_used_gb && simCard.overage_threshold &&
-                    simCard.current_data_used_gb >= (simCard.plan_data_limit_gb * simCard.overage_threshold);
-                  
-                  return (
-                    <tr key={simCard.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${hasOverage ? 'bg-red-50 dark:bg-red-900/20' : ''}`}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <CreditCard className="h-4 w-4 text-gray-400 mr-2" />
+        {/* Table */}
+        <div className="bg-white dark:bg-gray-dark rounded-lg shadow-1">
+          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+            {isLoading ? (
+              <div className="p-6">
+                <div className="animate-pulse space-y-4">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="flex items-center space-x-4">
+                      <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : error ? (
+              <div className="p-6 text-red-600">
+                Error loading SIM cards
+              </div>
+            ) : filteredSimCards.length === 0 ? (
+              <div className="p-6 text-center text-gray-500">
+                {statusFilter || planFilter || deviceFilter
+                  ? "No SIM cards found matching your filters."
+                  : "No SIM cards found."
+                }
+              </div>
+            ) : (
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-800">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      ICCID
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Plan Name
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Limit (GB)
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Used (GB)
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Device
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Last Act.
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                  {filteredSimCards.map((simCard: any) => {
+                    // Check for overage highlighting
+                    const hasOverage = simCard.plan_data_limit_gb && simCard.current_data_used_gb && simCard.overage_threshold &&
+                      simCard.current_data_used_gb >= (simCard.plan_data_limit_gb * simCard.overage_threshold);
+                    
+                    return (
+                      <tr 
+                        key={simCard.id} 
+                        className={`hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-150 ${hasOverage ? 'bg-red-50 dark:bg-red-900/20' : ''}`}
+                        onClick={(e) => {
+                          // Don't navigate if clicking on action buttons
+                          const target = e.target as HTMLElement;
+                          const isButton = target.closest('button');
+                          
+                          if (!isButton) {
+                            router.push(`/sim-cards/${simCard.id}`);
+                          }
+                        }}
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
                           <span className="text-sm text-gray-900 dark:text-white font-mono">
                             {simCard.iccid ? `${simCard.iccid.substring(0, 4)}…` : 'N/A'}
                           </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {getStatusBadge(simCard.status)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {simCard.plan_name || 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {simCard.plan_data_limit_gb || 0}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {simCard.current_data_used_gb || 0}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {simCard.device || 'Unassigned'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {simCard.last_activity 
-                          ? new Date(simCard.last_activity).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
-                          : 'N/A'
-                        }
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            label=""
-                            variant="outlineDark"
-                            size="small"
-                            icon={<Eye className="h-4 w-4" />}
-                            onClick={() => handleViewSimCard(simCard.id)}
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {getStatusBadge(simCard.status)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          {simCard.plan_name || 'N/A'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          {simCard.plan_data_limit_gb || 0}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          {simCard.current_data_used_gb || 0}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          {simCard.device || 'Unassigned'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          {simCard.last_activity 
+                            ? new Date(simCard.last_activity).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+                            : 'N/A'
+                          }
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
           </div>
 
-          {filteredSimCards.length === 0 && (
-            <div className="text-center py-12">
-              <CreditCard className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                No SIM cards found
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400">
-                {statusFilter || planFilter || deviceFilter
-                  ? "Try adjusting your search criteria"
-                  : "Get started by adding a new SIM card"
-                }
-              </p>
+          {/* Row Actions */}
+          {filteredSimCards.length > 0 && (
+            <div className="bg-gray-50 dark:bg-gray-800 px-6 py-3 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <Button
+                    label="View"
+                    variant="outlineDark"
+                    size="small"
+                    onClick={() => {}}
+                    className="text-sm"
+                  />
+                </div>
+              </div>
             </div>
           )}
         </div>

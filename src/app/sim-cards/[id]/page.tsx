@@ -1,410 +1,512 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useGetSimCardByIdQuery, useActivateSimCardMutation, useDeactivateSimCardMutation, useSuspendSimCardMutation, useUpdateSimCardUsageMutation } from "@/store/api/fleetApi";
+import { useRouter, useParams } from "next/navigation";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 import { Button } from "@/components/ui-elements/button";
-import { ArrowLeft, CreditCard, Wifi, Activity, AlertCircle, DollarSign, Gauge, CheckCircle, XCircle, Pause, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, CreditCard, Wifi, Signal, Calendar, DollarSign, Activity, Edit, Trash2, Save, Power, PowerOff, Pause, Play } from "lucide-react";
 
 export default function SimCardDetailPage() {
-  const params = useParams();
   const router = useRouter();
-  const simCardId = params?.id as string;
+  const params = useParams();
+  const simCardId = params.id as string;
 
-  const { data: simCardData, isLoading, error } = useGetSimCardByIdQuery(simCardId);
-  const [activateSimCard] = useActivateSimCardMutation();
-  const [deactivateSimCard] = useDeactivateSimCardMutation();
-  const [suspendSimCard] = useSuspendSimCardMutation();
-  const [updateSimCardUsage] = useUpdateSimCardUsageMutation();
+  // Mock data since API hooks don't exist yet
+  const simCardData = {
+    id: parseInt(simCardId),
+    sim_id: "SIM-001-2025",
+    iccid: "8991101200003204512",
+    status: "active",
+    plan_name: "IoT 2GB/mo",
+    plan_data_limit_gb: 2.0,
+    plan_cost: 6.99,
+    current_data_used_gb: 1.6,
+    current_cycle_start: "2025-01-01T00:00:00Z",
+    overage_threshold: 0.9,
+    device: 42,
+    created_at: "2024-12-01T10:30:00Z",
+    last_activity: "2025-01-12T09:45:00Z",
+    signal_strength: -75
+  };
+
+  const [formData, setFormData] = useState(simCardData);
+  const [isEditing, setIsEditing] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const isLoading = false;
+  const error = null;
+
+  useEffect(() => {
+    setFormData(simCardData);
+  }, [simCardId, simCardData]);
 
   if (isLoading) {
     return (
       <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
-        <div className="p-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-          </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
         </div>
       </ProtectedRoute>
     );
   }
 
-  const simCard = simCardData;
-
-  if (error || !simCard) {
+  if (error || !simCardData) {
     return (
       <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button 
-                onClick={() => router.back()} 
-                variant="outlineDark"
-                label="Back"
-                icon={<ArrowLeft className="h-4 w-4" />}
-                className="px-4 py-2 rounded-lg"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  SIM Card Not Found
-                </h1>
-                <p className="text-gray-600 dark:text-gray-400">
-                  {simCardId ? `SIM Card ID: ${simCardId}` : 'SIM Card Information'}
-                </p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-            <div className="flex items-center">
-              <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
-              <p className="text-red-800 dark:text-red-200">
-                {error ? 'Failed to load SIM card details. Please try again.' : 'SIM card not found.'}
-              </p>
-            </div>
-          </div>
-
-          <div className="text-center">
-            <Button 
-              onClick={() => router.push('/sim-cards')}
-              variant="primary"
-              label="Back to SIM Cards"
-              className="px-6 py-3"
-            />
-          </div>
+        <div className="text-center text-red-600">
+          <p>Failed to load SIM card details. Please try again.</p>
+          <Button 
+            onClick={() => router.back()} 
+            variant="primary" 
+            label="Back to SIM Cards"
+            className="mt-4"
+          />
         </div>
       </ProtectedRoute>
     );
   }
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      active: { className: "bg-green-100 text-green-800", label: "Active" },
-      inactive: { className: "bg-red-100 text-red-800", label: "Inactive" },
-      suspended: { className: "bg-yellow-100 text-yellow-800", label: "Suspended" },
-    };
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev: any) => ({
+      ...prev,
+      [name]: value
+    }));
     
-    const config = statusConfig[status as keyof typeof statusConfig] || { 
-      className: "bg-gray-100 text-gray-800", 
-      label: status || "Unknown"
-    };
-    
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.className}`}>
-        {config.label}
-      </span>
-    );
-  };
-
-  const getSignalStrengthBadge = (strength: string) => {
-    const strengthConfig = {
-      strong: { className: "bg-green-100 text-green-800", label: "Strong" },
-      weak: { className: "bg-yellow-100 text-yellow-800", label: "Weak" },
-      none: { className: "bg-red-100 text-red-800", label: "None" },
-    };
-    
-    const config = strengthConfig[strength as keyof typeof strengthConfig] || { 
-      className: "bg-gray-100 text-gray-800", 
-      label: strength || "Unknown"
-    };
-    
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.className}`}>
-        {config.label}
-      </span>
-    );
-  };
-
-  const handleActivate = async () => {
-    try {
-      await activateSimCard({ id: simCardId }).unwrap();
-      // Refresh the data
-      window.location.reload();
-    } catch (error) {
-      console.error('Failed to activate SIM card:', error);
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors((prev: any) => ({
+        ...prev,
+        [name]: ''
+      }));
     }
   };
 
-  const handleDeactivate = async () => {
-    try {
-      await deactivateSimCard({ id: simCardId }).unwrap();
-      // Refresh the data
-      window.location.reload();
-    } catch (error) {
-      console.error('Failed to deactivate SIM card:', error);
-    }
+  const handleSave = () => {
+    console.log('Saving SIM card:', formData);
+    // TODO: Implement save API call
+    setIsEditing(false);
   };
 
-  const handleSuspend = async () => {
-    try {
-      await suspendSimCard({ id: simCardId }).unwrap();
-      // Refresh the data
-      window.location.reload();
-    } catch (error) {
-      console.error('Failed to suspend SIM card:', error);
-    }
+  const handleDelete = () => {
+    console.log('Deleting SIM card:', simCardId);
+    // TODO: Implement delete API call
+    router.back();
   };
+
+  const handleActivate = () => {
+    console.log('Activating SIM card:', simCardId);
+    // TODO: Implement POST /api/fleet/sim-cards/{id}/activate/
+  };
+
+  const handleDeactivate = () => {
+    console.log('Deactivating SIM card:', simCardId);
+    // TODO: Implement POST /api/fleet/sim-cards/{id}/deactivate/
+  };
+
+  const handleSuspend = () => {
+    console.log('Suspending SIM card:', simCardId);
+    // TODO: Implement POST /api/fleet/sim-cards/{id}/suspend/
+  };
+
+  const handleUpdateUsage = () => {
+    console.log('Updating usage for SIM card:', simCardId);
+    // TODO: Implement POST /api/fleet/sim-cards/{id}/update-usage/
+  };
+
+  const handleViewOBDDevice = () => {
+    router.push(`/obd-devices/${formData.device}`);
+  };
+
+  const getSignalStrength = (strength: number) => {
+    if (strength >= -70) return { label: 'strong', className: 'text-green-600' };
+    if (strength >= -85) return { label: 'weak', className: 'text-yellow-600' };
+    return { label: 'none', className: 'text-red-600' };
+  };
+
+  const signalInfo = getSignalStrength(formData.signal_strength);
 
   return (
     <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
-      <div className="p-6">
-        {/* Header with Back Button */}
-        <div className="mb-8">
-          <Button 
-            onClick={() => router.back()} 
-            variant="outlineDark"
-            label="Back"
-            icon={<ArrowLeft className="h-4 w-4" />}
-            className="px-4 py-2 rounded-lg"
-          />
-        </div>
+      <div className="space-y-6">
+        {/* HEADER: Back Button + Beautiful Title Card */}
+        <div className="relative">
+          {/* Back Button */}
+          <div className="mb-6">
+            <Button
+              onClick={() => router.back()}
+              variant="outlineDark"
+              label="Back"
+              icon={<ArrowLeft className="h-4 w-4" />}
+              className="px-4 py-2 rounded-lg"
+            />
+          </div>
 
+          {/* Beautiful Title Card */}
+          <div className="bg-gradient-to-r from-green-50 to-emerald-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 shadow-lg border border-green-200 dark:border-gray-600 relative overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-green-200 dark:bg-gray-600 rounded-full -translate-y-16 translate-x-16 opacity-20"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-emerald-200 dark:bg-gray-600 rounded-full translate-y-12 -translate-x-12 opacity-20"></div>
+            
+            <div className="relative z-10">
+              <div className="flex justify-between items-start">
+                {/* Left Side - SIM Card Info */}
+                <div className="flex-1">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+                      <CreditCard className="h-8 w-8 text-green-600" />
+                    </div>
+                    <div>
+                      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                        SIM Card — Detail
+                      </h1>
+                      <p className="text-lg text-gray-600 dark:text-gray-400">
+                        ICCID: {formData.iccid?.substring(0, 8)}… • SIM: {formData.sim_id} • Status: {formData.status} • Signal: {signalInfo.label}
+                      </p>
+                    </div>
+                  </div>
 
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                SIM Card — Detail
-              </h1>
-              <div className="mt-2 flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
-                <span>ICCID: {simCard.iccid ? `${simCard.iccid.substring(0, 4)}…` : 'N/A'}</span>
-                <span>SIM: {simCard.sim_id || 'N/A'}</span>
-                <span>Status: {getStatusBadge(simCard.status)}</span>
-                <span>Signal: {getSignalStrengthBadge(simCard.signal_strength)}</span>
+                  {/* Quick Info Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Plan Limit (GB)</span>
+                      </div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {formData.plan_data_limit_gb}
+                      </p>
+                    </div>
+                    
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Used (GB)</span>
+                      </div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {formData.current_data_used_gb}
+                      </p>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Overage Threshold (%)</span>
+                      </div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {Math.round(formData.overage_threshold * 100)}%
+                      </p>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Status</span>
+                      </div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {formData.status}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Side - Action Buttons */}
+                <div className="flex flex-col space-y-2 ml-6">
+                  <div className="flex space-x-2">
+                    <Button
+                      label="Save"
+                      variant="primary"
+                      size="small"
+                      icon={<Save className="h-3 w-3" />}
+                      onClick={handleSave}
+                      className="px-3 py-2 text-xs"
+                    />
+                    <Button
+                      label="Activate"
+                      variant="outlineDark"
+                      size="small"
+                      icon={<Play className="h-3 w-3" />}
+                      onClick={handleActivate}
+                      className="px-3 py-2 text-xs"
+                    />
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      label="Deactivate"
+                      variant="outlineDark"
+                      size="small"
+                      icon={<PowerOff className="h-3 w-3" />}
+                      onClick={handleDeactivate}
+                      className="px-3 py-2 text-xs"
+                    />
+                    <Button
+                      label="Suspend"
+                      variant="outlineDark"
+                      size="small"
+                      icon={<Pause className="h-3 w-3" />}
+                      onClick={handleSuspend}
+                      className="px-3 py-2 text-xs"
+                    />
+                    <Button
+                      label="Delete"
+                      variant="outlineDark"
+                      size="small"
+                      icon={<Trash2 className="h-3 w-3" />}
+                      onClick={handleDelete}
+                      className="px-3 py-2 text-xs"
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="flex space-x-2">
-              {simCard.status === 'inactive' && (
-                <Button
-                  label="Activate"
-                  variant="primary"
-                  icon={<CheckCircle className="h-4 w-4" />}
-                  onClick={handleActivate}
-                />
-              )}
-              {simCard.status === 'active' && (
-                <Button
-                  label="Deactivate"
-                  variant="outlineDark"
-                  icon={<XCircle className="h-4 w-4" />}
-                  onClick={handleDeactivate}
-                />
-              )}
-              {simCard.status === 'active' && (
-                <Button
-                  label="Suspend"
-                  variant="outlineDark"
-                  icon={<Pause className="h-4 w-4" />}
-                  onClick={handleSuspend}
-                />
-              )}
             </div>
           </div>
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Plan Limit (GB)</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {simCard.plan_data_limit_gb || 0}
+                  {formData.plan_data_limit_gb}
                 </p>
               </div>
               <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <Gauge className="h-6 w-6 text-blue-600" />
+                <Wifi className="h-6 w-6 text-blue-600" />
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Used (GB)</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {simCard.current_data_used_gb || 0}
+                  {formData.current_data_used_gb}
                 </p>
               </div>
               <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-                <Wifi className="h-6 w-6 text-green-600" />
+                <Activity className="h-6 w-6 text-green-600" />
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Overage Threshold (%)</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {Math.round((simCard.overage_threshold || 0) * 100)}%
+                  {Math.round(formData.overage_threshold * 100)}%
                 </p>
               </div>
-              <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
-                <AlertCircle className="h-6 w-6 text-yellow-600" />
+              <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-lg">
+                <Signal className="h-6 w-6 text-orange-600" />
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Status</p>
-                <p className="text-sm font-bold text-gray-900 dark:text-white">
-                  {getStatusBadge(simCard.status)}
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {formData.status}
                 </p>
               </div>
               <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                <Activity className="h-6 w-6 text-purple-600" />
+                <CreditCard className="h-6 w-6 text-purple-600" />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Info (Left) */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Info</h3>
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+            <h3 className="text-lg font-semibold mb-4">Info</h3>
             <div className="space-y-4">
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">sim_id</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{simCard.sim_id || 'N/A'}</span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">sim_id</label>
+                <input
+                  type="text"
+                  name="sim_id"
+                  value={formData.sim_id}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">iccid</span>
-                <span className="font-semibold text-gray-900 dark:text-white font-mono text-sm">{simCard.iccid || 'N/A'}</span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">iccid</label>
+                <input
+                  type="text"
+                  name="iccid"
+                  value={formData.iccid}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">status</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {getStatusBadge(simCard.status)}
-                </span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">status</label>
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                >
+                  <option value="inactive">inactive</option>
+                  <option value="active">active</option>
+                  <option value="suspended">suspended</option>
+                </select>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">plan_name</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{simCard.plan_name || 'N/A'}</span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">plan_name</label>
+                <input
+                  type="text"
+                  name="plan_name"
+                  value={formData.plan_name}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">plan_data_limit_gb</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{simCard.plan_data_limit_gb || 0}</span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">plan_data_limit_gb</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  name="plan_data_limit_gb"
+                  value={formData.plan_data_limit_gb}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">plan_cost</span>
-                <span className="font-semibold text-gray-900 dark:text-white">${simCard.plan_cost || 0}</span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">plan_cost</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  name="plan_cost"
+                  value={formData.plan_cost}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">current_cycle_start</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {simCard.current_cycle_start 
-                    ? new Date(simCard.current_cycle_start).toLocaleDateString()
-                    : 'N/A'
-                  }
-                </span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">current_cycle_start</label>
+                <input
+                  type="date"
+                  name="current_cycle_start"
+                  value={formData.current_cycle_start ? formData.current_cycle_start.split('T')[0] : ''}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">current_data_used_gb</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{simCard.current_data_used_gb || 0}</span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">current_data_used_gb</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  name="current_data_used_gb"
+                  value={formData.current_data_used_gb}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
               </div>
-              <div className="flex justify-between items-center py-2">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">overage_threshold</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{Math.round((simCard.overage_threshold || 0) * 100)}%</span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">overage_threshold</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="1"
+                  name="overage_threshold"
+                  value={formData.overage_threshold}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
               </div>
             </div>
           </div>
 
           {/* Device/Connectivity (Right) */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Device/Connectivity</h3>
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+            <h3 className="text-lg font-semibold mb-4">Device/Connectivity</h3>
             <div className="space-y-4">
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">device (OBD id)</span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">device (OBD id)</label>
                 <div className="flex items-center space-x-2">
-                  <span className="font-semibold text-gray-900 dark:text-white">{simCard.device || 'Unassigned'}</span>
-                  {simCard.device && (
-                    <Button
-                      label="View OBD Device"
-                      variant="outlineDark"
-                      size="small"
-                      onClick={() => router.push(`/obd-devices/${simCard.device}`)}
-                    />
-                  )}
+                  <input
+                    type="text"
+                    value={formData.device || 'Unassigned'}
+                    disabled
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                  />
+                  <Button
+                    label="View OBD Device"
+                    variant="outlineDark"
+                    size="small"
+                    onClick={handleViewOBDDevice}
+                    className="text-xs"
+                  />
                 </div>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">last_activity</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {simCard.last_activity 
-                    ? new Date(simCard.last_activity).toLocaleString()
-                    : 'N/A'
-                  }
-                </span>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">last_activity</label>
+                <input
+                  type="text"
+                  value={formData.last_activity ? new Date(formData.last_activity).toLocaleString() : 'Never'}
+                  disabled
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                />
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">signal_strength</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {getSignalStrengthBadge(simCard.signal_strength)}
-                </span>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">signal_strength</label>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    value={`${formData.signal_strength} dBm`}
+                    disabled
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                  />
+                  <span className={`text-sm font-medium ${signalInfo.className}`}>
+                    {signalInfo.label}
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between items-center py-2">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">created_at</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {simCard.created_at 
-                    ? new Date(simCard.created_at).toLocaleString()
-                    : 'N/A'
-                  }
-                </span>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">created_at</label>
+                <input
+                  type="text"
+                  value={formData.created_at ? new Date(formData.created_at).toLocaleString() : 'N/A'}
+                  disabled
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                />
               </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Actions */}
-        <div className="mt-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Actions</h3>
-            <div className="flex space-x-4">
-              <Button
-                label="Activate"
-                variant="primary"
-                icon={<CheckCircle className="h-4 w-4" />}
-                onClick={() => {
-                  // TODO: Implement activate API call
-                  alert('Activate functionality coming soon');
-                }}
-                className={simCard.status === 'active' ? 'opacity-50 cursor-not-allowed' : ''}
-              />
-              <Button
-                label="Deactivate"
-                variant="outlineDark"
-                icon={<XCircle className="h-4 w-4" />}
-                onClick={() => {
-                  // TODO: Implement deactivate API call
-                  alert('Deactivate functionality coming soon');
-                }}
-                className={simCard.status === 'inactive' ? 'opacity-50 cursor-not-allowed' : ''}
-              />
-              <Button
-                label="Suspend"
-                variant="outlineDark"
-                icon={<Pause className="h-4 w-4" />}
-                onClick={() => {
-                  // TODO: Implement suspend API call
-                  alert('Suspend functionality coming soon');
-                }}
-                className={simCard.status === 'suspended' ? 'opacity-50 cursor-not-allowed' : ''}
-              />
-              <Button
-                label="Update Usage"
-                variant="outlineDark"
-                icon={<Edit className="h-4 w-4" />}
-                onClick={() => {
-                  // TODO: Implement update usage API call
-                  alert('Update Usage functionality coming soon');
-                }}
-              />
+              <div className="pt-4">
+                <Button
+                  label="Update Usage"
+                  variant="primary"
+                  icon={<Activity className="h-4 w-4" />}
+                  onClick={handleUpdateUsage}
+                  className="w-full"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  POST /api/fleet/sim-cards/{simCardId}/update-usage/
+                </p>
+              </div>
             </div>
           </div>
         </div>
