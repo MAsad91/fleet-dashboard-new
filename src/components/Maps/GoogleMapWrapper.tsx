@@ -3,6 +3,21 @@
 import { Wrapper, Status } from "@googlemaps/react-wrapper";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+// Type declarations for Google Maps
+declare global {
+  namespace google {
+    namespace maps {
+      class Map {
+        constructor(mapDiv: Element, opts?: any);
+      }
+      interface MapMouseEvent {
+        latLng?: any;
+        [key: string]: any;
+      }
+    }
+  }
+}
+
 interface GoogleMapWrapperProps {
   center: { lat: number; lng: number };
   zoom: number;
