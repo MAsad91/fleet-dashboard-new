@@ -26,8 +26,8 @@ export function RealGoogleMap({
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
-  const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
+  const [mapInstance, setMapInstance] = useState<any | null>(null);
+  const [markers, setMarkers] = useState<any[]>([]);
 
   // Use environment variable or fallback API key
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || process.env.NEXT_MAP_API_KEY || 'AIzaSyBFw0Qbyq9zTFTd-tUY6dgsW6T9bWqJ1zI';
@@ -125,30 +125,30 @@ export function RealGoogleMap({
                 try {
                   console.log('🗺️ Initializing Google Map...');
                   
-                  const map = new google.maps.Map(mapRef.current, {
+                  const map = new window.google.maps.Map(mapRef.current, {
           center: center,
           zoom: zoom,
-          mapTypeId: google.maps.MapTypeId.ROADMAP,
+          mapTypeId: 'roadmap' as any,
           mapTypeControl: true,
           mapTypeControlOptions: {
-            position: google.maps.ControlPosition.BOTTOM_LEFT,
-            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+            position: 'BOTTOM_LEFT' as any,
+            style: 'HORIZONTAL_BAR' as any,
             mapTypeIds: [
-              google.maps.MapTypeId.ROADMAP,
-              google.maps.MapTypeId.SATELLITE
+              'roadmap' as any,
+              'satellite' as any
             ]
           },
           streetViewControl: true,
           streetViewControlOptions: {
-            position: google.maps.ControlPosition.RIGHT_BOTTOM
+            position: 'RIGHT_BOTTOM' as any
           },
           fullscreenControl: true,
           fullscreenControlOptions: {
-            position: google.maps.ControlPosition.RIGHT_TOP
+            position: 'RIGHT_TOP' as any
           },
           zoomControl: true,
           zoomControlOptions: {
-            position: google.maps.ControlPosition.RIGHT_TOP
+            position: 'RIGHT_TOP' as any
           },
           gestureHandling: "cooperative",
           styles: [
@@ -183,14 +183,14 @@ export function RealGoogleMap({
               tryInitialize();
             };
 
-    const addVehicleMarkers = (map: google.maps.Map) => {
+    const addVehicleMarkers = (map: any) => {
       // Clear existing markers
       markers.forEach(marker => marker.setMap(null));
 
-      const newMarkers: google.maps.Marker[] = [];
+      const newMarkers: any[] = [];
 
       vehicles.forEach((vehicle) => {
-        const marker = new google.maps.Marker({
+        const marker = new window.google.maps.Marker({
           position: { lat: vehicle.lat, lng: vehicle.lng },
           map: map,
           title: vehicle.name,
@@ -201,13 +201,13 @@ export function RealGoogleMap({
                 <text x="16" y="20" text-anchor="middle" fill="white" font-size="12" font-weight="bold">🚗</text>
               </svg>
             `)}`,
-            scaledSize: new google.maps.Size(32, 32),
-            anchor: new google.maps.Point(16, 16),
+            scaledSize: new window.google.maps.Size(32, 32),
+            anchor: new window.google.maps.Point(16, 16),
           },
-          animation: google.maps.Animation.DROP,
+          animation: 'DROP' as any,
         });
 
-        const infoWindow = new google.maps.InfoWindow({
+        const infoWindow = new window.google.maps.InfoWindow({
           content: `
             <div style="padding: 10px; min-width: 200px;">
               <h3 style="margin: 0 0 8px 0; color: #1F2937; font-size: 16px;">${vehicle.name}</h3>

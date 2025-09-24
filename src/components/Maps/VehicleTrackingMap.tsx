@@ -69,9 +69,9 @@ export function VehicleTrackingMap({
   onVehicleClick,
   selectedVehicleId,
 }: VehicleTrackingMapProps) {
-  const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
-  const [infoWindows, setInfoWindows] = useState<google.maps.InfoWindow[]>([]);
+  const [map, setMap] = useState<any | null>(null);
+  const [markers, setMarkers] = useState<any[]>([]);
+  const [infoWindows, setInfoWindows] = useState<any[]>([]);
 
   // Calculate map center based on vehicle locations
   const getMapCenter = () => {
@@ -120,7 +120,7 @@ export function VehicleTrackingMap({
     const icon = getStatusIcon(vehicle.status);
     
     return {
-      path: google.maps.SymbolPath.CIRCLE,
+      path: 'CIRCLE' as any,
       fillColor: color,
       fillOpacity: 1,
       strokeColor: "#FFFFFF",
@@ -169,19 +169,19 @@ export function VehicleTrackingMap({
     markers.forEach(marker => marker.setMap(null));
     infoWindows.forEach(infoWindow => infoWindow.close());
     
-    const newMarkers: google.maps.Marker[] = [];
-    const newInfoWindows: google.maps.InfoWindow[] = [];
+    const newMarkers: any[] = [];
+    const newInfoWindows: any[] = [];
 
     vehicles.forEach((vehicle) => {
-      const marker = new google.maps.Marker({
+      const marker = new window.google.maps.Marker({
         position: vehicle.location,
         map: map,
         title: vehicle.name,
         icon: createCustomMarker(vehicle),
-        animation: vehicle.status === "in_progress" ? google.maps.Animation.BOUNCE : undefined,
+        animation: vehicle.status === "in_progress" ? 'BOUNCE' as any : undefined,
       });
 
-      const infoWindow = new google.maps.InfoWindow({
+      const infoWindow = new window.google.maps.InfoWindow({
         content: createInfoWindowContent(vehicle),
       });
 
@@ -218,7 +218,7 @@ export function VehicleTrackingMap({
   // Update map center when vehicles change
   useEffect(() => {
     if (map && vehicles.length > 0) {
-      const bounds = new google.maps.LatLngBounds();
+      const bounds = new window.google.maps.LatLngBounds();
       vehicles.forEach(vehicle => {
         bounds.extend(vehicle.location);
       });
@@ -226,11 +226,11 @@ export function VehicleTrackingMap({
     }
   }, [map, vehicles]);
 
-  const handleMapLoad = (mapInstance: google.maps.Map) => {
+  const handleMapLoad = (mapInstance: any) => {
     setMap(mapInstance);
   };
 
-  const handleMapClick = (event: google.maps.MapMouseEvent) => {
+  const handleMapClick = (event: any) => {
     // Close all info windows when clicking on map
     infoWindows.forEach(infoWindow => infoWindow.close());
   };
