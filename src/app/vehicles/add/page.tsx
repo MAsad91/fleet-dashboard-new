@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useCreateVehicleMutation, useListVehicleTypesQuery } from "@/store/api/fleetApi";
+import { useCreateVehicleMutation, useListVehicleTypesQuery, useListFleetOperatorsQuery } from "@/store/api/fleetApi";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 import { Button } from "@/components/ui-elements/button";
 import { ArrowLeft, Car, Loader2 } from "lucide-react";
@@ -13,6 +13,7 @@ export default function AddVehiclePage() {
   const router = useRouter();
   const [createVehicle, { isLoading }] = useCreateVehicleMutation();
   const { data: vehicleTypesData } = useListVehicleTypesQuery();
+  const { data: fleetOperatorsData } = useListFleetOperatorsQuery();
   
   const [formData, setFormData] = useState({
     license_plate: "",
@@ -23,14 +24,28 @@ export default function AddVehiclePage() {
     vin: "",
     vehicle_type: "",
     fuel_type: "gasoline",
-    status: "active",
+    status: "available",
     purchase_date: "",
     purchase_price: "",
     odometer_reading: "",
     notes: "",
+    // Required fields from API
+    fleet_operator: "", // Will be set from fleet operators data
+    battery_capacity_kwh: "",
+    current_battery_level: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Set default fleet operator when data loads
+  useEffect(() => {
+    if (fleetOperatorsData?.results && fleetOperatorsData.results.length > 0 && !formData.fleet_operator) {
+      setFormData(prev => ({
+        ...prev,
+        fleet_operator: fleetOperatorsData.results[0].id.toString()
+      }));
+    }
+  }, [fleetOperatorsData, formData.fleet_operator]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -69,6 +84,16 @@ export default function AddVehiclePage() {
     if (!formData.vehicle_type) {
       newErrors.vehicle_type = "Vehicle type is required";
     }
+    // Validate required API fields
+    if (!formData.fleet_operator) {
+      newErrors.fleet_operator = "Fleet operator is required";
+    }
+    if (!formData.battery_capacity_kwh.trim()) {
+      newErrors.battery_capacity_kwh = "Battery capacity is required";
+    }
+    if (!formData.current_battery_level.trim()) {
+      newErrors.current_battery_level = "Current battery level is required";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -96,6 +121,10 @@ export default function AddVehiclePage() {
         purchase_price: formData.purchase_price ? parseFloat(formData.purchase_price) : null,
         odometer_reading: formData.odometer_reading ? parseInt(formData.odometer_reading) : null,
         notes: formData.notes || null,
+        // Required API fields
+        fleet_operator: parseInt(formData.fleet_operator),
+        battery_capacity_kwh: parseFloat(formData.battery_capacity_kwh) || 0,
+        current_battery_level: parseFloat(formData.current_battery_level) || 0,
       };
 
       await createVehicle(vehicleData).unwrap();
@@ -269,8 +298,8 @@ export default function AddVehiclePage() {
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
                   >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
+                    <option value="available">Available</option>
+                    <option value="in_service">In Service</option>
                     <option value="maintenance">Maintenance</option>
                     <option value="retired">Retired</option>
                   </select>
@@ -310,6 +339,64 @@ export default function AddVehiclePage() {
                   handleChange={handleInputChange}
                   placeholder="Enter odometer reading"
                 />
+              </div>
+            </div>
+
+            {/* Battery Information */}
+            <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                Battery Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <InputGroup
+                  label="Battery Capacity (kWh)"
+                  type="number"
+                  name="battery_capacity_kwh"
+                  value={formData.battery_capacity_kwh}
+                  handleChange={handleInputChange}
+                  placeholder="Enter battery capacity"
+                  error={errors.battery_capacity_kwh}
+                />
+
+                <InputGroup
+                  label="Current Battery Level (%)"
+                  type="number"
+                  name="current_battery_level"
+                  value={formData.current_battery_level}
+                  handleChange={handleInputChange}
+                  placeholder="Enter current battery level"
+                  error={errors.current_battery_level}
+                />
+              </div>
+            </div>
+
+            {/* Fleet Assignment */}
+            <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                Fleet Assignment
+              </h3>
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Fleet Operator *
+                  </label>
+                  <select
+                    name="fleet_operator"
+                    value={formData.fleet_operator}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+                  >
+                    <option value="">Select Fleet Operator</option>
+                    {fleetOperatorsData?.results?.map((operator: any) => (
+                      <option key={operator.id} value={operator.id}>
+                        {operator.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.fleet_operator && (
+                    <p className="mt-1 text-sm text-red-600">{errors.fleet_operator}</p>
+                  )}
+                </div>
               </div>
             </div>
 

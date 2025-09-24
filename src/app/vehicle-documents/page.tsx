@@ -34,6 +34,21 @@ export default function VehicleDocumentsPage() {
   const documents = documentsData?.results || [];
   const vehicles = vehiclesData?.results || [];
 
+  // Helper function to get vehicle info for a document
+  const getVehicleInfo = (document: any) => {
+    if (document.vehicle?.license_plate) {
+      return document.vehicle.license_plate;
+    }
+    
+    // Fallback: find vehicle by ID in the vehicles list
+    const vehicle = vehicles.find((v: any) => v.id === document.vehicle);
+    if (vehicle) {
+      return vehicle.license_plate || vehicle.vin || 'Unknown';
+    }
+    
+    return 'Unknown';
+  };
+
   // Calculate KPI data
   const totalDocs = documents.length;
   const activeDocs = documents.filter((doc: any) => doc.is_active).length;
@@ -346,7 +361,7 @@ export default function VehicleDocumentsPage() {
                           />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                          {document.vehicle?.license_plate || document.vehicle?.vin || 'Unknown'}
+                          {getVehicleInfo(document)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                           {document.doc_type || document.document_type || 'Unknown'}

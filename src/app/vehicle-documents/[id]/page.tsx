@@ -33,6 +33,40 @@ export default function VehicleDocumentDetailPage({ params }: VehicleDocumentDet
   const document = documentData;
   const vehicles = vehiclesData?.results || [];
 
+  // Helper function to get vehicle ID for a document
+  const getVehicleId = (document: any) => {
+    if (document.vehicle?.id) {
+      return document.vehicle.id;
+    }
+    
+    // Fallback: find vehicle by ID in the vehicles list
+    if (document.vehicle) {
+      const vehicle = vehicles.find((v: any) => v.id === document.vehicle);
+      if (vehicle) {
+        return vehicle.id;
+      }
+    }
+    
+    return null;
+  };
+
+  // Helper function to get vehicle name for display
+  const getVehicleName = (document: any) => {
+    if (document.vehicle?.license_plate) {
+      return document.vehicle.license_plate;
+    }
+    
+    // Fallback: find vehicle by ID in the vehicles list
+    if (document.vehicle) {
+      const vehicle = vehicles.find((v: any) => v.id === document.vehicle);
+      if (vehicle) {
+        return vehicle.license_plate || vehicle.vin || 'Unknown';
+      }
+    }
+    
+    return 'Unknown';
+  };
+
   if (isLoading) {
     return (
       <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
@@ -69,7 +103,13 @@ export default function VehicleDocumentDetailPage({ params }: VehicleDocumentDet
   };
 
   const handleViewVehicle = () => {
-    router.push(`/vehicles/${document.vehicle?.id}`);
+    const vehicleId = getVehicleId(document);
+    if (vehicleId) {
+      router.push(`/vehicles/${vehicleId}/view`);
+    } else {
+      console.error('Vehicle ID not found for document:', document);
+      // You could show a toast or alert here
+    }
   };
 
   const getStatusBadge = () => {
@@ -165,7 +205,7 @@ export default function VehicleDocumentDetailPage({ params }: VehicleDocumentDet
                         <div>
                           <p className="text-xs text-gray-500 dark:text-gray-400">Vehicle</p>
                           <p className="text-sm font-medium text-gray-900 dark:text-white">
-                            {document.vehicle?.license_plate || document.vehicle?.vin || 'Unknown'}
+                            {getVehicleName(document)}
                           </p>
                         </div>
                       </div>
@@ -300,12 +340,12 @@ export default function VehicleDocumentDetailPage({ params }: VehicleDocumentDet
             <div className="space-y-4">
               <div className="flex justify-between">
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Vehicle ID:</span>
-                <span className="text-sm text-gray-900 dark:text-white">{document.vehicle?.id}</span>
+                <span className="text-sm text-gray-900 dark:text-white">{getVehicleId(document) || 'N/A'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Vehicle:</span>
                 <span className="text-sm text-gray-900 dark:text-white">
-                  {document.vehicle?.license_plate} - {document.vehicle?.make} {document.vehicle?.model}
+                  {getVehicleName(document)} - {document.vehicle?.make || ''} {document.vehicle?.model || ''}
                 </span>
               </div>
               <div className="flex justify-between">
