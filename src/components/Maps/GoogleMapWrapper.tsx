@@ -13,8 +13,8 @@ declare global {
 interface GoogleMapWrapperProps {
   center: { lat: number; lng: number };
   zoom: number;
-  onMapLoad?: (map: google.maps.Map) => void;
-  onMapClick?: (event: google.maps.MapMouseEvent) => void;
+  onMapLoad?: (map: any) => void;
+  onMapClick?: (event: any) => void;
   className?: string;
   children?: React.ReactNode;
 }
@@ -28,7 +28,7 @@ const MapComponent = ({
   children,
 }: GoogleMapWrapperProps) => {
   const ref = useRef<HTMLDivElement>(null);
-  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [map, setMap] = useState<any | null>(null);
 
   useEffect(() => {
     if (ref.current && !map) {
