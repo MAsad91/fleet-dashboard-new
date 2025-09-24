@@ -92,7 +92,7 @@ export const vehiclesApi = createApi({
 
     // Vehicle documents
     listVehicleDocuments: builder.query<PaginatedResponse<any>, void>({
-      query: () => `/fleet/vehicle-documents/`,
+      query: () => `/fleet/vehicle-documents/?expand=vehicle&include=vehicle`,
       providesTags: ['VehicleDocuments'],
     }),
     createVehicleDocument: builder.mutation<any, any>({

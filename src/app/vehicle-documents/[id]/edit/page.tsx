@@ -41,11 +41,28 @@ export default function VehicleDocumentEditPage({ params }: VehicleDocumentEditP
 
   const [errors, setErrors] = useState<any>({});
 
+  // Helper function to get vehicle ID for a document
+  const getVehicleId = (document: any) => {
+    if (document.vehicle?.id) {
+      return document.vehicle.id.toString();
+    }
+    
+    // Fallback: find vehicle by ID in the vehicles list
+    if (document.vehicle) {
+      const vehicle = vehiclesData?.results?.find((v: any) => v.id === document.vehicle);
+      if (vehicle) {
+        return vehicle.id.toString();
+      }
+    }
+    
+    return '';
+  };
+
   // Populate form when data loads
   useEffect(() => {
     if (documentData) {
       setFormData({
-        vehicle: documentData.vehicle?.id?.toString() || '',
+        vehicle: getVehicleId(documentData),
         doc_type: documentData.doc_type || '',
         doc_number: documentData.doc_number || '',
         issue_date: documentData.issue_date || '',
@@ -54,7 +71,7 @@ export default function VehicleDocumentEditPage({ params }: VehicleDocumentEditP
         doc_file: null, // Don't pre-populate file
       });
     }
-  }, [documentData]);
+  }, [documentData, vehiclesData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;

@@ -141,7 +141,7 @@ export function ViewVehicleDocumentModal({ isOpen, onClose, documentId }: ViewVe
               <div className="flex items-center space-x-2">
                 <Truck className="h-4 w-4 text-gray-400" />
                 <span className="text-gray-900 dark:text-white">
-                  {documentData.vehicle?.license_plate || "Unknown Vehicle"}
+                  {documentData.vehicle?.license_plate || documentData.vehicle?.vin || "Unknown Vehicle"}
                 </span>
               </div>
             </div>
