@@ -7,8 +7,17 @@ export default function ApiTestPage() {
   const [testResult, setTestResult] = useState<string>("");
 
   useEffect(() => {
-    const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyA7-xn4sjsIh8EJAG0nPjWFOO_QSj20iew';
+    const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || process.env.NEXT_MAP_API_KEY || 'AIzaSyA7-xn4sjsIh8EJAG0nPjWFOO_QSj20iew';
     setApiKey(key);
+    
+    // Debug: Log which environment variable is being used
+    if (process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) {
+      console.log('🔑 API Test using NEXT_PUBLIC_GOOGLE_MAPS_API_KEY');
+    } else if (process.env.NEXT_MAP_API_KEY) {
+      console.log('🔑 API Test using NEXT_MAP_API_KEY');
+    } else {
+      console.log('🔑 API Test using fallback API key');
+    }
     
     // Test the API key
     const testApi = async () => {
@@ -43,6 +52,8 @@ export default function ApiTestPage() {
           </h2>
           <div className="space-y-2">
             <p><strong>API Key:</strong> {apiKey ? `${apiKey.substring(0, 20)}...` : 'Not found'}</p>
+            <p><strong>NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:</strong> {process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? 'Set' : 'Not set'}</p>
+            <p><strong>NEXT_MAP_API_KEY:</strong> {process.env.NEXT_MAP_API_KEY ? 'Set' : 'Not set'}</p>
             <p><strong>Base URL:</strong> {process.env.NEXT_PUBLIC_API_BASE_URL || 'Not set'}</p>
             <p><strong>Node Environment:</strong> {process.env.NODE_ENV || 'Not set'}</p>
           </div>

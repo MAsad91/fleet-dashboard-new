@@ -32,6 +32,17 @@ export function RealGoogleMap({
   // Use environment variable or fallback API key
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || process.env.NEXT_MAP_API_KEY || 'AIzaSyBFw0Qbyq9zTFTd-tUY6dgsW6T9bWqJ1zI';
   
+  // Debug: Log which environment variable is being used
+  useEffect(() => {
+    if (process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) {
+      console.log('🔑 Using NEXT_PUBLIC_GOOGLE_MAPS_API_KEY');
+    } else if (process.env.NEXT_MAP_API_KEY) {
+      console.log('🔑 Using NEXT_MAP_API_KEY');
+    } else {
+      console.log('🔑 Using fallback API key');
+    }
+  }, []);
+  
 
   useEffect(() => {
     // Define global callback for Google Maps
