@@ -7,9 +7,8 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center py-8 px-4">
-      <div className="w-full max-w-4xl">
-        <div className="rounded-[10px] bg-white shadow-1 dark:bg-gray-dark dark:shadow-card p-8">
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-gray-dark rounded-lg shadow-1 p-8">
           <h1 className="text-3xl font-bold text-dark dark:text-white mb-6">
             Terms and Conditions
           </h1>
@@ -50,7 +49,6 @@ export default function TermsPage() {
             </Link>
           </div>
         </div>
-      </div>
     </div>
   );
 }

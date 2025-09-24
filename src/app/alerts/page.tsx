@@ -1,28 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { useGetAlertsQuery, useAcknowledgeAlertMutation, useIgnoreAlertMutation, useResolveAlertLegacyMutation, useDeleteAlertMutation } from "../../store/api/fleetApi";
+import { useGetAlertsQuery, useAcknowledgeAlertMutation, useIgnoreAlertMutation, useResolveAlertLegacyMutation, useDeleteAlertMutation, useGetAlertByIdQuery, useUpdateAlertMutation, useGetDriversQuery, useGetAlertsDashboardStatsQuery, useGetAlertsTrendsQuery, useListVehiclesQuery } from "../../store/api/fleetApi";
 import { setAlertsFilters, setAlertsPagination } from "../../store/slices/alertsUISlice";
 import ProtectedRoute from "../../components/Auth/ProtectedRoute";
 import { Button } from "@/components/ui-elements/button";
 import InputGroup from "@/components/FormElements/InputGroup";
 import { Select } from "@/components/FormElements/select";
-import { Search, Plus, Check, X, Eye, Edit, Trash, AlertTriangle, AlertCircle, AlertOctagon } from "lucide-react";
+import { Search, Plus, Check, X, Eye, Edit, Trash, AlertTriangle, AlertCircle, AlertOctagon, ArrowLeft, Save, Clock, User, Car, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { AddAlertModal } from "@/components/Modals/AddAlertModal";
-import { AlertViewModal } from "@/components/Modals/AlertViewModal";
-import { AlertEditModal } from "@/components/Modals/AlertEditModal";
 import { DeleteConfirmationModal } from "@/components/Modals/DeleteConfirmationModal";
 
 export default function AlertsPage() {
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const { filters, pagination } = useAppSelector((state) => state.alertsUI);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedAlertId, setSelectedAlertId] = useState<number | null>(null);
+  const [selectedAlerts, setSelectedAlerts] = useState<string[]>([]);
+  
+  // Full-page view states
+  const [currentView, setCurrentView] = useState<'list' | 'view' | 'edit'>('list');
+  const [alertData, setAlertData] = useState<any>(null);
+  const [formData, setFormData] = useState<any>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   
   const { data: alertsData, isLoading, error } = useGetAlertsQuery({
     page: pagination.page,
@@ -30,15 +33,73 @@ export default function AlertsPage() {
     status: filters.status,
     severity: filters.severity,
     vehicle: filters.vehicle_id,
-    // Temporarily remove system parameter to fix API error
-    // system: filters.alert_type,
+    system: filters.alert_type,
   });
+
+  // API hooks for full-page views
+  const { 
+    data: alertDetails, 
+    isLoading: alertLoading, 
+    error: alertError 
+  } = useGetAlertByIdQuery(selectedAlertId!, {
+    skip: !selectedAlertId
+  });
+
+  // Get drivers data to populate driver names
+  const { data: driversData } = useGetDriversQuery({});
+
+  // Get dashboard stats for KPI cards
+  const { data: dashboardStats } = useGetAlertsDashboardStatsQuery();
+  
+  // Get trends data for distribution charts
+  const { data: trendsData } = useGetAlertsTrendsQuery();
+  
+  // Get vehicles data for vehicle filter
+  const { data: vehiclesData } = useListVehiclesQuery({ page: 1 });
+
+  // Helper function to get driver name by ID
+  const getDriverName = (driverId: any) => {
+    if (!driverId || !driversData?.results) return null;
+    
+    const driver = driversData.results.find((d: any) => 
+      d.id === driverId || d.id === String(driverId)
+    );
+    
+    if (driver) {
+      return driver.name || 
+             driver.username || 
+             (driver.first_name && driver.last_name ? `${driver.first_name} ${driver.last_name}` : null) ||
+             driver.full_name ||
+             driver.display_name;
+    }
+    
+    return null;
+  };
+
+  const [updateAlert, { isLoading: isUpdating }] = useUpdateAlertMutation();
+
+  // Update alert data when API response changes
+  useEffect(() => {
+    if (alertDetails) {
+      setAlertData(alertDetails);
+      setFormData(alertDetails);
+    }
+  }, [alertDetails]);
 
   // Client-side filtering for alert_type and search
   const allFilteredAlerts = alertsData?.results?.filter((alert: any) => {
+    // Debug: Log first alert to see available fields
+    if (alertsData?.results?.indexOf(alert) === 0) {
+      console.log('First alert fields:', Object.keys(alert));
+      console.log('First alert data:', alert);
+      console.log('Vehicle field:', alert.vehicle);
+      console.log('Driver field:', alert.driver);
+      console.log('Vehicle info field:', alert.vehicle_info);
+    }
+
     // Filter by alert type (client-side since API doesn't support it properly)
     if (filters.alert_type && filters.alert_type !== 'all' && filters.alert_type !== undefined) {
-      const alertType = alert.alert_type || alert.system || alert.type;
+      const alertType = alert.alert_type || alert.source || alert.category;
       if (!alertType || !alertType.toLowerCase().includes(filters.alert_type.toLowerCase())) {
         return false;
       }
@@ -123,14 +184,71 @@ export default function AlertsPage() {
     }
   };
 
+  const handleSelectAll = () => {
+    if (selectedAlerts.length === filteredAlerts.length) {
+      setSelectedAlerts([]);
+    } else {
+      setSelectedAlerts(filteredAlerts.map((alert: any) => alert.id.toString()));
+    }
+  };
+
+  const handleSelectAlert = (alertId: string) => {
+    setSelectedAlerts(prev => 
+      prev.includes(alertId) 
+        ? prev.filter(id => id !== alertId)
+        : [...prev, alertId]
+    );
+  };
+
+  const handleBulkMarkRead = async () => {
+    if (selectedAlerts.length === 0) return;
+    
+    try {
+      // TODO: Implement bulk mark read API call
+      console.log("Bulk marking alerts as read:", selectedAlerts);
+      setSelectedAlerts([]);
+    } catch (error) {
+      console.error("Failed to bulk mark alerts as read:", error);
+    }
+  };
+
+  const handleBulkResolve = async () => {
+    if (selectedAlerts.length === 0) return;
+    
+    try {
+      // TODO: Implement bulk resolve API call
+      console.log("Bulk resolving alerts:", selectedAlerts);
+      setSelectedAlerts([]);
+    } catch (error) {
+      console.error("Failed to bulk resolve alerts:", error);
+    }
+  };
+
   const handleViewAlert = (alertId: number) => {
+    console.log('Opening alert view:', alertId);
     setSelectedAlertId(alertId);
-    setIsViewModalOpen(true);
+    setCurrentView('view');
   };
 
   const handleEditAlert = (alertId: number) => {
+    console.log('Opening alert edit:', alertId);
     setSelectedAlertId(alertId);
-    setIsEditModalOpen(true);
+    setCurrentView('edit');
+  };
+
+  const handleBackToList = () => {
+    console.log('Going back to list');
+    setCurrentView('list');
+    // Don't reset selectedAlertId to allow re-navigation
+  };
+
+  const handleClearSelection = () => {
+    console.log('Clearing selection');
+    setSelectedAlertId(null);
+    setAlertData(null);
+    setFormData({});
+    setErrors({});
+    setCurrentView('list');
   };
 
   const handleDeleteAlert = (alertId: number) => {
@@ -144,9 +262,62 @@ export default function AlertsPage() {
     try {
       await deleteAlert(selectedAlertId).unwrap();
       setIsDeleteModalOpen(false);
-      setSelectedAlertId(null);
+      handleClearSelection();
     } catch (error) {
       console.error("Failed to delete alert:", error);
+    }
+  };
+
+  // Form handling for edit view
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev: any) => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors((prev: any) => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.title?.trim()) {
+      newErrors.title = 'Title is required';
+    }
+    if (!formData.message?.trim()) {
+      newErrors.message = 'Message is required';
+    }
+    if (!formData.alert_type?.trim()) {
+      newErrors.alert_type = 'Alert type is required';
+    }
+    if (!formData.severity?.trim()) {
+      newErrors.severity = 'Severity is required';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSaveAlert = async () => {
+    if (!validateForm()) return;
+    
+    try {
+      await updateAlert({
+        id: selectedAlertId!,
+        body: formData
+      }).unwrap();
+      
+      console.log('Alert updated successfully');
+      handleClearSelection();
+    } catch (error) {
+      console.error('Failed to update alert:', error);
     }
   };
 
@@ -176,13 +347,23 @@ export default function AlertsPage() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
+      // API status values from README
       active: { className: "bg-red-100 text-red-800", label: "Active" },
       acknowledged: { className: "bg-yellow-100 text-yellow-800", label: "Acknowledged" },
       ignored: { className: "bg-gray-100 text-gray-800", label: "Ignored" },
       resolved: { className: "bg-green-100 text-green-800", label: "Resolved" },
+      new: { className: "bg-blue-100 text-blue-800", label: "New" },
+      // Legacy status values
+      open: { className: "bg-orange-100 text-orange-800", label: "Open" },
+      closed: { className: "bg-gray-100 text-gray-800", label: "Closed" },
+      unknown: { className: "bg-gray-100 text-gray-800", label: "Unknown" },
     };
     
-    const config = statusConfig[status as keyof typeof statusConfig] || { className: "bg-gray-100 text-gray-800", label: status };
+    const normalizedStatus = status?.toLowerCase() || 'unknown';
+    const config = statusConfig[normalizedStatus as keyof typeof statusConfig] || { 
+      className: "bg-gray-100 text-gray-800", 
+      label: status || 'Unknown' 
+    };
     return (
       <span className={cn("px-2 py-1 rounded-full text-xs font-medium", config.className)}>
         {config.label}
@@ -192,8 +373,9 @@ export default function AlertsPage() {
 
   const getActionButtons = (alert: any) => {
     const buttons = [];
+    const status = alert.status_label || alert.status || 'unknown';
     
-    if (alert.status === "active") {
+    if (status === "active" || status === "new") {
       buttons.push(
         <Button
           key="acknowledge"
@@ -206,7 +388,7 @@ export default function AlertsPage() {
       );
     }
     
-    if (alert.status === "active" || alert.status === "acknowledged") {
+    if (status === "active" || status === "new" || status === "acknowledged") {
       buttons.push(
         <Button
           key="ignore"
@@ -219,7 +401,7 @@ export default function AlertsPage() {
       );
     }
     
-    if (alert.status === "acknowledged") {
+    if (status === "acknowledged") {
       buttons.push(
         <Button
           key="resolve"
@@ -237,7 +419,7 @@ export default function AlertsPage() {
 
   if (error) {
     const errorMessage = "message" in error ? error.message : "Unknown error";
-    const isTokenError = errorMessage.includes("token") || errorMessage.includes("403") || errorMessage.includes("401");
+    const isTokenError = errorMessage?.includes("token") || errorMessage?.includes("403") || errorMessage?.includes("401");
     
     return (
       <div className="p-6">
@@ -260,6 +442,460 @@ export default function AlertsPage() {
     );
   }
 
+  // Debug current state
+  console.log('Current Alerts state:', { currentView, selectedAlertId, alertData: !!alertData, alertLoading });
+
+  // Show loading state when switching alerts
+  if ((currentView === 'view' || currentView === 'edit') && selectedAlertId && !alertData && alertLoading) {
+    return (
+      <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              <Button 
+                onClick={handleBackToList} 
+                variant="outlineDark"
+                label="Back"
+                icon={<ArrowLeft className="h-4 w-4" />}
+                className="px-4 py-2 rounded-lg"
+              />
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Loading Alert...
+                </h1>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    );
+  }
+
+  // Show error state when API fails
+  if ((currentView === 'view' || currentView === 'edit') && selectedAlertId && alertError) {
+    return (
+      <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              <Button 
+                onClick={handleBackToList} 
+                variant="outlineDark"
+                label="Back"
+                icon={<ArrowLeft className="h-4 w-4" />}
+                className="px-4 py-2 rounded-lg"
+              />
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Error Loading Alert
+                </h1>
+              </div>
+            </div>
+          </div>
+          <div className="text-center text-red-600">
+            <p>Failed to load alert details. Please try again.</p>
+            <Button 
+              onClick={handleBackToList} 
+              variant="primary" 
+              label="Back to Alerts"
+              className="mt-4"
+            />
+          </div>
+        </div>
+      </ProtectedRoute>
+    );
+  }
+
+  // Render different views based on currentView state
+  if (currentView === 'view' && alertData) {
+    return (
+      <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
+        <div key={`view-${selectedAlertId}`} className="p-6">
+          {/* Header with Back Button */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Button 
+                  onClick={handleBackToList} 
+                  variant="outlineDark"
+                  label="Back"
+                  icon={<ArrowLeft className="h-4 w-4" />}
+                  className="px-4 py-2 rounded-lg"
+                />
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                    Alert — Detail
+                  </h1>
+                  <p className="text-gray-600 dark:text-gray-400 mt-1">
+                    Type: {alertData.alert_type || alertData.system || 'Unknown'} • Severity: {alertData.severity} • Status: {alertData.status_label || alertData.status} • System: {alertData.system || 'Unknown'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex space-x-3">
+                {alertData && (alertData.status === 'active' || alertData.status === 'new') && (
+                  <Button
+                    label="Acknowledge"
+                    variant="outlineDark"
+                    icon={<Check className="h-4 w-4" />}
+                    onClick={() => handleAcknowledgeAlert(alertData.id.toString())}
+                  />
+                )}
+                {alertData && (alertData.status === 'active' || alertData.status === 'new' || alertData.status === 'acknowledged') && (
+                  <Button
+                    label="Ignore"
+                    variant="outlineDark"
+                    icon={<X className="h-4 w-4" />}
+                    onClick={() => handleIgnoreAlert(alertData.id.toString())}
+                  />
+                )}
+                {alertData && alertData.status === 'acknowledged' && (
+                  <Button
+                    label="Resolve"
+                    variant="primary"
+                    icon={<Check className="h-4 w-4" />}
+                    onClick={() => handleResolveAlert(alertData.id.toString())}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* KPI Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Severity</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                    {getSeverityBadge(alertData.severity)}
+                  </p>
+                </div>
+                <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-lg">
+                  <AlertTriangle className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Status</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                    {getStatusBadge(alertData.status_label || alertData.status)}
+                  </p>
+                </div>
+                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                  <Clock className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Created At</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">
+                    {alertData.created_at ? new Date(alertData.created_at).toLocaleDateString() : 'N/A'}
+                  </p>
+                </div>
+                <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
+                  <Calendar className="h-6 w-6 text-green-600 dark:text-green-400" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Resolved</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">
+                    {alertData.resolved_at ? new Date(alertData.resolved_at).toLocaleDateString() : '—'}
+                  </p>
+                </div>
+                <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                  <Check className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Alert Information Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Basic Information Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+              <div className="flex items-center mb-6">
+                <div className="p-2 bg-primary/10 rounded-lg mr-3">
+                  <AlertTriangle className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Alert Details</h3>
+              </div>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Title</span>
+                  <span className="font-semibold text-gray-900 dark:text-white text-lg">{alertData.title}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Type</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{alertData.alert_type || alertData.system || 'Unknown'}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">System</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{alertData.system || 'Unknown'}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Severity</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {getSeverityBadge(alertData.severity)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {getStatusBadge(alertData.status_label || alertData.status)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Created At</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {alertData.created_at ? new Date(alertData.created_at).toLocaleString() : 'Unknown'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Additional Information Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+              <div className="flex items-center mb-6">
+                <div className="p-2 bg-primary/10 rounded-lg mr-3">
+                  <Car className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Additional Information</h3>
+              </div>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Vehicle</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {(() => {
+                      if (alertData.vehicle_info) {
+                        const vehicleInfo = alertData.vehicle_info;
+                        if (vehicleInfo.make && vehicleInfo.model && vehicleInfo.license_plate) {
+                          return `${vehicleInfo.make} ${vehicleInfo.model} (${vehicleInfo.license_plate})`;
+                        }
+                        if (vehicleInfo.license_plate) return vehicleInfo.license_plate;
+                        if (vehicleInfo.name) return vehicleInfo.name;
+                      }
+                      
+                      if (typeof alertData.vehicle === 'object' && alertData.vehicle) {
+                        const vehicle = alertData.vehicle;
+                        if (vehicle.make && vehicle.model && vehicle.license_plate) {
+                          return `${vehicle.make} ${vehicle.model} (${vehicle.license_plate})`;
+                        }
+                        if (vehicle.license_plate) return vehicle.license_plate;
+                        if (vehicle.name) return vehicle.name;
+                      }
+                      
+                      if (typeof alertData.vehicle === 'string' && alertData.vehicle.trim() !== '') {
+                        return alertData.vehicle;
+                      }
+                      
+                      return 'Not Assigned';
+                    })()}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Acknowledged By</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {alertData.acknowledged_by ? alertData.acknowledged_by.username : 'Not Acknowledged'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Acknowledged At</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {alertData.acknowledged_at ? new Date(alertData.acknowledged_at).toLocaleString() : 'Not Acknowledged'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Resolved At</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {alertData.resolved_at ? new Date(alertData.resolved_at).toLocaleString() : 'Not Resolved'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Message Card */}
+          <div className="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+            <div className="flex items-center mb-6">
+              <div className="p-2 bg-primary/10 rounded-lg mr-3">
+                <AlertCircle className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Message</h3>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+              <p className="text-gray-900 dark:text-white">{alertData.message || alertData.description || 'No message available'}</p>
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    );
+  }
+
+  if (currentView === 'edit' && alertData) {
+    return (
+      <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
+        <div key={`edit-${selectedAlertId}`} className="p-6">
+          {/* Header with Back Button */}
+          <div className="mb-8">
+            <Button 
+              onClick={handleBackToList} 
+              variant="outlineDark"
+              label="Back"
+              icon={<ArrowLeft className="h-4 w-4" />}
+              className="px-4 py-2 rounded-lg"
+            />
+          </div>
+
+          {/* Edit Form */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Basic Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Basic Information</h3>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Title
+                  </label>
+                  <input
+                    type="text"
+                    name="title"
+                    value={formData.title || ''}
+                    onChange={handleInputChange}
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
+                      errors.title ? "border-red-500" : "border-gray-300 dark:border-gray-600"
+                    }`}
+                  />
+                  {errors.title && (
+                    <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Alert Type
+                  </label>
+                  <select
+                    name="alert_type"
+                    value={formData.alert_type || ''}
+                    onChange={handleInputChange}
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
+                      errors.alert_type ? "border-red-500" : "border-gray-300 dark:border-gray-600"
+                    }`}
+                  >
+                    <option value="">Select alert type</option>
+                    <option value="maintenance">Maintenance</option>
+                    <option value="safety">Safety</option>
+                    <option value="performance">Performance</option>
+                    <option value="fuel">Fuel</option>
+                    <option value="location">Location</option>
+                    <option value="system">System</option>
+                  </select>
+                  {errors.alert_type && (
+                    <p className="mt-1 text-sm text-red-600">{errors.alert_type}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Severity
+                  </label>
+                  <select
+                    name="severity"
+                    value={formData.severity || ''}
+                    onChange={handleInputChange}
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
+                      errors.severity ? "border-red-500" : "border-gray-300 dark:border-gray-600"
+                    }`}
+                  >
+                    <option value="">Select severity</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                  </select>
+                  {errors.severity && (
+                    <p className="mt-1 text-sm text-red-600">{errors.severity}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Status Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Status Information</h3>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Status
+                  </label>
+                  <select
+                    name="status"
+                    value={formData.status || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
+                  >
+                    <option value="open">Open</option>
+                    <option value="acknowledged">Acknowledged</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="ignored">Ignored</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Message Field */}
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Message
+              </label>
+              <textarea
+                name="message"
+                value={formData.message || ''}
+                onChange={handleInputChange}
+                rows={4}
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
+                  errors.message ? "border-red-500" : "border-gray-300 dark:border-gray-600"
+                }`}
+                placeholder="Enter alert message..."
+              />
+              {errors.message && (
+                <p className="mt-1 text-sm text-red-600">{errors.message}</p>
+              )}
+            </div>
+            
+            {/* Form Actions */}
+            <div className="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <Button 
+                onClick={handleBackToList} 
+                variant="outlineDark"
+                label="Cancel"
+                icon={<X className="h-4 w-4" />}
+                className="px-4 py-2 rounded-lg"
+              />
+              <Button 
+                onClick={isUpdating ? undefined : handleSaveAlert}
+                variant="primary"
+                label={isUpdating ? 'Saving...' : 'Save Changes'}
+                icon={<Save className="h-4 w-4" />}
+                className={`px-6 py-2 rounded-lg ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
+              />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    );
+  }
+
   return (
     <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
       <div className="space-y-6">
@@ -275,8 +911,131 @@ export default function AlertsPage() {
             label="Create Alert"
             variant="primary"
             icon={<Plus className="h-4 w-4" />}
-            onClick={() => setIsAddModalOpen(true)}
+              onClick={() => router.push('/alerts/add')}
           />
+        </div>
+
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Alerts</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {dashboardStats?.total_alerts || alertsData?.count || 0}
+                </p>
+              </div>
+              <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                <AlertTriangle className="h-6 w-6 text-blue-600" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Unread</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {dashboardStats?.unread || alertsData?.results?.filter((alert: any) => alert.status === 'active').length || 0}
+                </p>
+              </div>
+              <div className="p-3 bg-red-100 dark:bg-red-900 rounded-lg">
+                <AlertCircle className="h-6 w-6 text-red-600" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Critical</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {dashboardStats?.critical_alerts || alertsData?.results?.filter((alert: any) => alert.severity === 'critical').length || 0}
+                </p>
+              </div>
+              <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
+                <Clock className="h-6 w-6 text-yellow-600" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Resolved</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {dashboardStats?.resolved_alerts || alertsData?.results?.filter((alert: any) => alert.status === 'resolved').length || 0}
+                </p>
+              </div>
+              <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
+                <Check className="h-6 w-6 text-green-600" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Distribution Charts */}
+        <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+          <h3 className="text-lg font-semibold mb-4">Distribution</h3>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Severity Distribution */}
+            <div>
+              <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">By Severity</h4>
+              <div className="space-y-3">
+                {['low', 'medium', 'high', 'critical'].map((severity) => {
+                  const count = dashboardStats?.severity_distribution?.[severity] || 0;
+                  const maxCount = Math.max(
+                    dashboardStats?.severity_distribution?.low || 0,
+                    dashboardStats?.severity_distribution?.medium || 0,
+                    dashboardStats?.severity_distribution?.high || 0,
+                    dashboardStats?.severity_distribution?.critical || 0
+                  );
+                  const barWidth = maxCount > 0 ? Math.round((count / maxCount) * 7) : 0;
+                  const bar = '█'.repeat(barWidth);
+                  
+                  return (
+                    <div key={severity} className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize w-16">
+                        {severity}
+                      </span>
+                      <div className="flex-1 mx-4">
+                        <span className="text-xs font-mono text-gray-600 dark:text-gray-400">
+                          {bar.padEnd(7, ' ')} {Number(count)}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {/* Type Distribution */}
+            <div>
+              <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">By Type</h4>
+              <div className="space-y-3">
+                {dashboardStats?.type_distribution ? Object.entries(dashboardStats.type_distribution).map(([type, count]) => {
+                  const maxCount = Math.max(...Object.values(dashboardStats.type_distribution).map(v => Number(v)));
+                  const barWidth = Math.round((Number(count) / maxCount) * 7);
+                  const bar = '█'.repeat(barWidth);
+                  
+                  return (
+                    <div key={type} className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize w-20 truncate">
+                        {type.replace('_', ' ')}
+                      </span>
+                      <div className="flex-1 mx-4">
+                        <span className="text-xs font-mono text-gray-600 dark:text-gray-400">
+                          {bar.padEnd(7, ' ')} {Number(count)}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                }) : (
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    No type distribution data available
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Filters */}
@@ -346,6 +1105,21 @@ export default function AlertsPage() {
               </div>
 
               <div className="flex-shrink-0 w-40">
+                <Select
+                  label="Vehicle"
+                  items={[
+                    { value: "", label: "All Vehicles" },
+                    ...(vehiclesData?.results?.map((vehicle: any) => ({
+                      value: vehicle.id.toString(),
+                      label: `${vehicle.plate_number || vehicle.license_plate || 'N/A'} - ${vehicle.make || ''} ${vehicle.model || ''}`
+                    })) || [])
+                  ]}
+                  defaultValue={filters.vehicle_id || ""}
+                  onChange={(e) => dispatch(setAlertsFilters({ vehicle_id: e.target.value || undefined }))}
+                />
+              </div>
+
+              <div className="flex-shrink-0 w-40">
                 <InputGroup
                   label="Start Date"
                   type="date"
@@ -370,15 +1144,52 @@ export default function AlertsPage() {
               </div>
             </div>
           </div>
+          <div className="flex justify-end mt-4">
+            <Button
+              label="Clear Filters"
+              variant="outlineDark"
+              size="small"
+              onClick={() => dispatch(setAlertsFilters({ 
+                search: "", 
+                status: undefined, 
+                severity: undefined, 
+                alert_type: undefined,
+                start_date: "",
+                end_date: ""
+              }))}
+            />
+          </div>
         </div>
 
         {/* Alerts Table */}
         <div className="bg-white dark:bg-gray-dark rounded-lg shadow-1">
           <div className="p-6 border-b border-stroke dark:border-dark-3">
-            <h3 className="text-lg font-semibold">Alert List</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {totalFilteredCount} alerts found
-            </p>
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-semibold">Alert List</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {totalFilteredCount} alerts found
+                </p>
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  label="Mark Read"
+                  variant="outlineDark"
+                  size="small"
+                  icon={<Check className="h-4 w-4" />}
+                  onClick={handleBulkMarkRead}
+                  className={selectedAlerts.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+                />
+                <Button
+                  label="Resolve"
+                  variant="primary"
+                  size="small"
+                  icon={<Check className="h-4 w-4" />}
+                  onClick={handleBulkResolve}
+                  className={selectedAlerts.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+                />
+              </div>
+            </div>
           </div>
           
           <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
@@ -397,7 +1208,7 @@ export default function AlertsPage() {
               </div>
             ) : error ? (
               <div className="p-6 text-red-600">
-                Error: {error.message}
+                Error loading alerts
               </div>
             ) : filteredAlerts.length === 0 ? (
               <div className="p-6 text-center text-gray-500">
@@ -420,6 +1231,14 @@ export default function AlertsPage() {
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700" style={{ minWidth: '1000px' }}>
                 <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <input
+                        type="checkbox"
+                        checked={selectedAlerts.length === filteredAlerts.length && filteredAlerts.length > 0}
+                        onChange={handleSelectAll}
+                        className="rounded border-gray-300 text-primary focus:ring-primary"
+                      />
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Alert
                     </th>
@@ -450,6 +1269,14 @@ export default function AlertsPage() {
                   {filteredAlerts.map((alert) => (
                     <tr key={alert.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                       <td className="px-6 py-4 whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={selectedAlerts.includes(alert.id.toString())}
+                          onChange={() => handleSelectAlert(alert.id.toString())}
+                          className="rounded border-gray-300 text-primary focus:ring-primary"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="font-medium text-gray-900 dark:text-white">
                             {alert.title}
@@ -461,17 +1288,70 @@ export default function AlertsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 capitalize">
-                          {alert.severity}
+                          {alert.alert_type || alert.system || alert.source || alert.category || 'Unknown'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {alert.vehicle || "N/A"}
+                        {(() => {
+                          // Handle vehicle field based on new API structure
+                          if (alert.vehicle_info) {
+                            // Use vehicle_info if available (preferred)
+                            const vehicleInfo = alert.vehicle_info;
+                            if (vehicleInfo.license_plate) return vehicleInfo.license_plate;
+                            if (vehicleInfo.name) return vehicleInfo.name;
+                            if (vehicleInfo.make && vehicleInfo.model) return `${vehicleInfo.make} ${vehicleInfo.model}`;
+                            if (vehicleInfo.vin) return vehicleInfo.vin;
+                          }
+                          
+                          if (typeof alert.vehicle === 'object' && alert.vehicle) {
+                            // Handle object vehicle field
+                            const vehicle = alert.vehicle as any;
+                            if (vehicle.license_plate) return vehicle.license_plate;
+                            if (vehicle.name) return vehicle.name;
+                            if (vehicle.make && vehicle.model) return `${vehicle.make} ${vehicle.model}`;
+                            if (vehicle.vin) return vehicle.vin;
+                          }
+                          
+                          if (typeof alert.vehicle === 'string' && alert.vehicle.trim() !== '') {
+                            return alert.vehicle;
+                          }
+                          
+                          if (typeof alert.vehicle === 'number') {
+                            return `Vehicle #${alert.vehicle}`;
+                          }
+                          
+                          return 'N/A';
+                        })()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        N/A
+                        {(() => {
+                          // Handle driver field based on new API structure
+                          if (typeof alert.driver === 'object' && alert.driver) {
+                            // Handle object driver field
+                            const driver = alert.driver as any;
+                            if (driver.name) return driver.name;
+                            if (driver.full_name) return driver.full_name;
+                            if (driver.display_name) return driver.display_name;
+                            if (driver.username) return driver.username;
+                            if (driver.first_name && driver.last_name) return `${driver.first_name} ${driver.last_name}`;
+                          }
+                          
+                          if (typeof alert.driver === 'string' && alert.driver.trim() !== '') {
+                            return alert.driver;
+                          }
+                          
+                          if (typeof alert.driver === 'number') {
+                            // Try to get driver name by ID using the drivers API
+                            const driverName = getDriverName(alert.driver);
+                            if (driverName) return driverName;
+                            return `Driver #${alert.driver}`;
+                          }
+                          
+                          return 'N/A';
+                        })()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {getStatusBadge(alert.status)}
+                        {getStatusBadge(alert.status_label || alert.status || 'unknown')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                         {new Date(alert.created_at).toLocaleString()}
@@ -479,27 +1359,26 @@ export default function AlertsPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center space-x-2">
                           <Button
-                            label="View"
-                            variant="ghost"
+                            label=""
+                            variant="outlineDark"
                             size="small"
                             icon={<Eye className="h-4 w-4" />}
                             onClick={() => handleViewAlert(alert.id)}
                           />
                           <Button
-                            label="Edit"
-                            variant="ghost"
+                            label=""
+                            variant="outlineDark"
                             size="small"
                             icon={<Edit className="h-4 w-4" />}
                             onClick={() => handleEditAlert(alert.id)}
                           />
                           <Button
-                            label="Delete"
-                            variant="ghost"
+                            label=""
+                            variant="outlineDark"
                             size="small"
                             icon={<Trash className="h-4 w-4" />}
                             onClick={() => handleDeleteAlert(alert.id)}
                           />
-                          {getActionButtons(alert)}
                         </div>
                       </td>
                     </tr>
@@ -559,25 +1438,7 @@ export default function AlertsPage() {
         </div>
       </div>
 
-      {/* Add Alert Modal */}
-      <AddAlertModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-      />
 
-      {/* View Alert Modal */}
-      <AlertViewModal
-        isOpen={isViewModalOpen}
-        onClose={() => { setIsViewModalOpen(false); setSelectedAlertId(null); }}
-        alertId={selectedAlertId}
-      />
-
-      {/* Edit Alert Modal */}
-      <AlertEditModal
-        isOpen={isEditModalOpen}
-        onClose={() => { setIsEditModalOpen(false); setSelectedAlertId(null); }}
-        alertId={selectedAlertId}
-      />
 
       {/* Delete Confirmation Modal */}
       <DeleteConfirmationModal

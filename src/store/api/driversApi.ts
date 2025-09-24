@@ -73,6 +73,13 @@ export const driversApi = createApi({
       query: ({ ids }) => `/fleet/drivers/export_drivers_csv/?ids=${ids.join(',')}`,
       providesTags: ['Drivers'],
     }),
+    downloadDriversCsv: builder.mutation<any, { ids: string[] }>({
+      query: ({ ids }) => ({
+        url: `/fleet/drivers/export_drivers_csv/?ids=${ids.join(',')}`,
+        method: 'GET',
+        responseHandler: (response) => response.blob(),
+      }),
+    }),
   }),
 });
 
@@ -86,4 +93,5 @@ export const {
   useDeleteDriverMutation,
   useSuspendDriversMutation,
   useExportDriversCsvQuery,
+  useDownloadDriversCsvMutation,
 } = driversApi;

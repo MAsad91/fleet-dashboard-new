@@ -103,18 +103,36 @@ export function useDashboardData(
       const alerts = alertsStats.status === 'fulfilled' ? alertsStats.value : null;
       const maintenance = maintenanceStats.status === 'fulfilled' ? maintenanceStats.value : null;
 
-      // Log any failed requests
-      const failedRequests = [
-        summaryData.status === 'rejected' && 'Summary',
-        vehiclesStats.status === 'rejected' && 'Vehicles Stats',
-        driversStats.status === 'rejected' && 'Drivers Stats',
-        tripsStats.status === 'rejected' && 'Trips Stats',
-        alertsStats.status === 'rejected' && 'Alerts Stats',
-        maintenanceStats.status === 'rejected' && 'Maintenance Stats',
-      ].filter(Boolean);
+
+      // Log any failed requests with detailed error info
+      const failedRequests = [];
+      if (summaryData.status === 'rejected') {
+        console.error('❌ Summary API failed:', summaryData.reason);
+        failedRequests.push('Summary');
+      }
+      if (vehiclesStats.status === 'rejected') {
+        console.error('❌ Vehicles Stats API failed:', vehiclesStats.reason);
+        failedRequests.push('Vehicles Stats');
+      }
+      if (driversStats.status === 'rejected') {
+        console.error('❌ Drivers Stats API failed:', driversStats.reason);
+        failedRequests.push('Drivers Stats');
+      }
+      if (tripsStats.status === 'rejected') {
+        console.error('❌ Trips Stats API failed:', tripsStats.reason);
+        failedRequests.push('Trips Stats');
+      }
+      if (alertsStats.status === 'rejected') {
+        console.error('❌ Alerts Stats API failed:', alertsStats.reason);
+        failedRequests.push('Alerts Stats');
+      }
+      if (maintenanceStats.status === 'rejected') {
+        console.error('❌ Maintenance Stats API failed:', maintenanceStats.reason);
+        failedRequests.push('Maintenance Stats');
+      }
 
       if (failedRequests.length > 0) {
-        console.warn(`Some dashboard data failed to load: ${failedRequests.join(', ')}`);
+        console.warn(`⚠️ Dashboard: Some data failed to load: ${failedRequests.join(', ')}`);
       }
 
       setSummary(summary);
@@ -126,7 +144,7 @@ export function useDashboardData(
         maintenance,
       });
     } catch (err: any) {
-      console.error('Failed to fetch dashboard data:', err);
+      console.error('💥 Dashboard: Failed to fetch dashboard data:', err);
       setError(err.response?.data?.message || 'Failed to fetch dashboard data');
     } finally {
       setLoading(false);

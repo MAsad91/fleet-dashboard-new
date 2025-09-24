@@ -1,6 +1,7 @@
 "use client";
 
 import { useDashboard } from "@/contexts/DashboardContext";
+import { useGetActiveAlertsQuery } from "@/store/api/fleetApi";
 import { cn } from "@/lib/utils";
 import { BellIcon } from "@/components/Layouts/sidebar/icons";
 
@@ -9,10 +10,16 @@ type PropsType = {
 };
 
 export function RecentAlerts({ className }: PropsType) {
-  const { summary, loading } = useDashboard();
+  const { summary, stats, loading } = useDashboard();
   
-  // Mock alerts data for now - in a real app, this would come from the API
-  const alerts = [
+  // Try to get alerts from RTK Query as a fallback
+  const { data: rtkAlertsData, isLoading: rtkLoading } = useGetActiveAlertsQuery({ 
+    status: 'active', 
+    limit: 5 
+  });
+  
+  // Use real alerts data from the API, fallback to RTK Query, then mock data
+  const alerts = stats?.alerts?.results || rtkAlertsData?.results || [
     {
       id: 1,
       title: "Battery Low",
@@ -35,6 +42,7 @@ export function RecentAlerts({ className }: PropsType) {
       created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
     }
   ];
+
 
   const getAlertIcon = (title: string) => {
     const lowerTitle = title.toLowerCase();
@@ -96,7 +104,7 @@ export function RecentAlerts({ className }: PropsType) {
     }
   };
 
-  if (loading) {
+  if (loading || rtkLoading) {
     return (
       <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>
         <div className="mb-6">
@@ -129,7 +137,7 @@ export function RecentAlerts({ className }: PropsType) {
 
       <div className="space-y-4 max-h-80 overflow-y-auto">
         {alerts.length > 0 ? (
-          alerts.map((alert) => (
+          alerts.map((alert: any) => (
             <div
               key={alert.id}
               className="flex items-start gap-3"

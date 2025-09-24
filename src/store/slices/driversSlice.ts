@@ -3,6 +3,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 export interface DriversFiltersState {
   search?: string;
   status?: string;
+  minRating?: string;
   page?: number;
 }
 
@@ -36,5 +37,7 @@ const driversSlice = createSlice({
 
 export const { setDriverFilters, resetDriverFilters, setSelectedDriverId } = driversSlice.actions;
 export default driversSlice.reducer;
+
+// Updated to include minRating filter
 
 

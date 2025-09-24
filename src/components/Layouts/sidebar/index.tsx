@@ -14,14 +14,21 @@ export function Sidebar() {
   const pathname = usePathname();
   const { setIsOpen, isOpen, isMobile, toggleSidebar } = useSidebarContext();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const toggleExpanded = useCallback((title: string) => {
-    setExpandedItems((prev) => (prev.includes(title) ? [] : [title]));
-
-    // Uncomment the following line to enable multiple expanded items
-    // setExpandedItems((prev) =>
-    //   prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title],
-    // );
+    setExpandedItems((prev) => {
+      // If the clicked item is already expanded, close it
+      if (prev.includes(title)) {
+        return [];
+      }
+      // Otherwise, close all others and open this one
+      return [title];
+    });
   }, []);
 
   useEffect(() => {
@@ -47,6 +54,20 @@ export function Sidebar() {
     });
   }, [pathname, expandedItems, toggleExpanded]);
 
+  // Show sidebar as open on desktop when hydrated, closed on mobile
+  const shouldShowSidebar = isHydrated ? (isMobile ? isOpen : true) : true;
+  
+  // Debug logging
+  useEffect(() => {
+    console.log('🔍 Sidebar Debug:', {
+      isHydrated,
+      isMobile,
+      isOpen,
+      shouldShowSidebar,
+      pathname
+    });
+  }, [isHydrated, isMobile, isOpen, shouldShowSidebar, pathname]);
+
   return (
     <>
       {/* Mobile Overlay */}
@@ -62,11 +83,15 @@ export function Sidebar() {
         className={cn(
           "max-w-[290px] overflow-hidden border-r border-gray-200 bg-white transition-[width] duration-200 ease-linear dark:border-gray-800 dark:bg-gray-dark",
           isMobile ? "fixed bottom-0 top-0 z-50" : "sticky top-0 h-screen",
-          isOpen ? "w-full" : "w-0",
+          shouldShowSidebar ? "w-full" : "w-0",
         )}
         aria-label="Main navigation"
-        aria-hidden={!isOpen}
-        inert={!isOpen}
+        aria-hidden={!shouldShowSidebar}
+        inert={!shouldShowSidebar}
+        style={{
+          minWidth: shouldShowSidebar ? '290px' : '0px',
+          width: shouldShowSidebar ? '290px' : '0px'
+        }}
       >
         <div className="flex h-full flex-col py-10 pl-[25px] pr-[7px]">
           <div className="relative pr-4.5">

@@ -142,7 +142,6 @@ export function ObdDeviceEditModal({ isOpen, onClose, deviceId }: ObdDeviceEditM
 
               <Select
                 label="Device Type"
-                name="device_type"
                 items={[
                   { value: "elm327", label: "ELM327" },
                   { value: "obd2", label: "OBD2" },
@@ -151,7 +150,7 @@ export function ObdDeviceEditModal({ isOpen, onClose, deviceId }: ObdDeviceEditM
                   { value: "wifi", label: "WiFi" },
                   { value: "cellular", label: "Cellular" },
                 ]}
-                value={formData.device_type}
+                defaultValue={formData.device_type}
                 onChange={handleChange}
                 placeholder="Select device type"
               />
@@ -192,18 +191,17 @@ export function ObdDeviceEditModal({ isOpen, onClose, deviceId }: ObdDeviceEditM
             {/* Action Buttons */}
             <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
               <Button
-                type="button"
                 label="Cancel"
                 variant="outlineDark"
                 icon={<X className="h-4 w-4" />}
                 onClick={onClose}
               />
               <Button
-                type="submit"
                 label={isUpdating ? "Saving..." : "Save Changes"}
                 variant="primary"
                 icon={<Save className="h-4 w-4" />}
-                disabled={isUpdating}
+                onClick={handleSubmit}
+                className={isUpdating ? 'opacity-50 cursor-not-allowed' : ''}
               />
             </div>
           </>

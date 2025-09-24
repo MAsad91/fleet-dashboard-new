@@ -3,6 +3,7 @@
 import { useDashboard } from "@/contexts/DashboardContext";
 import { cn } from "@/lib/utils";
 import { MapIcon } from "@/components/Layouts/sidebar/icons";
+import { RealGoogleMap } from "@/components/Maps/RealGoogleMap";
 import { useState } from "react";
 
 type PropsType = {
@@ -12,10 +13,10 @@ type PropsType = {
 export function LiveTrackingMap({ className }: PropsType) {
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   
-  const { summary, loading } = useDashboard();
+  const { summary, stats, loading } = useDashboard();
   
-  // Mock trips data for now - in a real app, this would come from the API
-  const trips = [
+  // Use real trips data from the API, fallback to mock data if not available
+  const trips = stats?.trips?.results || [
     {
       id: 1,
       trip_id: "TRP-001",
@@ -33,6 +34,33 @@ export function LiveTrackingMap({ className }: PropsType) {
       status: "in_progress",
       current_location: "Airport",
       actual_start_time: new Date(Date.now() - 60 * 60 * 1000).toISOString(), // 1 hour ago
+    }
+  ];
+
+  // Use real vehicle data from the API, fallback to mock data if not available
+  const vehicles = stats?.vehicles?.results?.map((v: any) => ({
+    id: v.id.toString(),
+    name: v.name || v.license_plate,
+    license_plate: v.license_plate,
+    driver: v.driver?.name || "Unknown",
+    status: v.status || "available",
+    location: v.last_known_location ? 
+      { lat: v.last_known_location.latitude, lng: v.last_known_location.longitude } :
+      { lat: 40.7128, lng: -74.0060 }, // Default NYC location
+    last_updated: v.last_updated || new Date().toISOString(),
+    speed: v.current_speed || 0,
+    battery_level: v.battery_level || 0,
+  })) || [
+    {
+      id: "1",
+      name: "EV-001",
+      license_plate: "ABC-123",
+      driver: "John Doe",
+      status: "in_progress" as const,
+      location: { lat: 40.7128, lng: -74.0060 },
+      last_updated: new Date().toISOString(),
+      speed: 45,
+      battery_level: 85,
     }
   ];
 
@@ -169,32 +197,64 @@ export function LiveTrackingMap({ className }: PropsType) {
 
       {viewMode === "map" ? (
         <>
-          {/* Map placeholder - in a real app, this would be an interactive map */}
-          <div className="relative mb-6 h-64 rounded-lg bg-gray-100 dark:bg-gray-700 overflow-hidden">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <MapIcon className="h-12 w-12 mx-auto mb-2 text-gray-400" />
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Interactive Map View
-                </p>
-                <p className="text-xs text-gray-400 dark:text-gray-500">
-                  (Map integration would go here)
-                </p>
-              </div>
-            </div>
-            
-            {/* Vehicle markers */}
-            {trips.map((trip, index) => (
-              <div
-                key={trip.id}
-                className={`absolute h-3 w-3 rounded-full ${getStatusColor(trip.status)} animate-pulse`}
-                style={{
-                  left: `${20 + (index * 20)}%`,
-                  top: `${30 + (index * 15)}%`,
-                }}
-                title={`${trip.vehicle} - ${trip.driver}`}
-              />
-            ))}
+          {/* Interactive Fleet Map */}
+          <div className="relative mb-6 h-96 rounded-lg overflow-hidden">
+            <RealGoogleMap
+              center={{ lat: 40.7128, lng: -74.0060 }}
+              zoom={12}
+              className="h-full w-full"
+              vehicles={[
+                ...vehicles.map((v: any) => ({
+                  id: v.id,
+                  lat: v.location.lat,
+                  lng: v.location.lng,
+                  name: v.name,
+                  status: v.status,
+                  battery: v.battery_level
+                })),
+                // Add some demo vehicles for better visualization
+                {
+                  id: "demo-1",
+                  lat: 40.7589,
+                  lng: -73.9851,
+                  name: "Fleet Vehicle #001",
+                  status: "available",
+                  battery: 85
+                },
+                {
+                  id: "demo-2", 
+                  lat: 40.7505,
+                  lng: -73.9934,
+                  name: "Fleet Vehicle #002",
+                  status: "in_use",
+                  battery: 67
+                },
+                {
+                  id: "demo-3",
+                  lat: 40.7614,
+                  lng: -73.9776,
+                  name: "Fleet Vehicle #003", 
+                  status: "maintenance",
+                  battery: 23
+                },
+                {
+                  id: "demo-4",
+                  lat: 40.7282,
+                  lng: -73.9942,
+                  name: "Fleet Vehicle #004",
+                  status: "available",
+                  battery: 92
+                },
+                {
+                  id: "demo-5",
+                  lat: 40.6892,
+                  lng: -74.0445,
+                  name: "Fleet Vehicle #005",
+                  status: "offline",
+                  battery: 15
+                }
+              ]}
+            />
           </div>
 
           {/* Trip list */}
@@ -203,7 +263,7 @@ export function LiveTrackingMap({ className }: PropsType) {
               Active Trips
             </h4>
             {trips.length > 0 ? (
-              trips.map((trip) => (
+              trips.map((trip: any) => (
                 <div
                   key={trip.id}
                   className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-600 p-3"
@@ -270,7 +330,7 @@ export function LiveTrackingMap({ className }: PropsType) {
                 </tr>
               </thead>
               <tbody>
-                {trips.map((trip) => (
+                {trips.map((trip: any) => (
                   <tr
                     key={trip.id}
                     className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50"

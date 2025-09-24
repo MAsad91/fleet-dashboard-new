@@ -1,68 +1,67 @@
+import { Car, CheckCircle, MapPin, AlertTriangle, Wrench, Battery, Gauge } from "lucide-react";
 import type { SVGProps } from "react";
 
 type SVGPropsType = SVGProps<SVGSVGElement>;
 
+// Total Vehicles Icon - Blue background
 export function TruckIcon(props: SVGPropsType) {
   return (
-    <svg width={48} height={48} viewBox="0 0 48 48" fill="none" {...props}>
-      <rect x="4" y="4" width="40" height="40" rx="8" fill="#3B82F6" />
-      <path
-        d="M12 16h16v6H12V16zM28 16h8l2 2v4h-10V16z"
-        stroke="#fff"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="16" cy="34" r="2" stroke="#fff" strokeWidth="1.5" />
-      <circle cx="32" cy="34" r="2" stroke="#fff" strokeWidth="1.5" />
-    </svg>
+    <div className="w-12 h-12 rounded-lg bg-blue-500 flex items-center justify-center">
+      <Car className="w-6 h-6 text-white" />
+    </div>
   );
 }
 
+// Online Vehicles Icon - Green background
+export function OnlineVehiclesIcon(props: SVGPropsType) {
+  return (
+    <div className="w-12 h-12 rounded-lg bg-green-500 flex items-center justify-center">
+      <CheckCircle className="w-6 h-6 text-white" />
+    </div>
+  );
+}
+
+// Active Trips Icon - Green background
 export function ActiveTripsIcon(props: SVGPropsType) {
   return (
-    <svg width={48} height={48} viewBox="0 0 48 48" fill="none" {...props}>
-      <rect x="4" y="4" width="40" height="40" rx="8" fill="#10B981" />
-      <path
-        d="M16 20h16M16 25h16M16 30h12"
-        stroke="#fff"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="28" cy="30" r="1.5" fill="#fff" />
-    </svg>
+    <div className="w-12 h-12 rounded-lg bg-green-500 flex items-center justify-center">
+      <MapPin className="w-6 h-6 text-white" />
+    </div>
   );
 }
 
+// Critical Alerts Icon - Orange background
+export function CriticalAlertsIcon(props: SVGPropsType) {
+  return (
+    <div className="w-12 h-12 rounded-lg bg-orange-500 flex items-center justify-center">
+      <AlertTriangle className="w-6 h-6 text-white" />
+    </div>
+  );
+}
+
+// Open Maintenance Icon - Orange background
 export function MaintenanceIcon(props: SVGPropsType) {
   return (
-    <svg width={48} height={48} viewBox="0 0 48 48" fill="none" {...props}>
-      <rect x="4" y="4" width="40" height="40" rx="8" fill="#F59E0B" />
-      <path
-        d="M18 18l6 6-6 6M24 18l6 6-6 6"
-        stroke="#fff"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="24" cy="24" r="1.5" fill="#fff" />
-    </svg>
+    <div className="w-12 h-12 rounded-lg bg-orange-500 flex items-center justify-center">
+      <Wrench className="w-6 h-6 text-white" />
+    </div>
   );
 }
 
-export function FuelIcon(props: SVGPropsType) {
+// Battery Icon - Purple background
+export function BatteryIcon(props: SVGPropsType) {
   return (
-    <svg width={48} height={48} viewBox="0 0 48 48" fill="none" {...props}>
-      <rect x="4" y="4" width="40" height="40" rx="8" fill="#8B5CF6" />
-      <path
-        d="M15 28h10l3-6H18l-3 6zM18 12v5l3-2 3 2V12"
-        stroke="#fff"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path d="M20 16h6M20 20h6" stroke="#fff" strokeWidth="1.5" />
-    </svg>
+    <div className="w-12 h-12 rounded-lg bg-purple-500 flex items-center justify-center">
+      <Battery className="w-6 h-6 text-white" />
+    </div>
+  );
+}
+
+// Distance Icon - Purple background
+export function DistanceIcon(props: SVGPropsType) {
+  return (
+    <div className="w-12 h-12 rounded-lg bg-purple-500 flex items-center justify-center">
+      <Gauge className="w-6 h-6 text-white" />
+    </div>
   );
 }

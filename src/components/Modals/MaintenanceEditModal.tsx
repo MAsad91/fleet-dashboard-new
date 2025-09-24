@@ -134,7 +134,6 @@ export function MaintenanceEditModal({ isOpen, onClose, maintenanceId }: Mainten
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Select
                   label="Maintenance Type"
-                  name="maintenance_type"
                   items={[
                     { value: "routine", label: "Routine" },
                     { value: "preventive", label: "Preventive" },
@@ -142,28 +141,26 @@ export function MaintenanceEditModal({ isOpen, onClose, maintenanceId }: Mainten
                     { value: "emergency", label: "Emergency" },
                     { value: "inspection", label: "Inspection" },
                   ]}
-                  value={formData.maintenance_type}
+                  defaultValue={formData.maintenance_type}
                   onChange={handleChange}
                   placeholder="Select maintenance type"
                 />
 
                 <Select
                   label="Priority"
-                  name="priority"
                   items={[
                     { value: "low", label: "Low" },
                     { value: "medium", label: "Medium" },
                     { value: "high", label: "High" },
                     { value: "critical", label: "Critical" },
                   ]}
-                  value={formData.priority}
+                  defaultValue={formData.priority}
                   onChange={handleChange}
                   placeholder="Select priority"
                 />
 
                 <Select
                   label="Status"
-                  name="status"
                   items={[
                     { value: "scheduled", label: "Scheduled" },
                     { value: "in_progress", label: "In Progress" },
@@ -171,7 +168,7 @@ export function MaintenanceEditModal({ isOpen, onClose, maintenanceId }: Mainten
                     { value: "overdue", label: "Overdue" },
                     { value: "cancelled", label: "Cancelled" },
                   ]}
-                  value={formData.status}
+                  defaultValue={formData.status}
                   onChange={handleChange}
                   placeholder="Select status"
                 />
@@ -183,7 +180,6 @@ export function MaintenanceEditModal({ isOpen, onClose, maintenanceId }: Mainten
                   value={formData.estimated_cost}
                   handleChange={handleChange}
                   placeholder="Enter estimated cost"
-                  step="0.01"
                 />
 
                 <InputGroup
@@ -193,7 +189,6 @@ export function MaintenanceEditModal({ isOpen, onClose, maintenanceId }: Mainten
                   value={formData.estimated_duration}
                   handleChange={handleChange}
                   placeholder="Enter estimated duration"
-                  step="0.1"
                 />
 
                 <InputGroup
@@ -233,18 +228,17 @@ export function MaintenanceEditModal({ isOpen, onClose, maintenanceId }: Mainten
             {/* Action Buttons */}
             <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
               <Button
-                type="button"
                 label="Cancel"
                 variant="outlineDark"
                 icon={<X className="h-4 w-4" />}
                 onClick={onClose}
               />
               <Button
-                type="submit"
                 label={isUpdating ? "Saving..." : "Save Changes"}
                 variant="primary"
                 icon={<Save className="h-4 w-4" />}
-                disabled={isUpdating}
+                onClick={handleSubmit}
+                className={isUpdating ? 'opacity-50 cursor-not-allowed' : ''}
               />
             </div>
           </>

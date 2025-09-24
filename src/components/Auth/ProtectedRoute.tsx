@@ -19,16 +19,18 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading) {
-      if (!isAuthenticated) {
-        router.push(fallbackPath);
-        return;
-      }
+    // Only redirect if we're not loading and we're sure the user is not authenticated
+    if (!loading && !isAuthenticated) {
+      console.log('🔒 ProtectedRoute: User not authenticated, redirecting to login');
+      router.push(fallbackPath);
+      return;
+    }
 
-      if (requiredRoles.length > 0 && !hasAnyRole(requiredRoles)) {
-        // Instead of redirecting to /unauthorized (which doesn't exist), show access denied
-        return;
-      }
+    // Check roles only if user is authenticated and not loading
+    if (!loading && isAuthenticated && requiredRoles.length > 0 && !hasAnyRole(requiredRoles)) {
+      console.log('🔒 ProtectedRoute: User lacks required roles:', requiredRoles);
+      // Instead of redirecting to /unauthorized (which doesn't exist), show access denied
+      return;
     }
   }, [user, loading, isAuthenticated, requiredRoles, hasAnyRole, router, fallbackPath]);
 
@@ -37,7 +39,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       <div className="flex min-h-screen items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Loading...</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Authenticating...</p>
         </div>
       </div>
     );

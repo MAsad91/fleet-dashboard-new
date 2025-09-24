@@ -32,14 +32,21 @@ export function SidebarProvider({
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const isMobile = useIsMobile();
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    if (isMobile) {
-      setIsOpen(false);
-    } else {
-      setIsOpen(true);
+    setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (isHydrated) {
+      if (isMobile) {
+        setIsOpen(false);
+      } else {
+        setIsOpen(true);
+      }
     }
-  }, [isMobile]);
+  }, [isMobile, isHydrated]);
 
   function toggleSidebar() {
     setIsOpen((prev) => !prev);

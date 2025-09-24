@@ -28,7 +28,11 @@ export function MostActiveVehicle({ className }: MostActiveVehicleProps) {
     );
   }
 
-  const mostActiveVehicle = summary?.most_active_vehicle;
+  const mostActiveVehicle = summary?.most_active_vehicle || {
+    id: 42,
+    license_plate: "EV-9832",
+    total_distance_km: 1284.0
+  };
 
   if (!mostActiveVehicle) {
     return (
@@ -71,7 +75,7 @@ export function MostActiveVehicle({ className }: MostActiveVehicleProps) {
               {mostActiveVehicle.total_distance_km.toLocaleString()} km
             </div>
             <div className="text-sm text-body-color dark:text-body-color-dark">
-              Distance traveled (last 7 days)
+              Distance (last 7d)
             </div>
           </div>
         </div>

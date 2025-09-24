@@ -92,9 +92,7 @@ async function handleRequest(request: NextRequest, method: string) {
     
     console.log(`🔐 Full URL: ${fullUrl.toString()}`);
     
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
+    const headers: Record<string, string> = {};
     
     const authHeader = request.headers.get('authorization');
     if (authHeader) {
@@ -106,11 +104,24 @@ async function handleRequest(request: NextRequest, method: string) {
     
     let body = undefined;
     if (method !== 'GET') {
-      try {
-        body = await request.text();
-        console.log(`🔐 Request body: ${body}`);
-      } catch (error) {
-        console.log('No body in request');
+      const contentType = request.headers.get('content-type');
+      console.log(`🔐 Content-Type: ${contentType}`);
+      
+      if (contentType && contentType.includes('multipart/form-data')) {
+        // For form data, pass the body as-is and preserve the content-type
+        headers['Content-Type'] = contentType; // ← This is crucial!
+        body = await request.arrayBuffer();
+        console.log(`🔐 Form data body size: ${body.byteLength} bytes`);
+        console.log(`🔐 Preserved Content-Type: ${contentType}`);
+      } else {
+        // For JSON and other content types
+        headers['Content-Type'] = contentType || 'application/json';
+        try {
+          body = await request.text();
+          console.log(`🔐 Request body: ${body}`);
+        } catch (error) {
+          console.log('No body in request');
+        }
       }
     }
     

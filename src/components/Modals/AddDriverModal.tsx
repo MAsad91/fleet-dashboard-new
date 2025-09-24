@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCreateDriverMutation } from "@/store/api/driversApi";
+import { useListFleetOperatorsQuery } from "@/store/api/fleetApi";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui-elements/button";
 import InputGroup from "@/components/FormElements/InputGroup";
@@ -11,36 +12,41 @@ import { User, Loader2 } from "lucide-react";
 interface AddDriverModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-export function AddDriverModal({ isOpen, onClose }: AddDriverModalProps) {
+export function AddDriverModal({ isOpen, onClose, onSuccess }: AddDriverModalProps) {
   const [createDriver, { isLoading }] = useCreateDriverMutation();
+  const { data: fleetOperatorsData } = useListFleetOperatorsQuery();
   
   const [formData, setFormData] = useState({
+    // User fields (nested user object as per API)
+    username: "",
     first_name: "",
     last_name: "",
     email: "",
-    phone: "",
+    // Driver fields
     phone_number: "", // Required field from API
     license_number: "",
-    license_type: "",
-    license_expiry: "",
-    date_of_birth: "",
+    experience_years: "",
     address: "",
-    city: "",
-    state: "",
-    postal_code: "",
-    country: "",
-    emergency_contact_name: "",
-    emergency_contact_phone: "",
-    hire_date: "",
-    status: "active",
-    notes: "",
+    date_of_birth: "",
+    emergency_contact: "",
     // Required fields from API
-    fleet_operator: 1, // Default fleet operator ID
+    fleet_operator: "", // Will be set from fleet operators data
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Set default fleet operator when data loads
+  useEffect(() => {
+    if (fleetOperatorsData?.results && fleetOperatorsData.results.length > 0 && !formData.fleet_operator) {
+      setFormData(prev => ({
+        ...prev,
+        fleet_operator: fleetOperatorsData.results[0].id.toString()
+      }));
+    }
+  }, [fleetOperatorsData, formData.fleet_operator]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -61,6 +67,9 @@ export function AddDriverModal({ isOpen, onClose }: AddDriverModalProps) {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
+    if (!formData.username.trim()) {
+      newErrors.username = "Username is required";
+    }
     if (!formData.first_name.trim()) {
       newErrors.first_name = "First name is required";
     }
@@ -72,20 +81,14 @@ export function AddDriverModal({ isOpen, onClose }: AddDriverModalProps) {
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Email is invalid";
     }
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Phone number is required";
-    }
     if (!formData.phone_number.trim()) {
       newErrors.phone_number = "Phone number is required";
     }
     if (!formData.license_number.trim()) {
       newErrors.license_number = "License number is required";
     }
-    if (!formData.license_type) {
-      newErrors.license_type = "License type is required";
-    }
-    if (!formData.license_expiry) {
-      newErrors.license_expiry = "License expiry date is required";
+    if (!formData.fleet_operator) {
+      newErrors.fleet_operator = "Fleet operator is required";
     }
 
     setErrors(newErrors);
@@ -100,30 +103,41 @@ export function AddDriverModal({ isOpen, onClose }: AddDriverModalProps) {
     }
 
     try {
-      await createDriver(formData).unwrap();
+      // Transform the form data to match API expectations (nested user object)
+      const apiData = {
+        user: {
+          username: formData.username,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          email: formData.email,
+        },
+        fleet_operator: parseInt(formData.fleet_operator),
+        phone_number: formData.phone_number,
+        license_number: formData.license_number,
+        experience_years: parseInt(formData.experience_years) || 0,
+        address: formData.address,
+        date_of_birth: formData.date_of_birth,
+        emergency_contact: formData.emergency_contact,
+      };
+      
+      await createDriver(apiData).unwrap();
+      
+      // Call success callback to refresh the drivers list
+      onSuccess?.();
       
       // Reset form and close modal
       setFormData({
+        username: "",
         first_name: "",
         last_name: "",
         email: "",
-        phone: "",
         phone_number: "",
         license_number: "",
-        license_type: "",
-        license_expiry: "",
-        date_of_birth: "",
+        experience_years: "",
         address: "",
-        city: "",
-        state: "",
-        postal_code: "",
-        country: "",
-        emergency_contact_name: "",
-        emergency_contact_phone: "",
-        hire_date: "",
-        status: "active",
-        notes: "",
-        fleet_operator: 1,
+        date_of_birth: "",
+        emergency_contact: "",
+        fleet_operator: "",
       });
       setErrors({});
       onClose();
@@ -156,6 +170,16 @@ export function AddDriverModal({ isOpen, onClose }: AddDriverModalProps) {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InputGroup
+              label="Username *"
+              type="text"
+              name="username"
+              value={formData.username}
+              handleChange={handleInputChange}
+              placeholder="Enter username"
+              className={errors.username ? "border-red-500" : ""}
+            />
+            
+            <InputGroup
               label="First Name *"
               type="text"
               name="first_name"
@@ -186,22 +210,12 @@ export function AddDriverModal({ isOpen, onClose }: AddDriverModalProps) {
             />
             
             <InputGroup
-              label="Phone *"
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              handleChange={handleInputChange}
-              placeholder="Enter phone number"
-              className={errors.phone ? "border-red-500" : ""}
-            />
-            
-            <InputGroup
-              label="Phone Number (API) *"
+              label="Phone Number *"
               type="tel"
               name="phone_number"
               value={formData.phone_number}
               handleChange={handleInputChange}
-              placeholder="Enter phone number for API"
+              placeholder="Enter phone number"
               className={errors.phone_number ? "border-red-500" : ""}
             />
             
@@ -215,12 +229,12 @@ export function AddDriverModal({ isOpen, onClose }: AddDriverModalProps) {
             />
             
             <InputGroup
-              label="Hire Date"
-              type="date"
-              name="hire_date"
-              value={formData.hire_date}
+              label="Experience Years"
+              type="number"
+              name="experience_years"
+              value={formData.experience_years}
               handleChange={handleInputChange}
-              placeholder=""
+              placeholder="Enter years of experience"
             />
           </div>
         </div>
@@ -231,7 +245,7 @@ export function AddDriverModal({ isOpen, onClose }: AddDriverModalProps) {
             License Information
           </h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <InputGroup
               label="License Number *"
               type="text"
@@ -241,48 +255,13 @@ export function AddDriverModal({ isOpen, onClose }: AddDriverModalProps) {
               placeholder="Enter license number"
               className={errors.license_number ? "border-red-500" : ""}
             />
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                License Type *
-              </label>
-              <select
-                name="license_type"
-                value={formData.license_type}
-                onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
-                  errors.license_type ? "border-red-500" : "border-gray-300 dark:border-gray-600"
-                }`}
-              >
-                <option value="">Select license type</option>
-                <option value="class_a">Class A</option>
-                <option value="class_b">Class B</option>
-                <option value="class_c">Class C</option>
-                <option value="class_d">Class D</option>
-                <option value="motorcycle">Motorcycle</option>
-                <option value="commercial">Commercial</option>
-              </select>
-              {errors.license_type && (
-                <p className="text-red-500 text-sm mt-1">{errors.license_type}</p>
-              )}
-            </div>
-            
-            <InputGroup
-              label="License Expiry *"
-              type="date"
-              name="license_expiry"
-              value={formData.license_expiry}
-              handleChange={handleInputChange}
-              className={errors.license_expiry ? "border-red-500" : ""}
-              placeholder=""
-            />
           </div>
         </div>
 
         {/* Address Information */}
         <div className="space-y-4">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-            Address Information
+            Additional Information
           </h3>
           
           <div className="grid grid-cols-1 gap-4">
@@ -295,91 +274,38 @@ export function AddDriverModal({ isOpen, onClose }: AddDriverModalProps) {
               placeholder="Enter street address"
             />
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <InputGroup
-                label="City"
-                type="text"
-                name="city"
-                value={formData.city}
-                handleChange={handleInputChange}
-                placeholder="Enter city"
-              />
-              
-              <InputGroup
-                label="State"
-                type="text"
-                name="state"
-                value={formData.state}
-                handleChange={handleInputChange}
-                placeholder="Enter state"
-              />
-              
-              <InputGroup
-                label="Postal Code"
-                type="text"
-                name="postal_code"
-                value={formData.postal_code}
-                handleChange={handleInputChange}
-                placeholder="Enter postal code"
-              />
-            </div>
-            
             <InputGroup
-              label="Country"
+              label="Emergency Contact"
               type="text"
-              name="country"
-              value={formData.country}
+              name="emergency_contact"
+              value={formData.emergency_contact}
               handleChange={handleInputChange}
-              placeholder="Enter country"
+              placeholder="Enter emergency contact name and phone"
             />
           </div>
         </div>
 
-        {/* Emergency Contact */}
+        {/* Fleet Operator Selection */}
         <div className="space-y-4">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-            Emergency Contact
+            Fleet Assignment
           </h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InputGroup
-              label="Emergency Contact Name"
-              type="text"
-              name="emergency_contact_name"
-              value={formData.emergency_contact_name}
-              handleChange={handleInputChange}
-              placeholder="Enter emergency contact name"
+          <div className="grid grid-cols-1 gap-4">
+            <Select
+              label="Fleet Operator *"
+              defaultValue={formData.fleet_operator}
+              onChange={(e) => handleInputChange({ target: { name: 'fleet_operator', value: e.target.value } } as any)}
+              items={fleetOperatorsData?.results?.map((operator: any) => ({
+                value: operator.id.toString(),
+                label: operator.name
+              })) || []}
+              placeholder="Select fleet operator"
+              className={errors.fleet_operator ? "border-red-500" : ""}
             />
-            
-            <InputGroup
-              label="Emergency Contact Phone"
-              type="tel"
-              name="emergency_contact_phone"
-              value={formData.emergency_contact_phone}
-              handleChange={handleInputChange}
-              placeholder="Enter emergency contact phone"
-            />
-          </div>
-        </div>
-
-        {/* Additional Information */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-            Additional Information
-          </h3>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Notes
-            </label>
-            <textarea
-              name="notes"
-              value={formData.notes}
-              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
-              placeholder="Enter any additional notes..."
-            />
+            {errors.fleet_operator && (
+              <p className="text-sm text-red-600">{errors.fleet_operator}</p>
+            )}
           </div>
         </div>
 

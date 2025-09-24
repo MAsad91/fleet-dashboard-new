@@ -1,6 +1,7 @@
 "use client";
 
 import { useDashboard } from "@/contexts/DashboardContext";
+import { useGetSimCardsSummaryQuery } from "@/store/api/fleetApi";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 
@@ -12,7 +13,10 @@ interface SimUsageCardProps {
 }
 
 export function SimUsageCard({ className }: SimUsageCardProps) {
-  const { summary, loading } = useDashboard();
+  const { summary, loading: dashboardLoading } = useDashboard();
+  const { data: simCardsSummary, isLoading: simCardsLoading, error: simCardsError } = useGetSimCardsSummaryQuery();
+
+  const loading = dashboardLoading || simCardsLoading;
 
   if (loading) {
     return (
@@ -26,15 +30,19 @@ export function SimUsageCard({ className }: SimUsageCardProps) {
     );
   }
 
+  // Use dedicated SIM cards summary API data if available, otherwise fallback to dashboard data
   const diagnostics = summary?.diagnostics || {
     sim_cards: { high_usage: 0, inactive: 0, total: 0 },
   };
 
+  // Use SIM cards summary API data if available, otherwise fallback to dashboard diagnostics
+  const simCardsData = simCardsSummary || diagnostics.sim_cards;
+  
   const simUsageData = {
     series: [{
       data: [
-        diagnostics.sim_cards.high_usage,
-        diagnostics.sim_cards.inactive,
+        simCardsData.high_usage || 0,
+        simCardsData.inactive || 0,
       ]
     }],
     labels: ["High Usage", "Inactive"],
@@ -92,6 +100,8 @@ export function SimUsageCard({ className }: SimUsageCardProps) {
       title: {
         text: "Count",
       },
+      min: 0,
+      forceNiceScale: true,
     },
     grid: {
       show: true,
@@ -106,7 +116,26 @@ export function SimUsageCard({ className }: SimUsageCardProps) {
         columnWidth: "55%",
       },
     },
+    tooltip: {
+      enabled: true,
+    },
   };
+
+  // Show error state if both APIs fail
+  if (simCardsError && !summary?.diagnostics) {
+    return (
+      <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>
+        <h4 className="text-sm font-medium text-body-color dark:text-body-color-dark mb-4">
+          SIM Card Usage
+        </h4>
+        <div className="text-center py-8">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Unable to load SIM card data
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>
@@ -122,7 +151,7 @@ export function SimUsageCard({ className }: SimUsageCardProps) {
           height={200}
         />
         <div className="mt-2 text-xs text-body-color dark:text-body-color-dark">
-          Total: {diagnostics.sim_cards.total} SIM cards
+          Total: {simCardsData.total || simCardsData.count || 0} SIM cards
         </div>
       </div>
     </div>

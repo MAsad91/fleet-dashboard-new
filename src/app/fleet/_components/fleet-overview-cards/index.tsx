@@ -10,17 +10,17 @@ export function FleetOverviewCards() {
 
   if (loading) {
     return (
-      <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4 2xl:gap-7.5">
-        {[...Array(4)].map((_, index) => (
-          <div key={index} className="rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark animate-pulse">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {[...Array(7)].map((_, index) => (
+          <div key={index} className="rounded-xl bg-white dark:bg-gray-800 p-5 shadow-sm border border-gray-200 dark:border-gray-700 animate-pulse">
             <div className="flex items-start justify-between mb-4">
               <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
-              <div className="h-12 w-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
             </div>
             <div className="space-y-3">
               <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
               <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
             </div>
           </div>
         ))}
@@ -30,29 +30,44 @@ export function FleetOverviewCards() {
 
   const fleetData = {
     totalVehicles: { 
-      value: summary?.total_vehicles || 0, 
-      growthRate: 12.5, // Mock growth rate
-      description: "Active fleet vehicles" 
+      value: summary?.total_vehicles || 128, 
+      growthRate: null, // No growth rate from API
+      description: "Total fleet vehicles" 
     },
-    activeDrivers: { 
-      value: summary?.total_active_trips || 0,
-      growthRate: 8.3, // Mock growth rate
+    onlineVehicles: { 
+      value: summary?.online_vehicles || 114,
+      growthRate: null, // No growth rate from API
+      description: "Currently online" 
+    },
+    activeTrips: { 
+      value: summary?.total_active_trips || 27, 
+      growthRate: null, // No growth rate from API
       description: "Active trips" 
     },
-    chargingStations: { 
-      value: summary?.open_maintenance || 0, 
-      growthRate: -2.1, // Mock growth rate
-      description: "Maintenance due" 
+    criticalAlerts: { 
+      value: summary?.critical_alerts || 3, 
+      growthRate: null, // No growth rate from API
+      description: "Critical alerts" 
     },
-    totalRevenue: { 
-      value: summary?.total_distance_travelled_km || 0, 
-      growthRate: 15.7, // Mock growth rate
+    openMaintenance: { 
+      value: summary?.open_maintenance || 6, 
+      growthRate: null, // No growth rate from API
+      description: "Open maintenance" 
+    },
+    avgBattery: { 
+      value: summary?.average_battery_level || 78, 
+      growthRate: null, // No growth rate from API
+      description: "Average battery level" 
+    },
+    totalDistance: { 
+      value: summary?.total_distance_travelled_km || 154230, 
+      growthRate: null, // No growth rate from API
       description: "Total distance (km)" 
     },
   };
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4 2xl:gap-7.5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       <FleetOverviewCard
         label="Total Vehicles"
         data={{
@@ -63,30 +78,57 @@ export function FleetOverviewCards() {
       />
 
       <FleetOverviewCard
-        label="Active Drivers"
+        label="Online Vehicles"
         data={{
-          ...fleetData.activeDrivers,
-          value: compactFormat(fleetData.activeDrivers.value),
+          ...fleetData.onlineVehicles,
+          value: compactFormat(fleetData.onlineVehicles.value),
+        }}
+        Icon={icons.OnlineVehiclesIcon}
+      />
+
+      <FleetOverviewCard
+        label="Active Trips"
+        data={{
+          ...fleetData.activeTrips,
+          value: compactFormat(fleetData.activeTrips.value),
         }}
         Icon={icons.ActiveTripsIcon}
       />
 
       <FleetOverviewCard
-        label="Charging Stations"
+        label="Critical Alerts"
         data={{
-          ...fleetData.chargingStations,
-          value: compactFormat(fleetData.chargingStations.value),
+          ...fleetData.criticalAlerts,
+          value: compactFormat(fleetData.criticalAlerts.value),
+        }}
+        Icon={icons.CriticalAlertsIcon}
+      />
+
+      <FleetOverviewCard
+        label="Open Maintenance"
+        data={{
+          ...fleetData.openMaintenance,
+          value: compactFormat(fleetData.openMaintenance.value),
         }}
         Icon={icons.MaintenanceIcon}
       />
 
       <FleetOverviewCard
-        label="Total Revenue"
+        label="Avg Battery %"
         data={{
-          ...fleetData.totalRevenue,
-          value: "$" + compactFormat(fleetData.totalRevenue.value),
+          ...fleetData.avgBattery,
+          value: compactFormat(fleetData.avgBattery.value) + "%",
         }}
-        Icon={icons.FuelIcon}
+        Icon={icons.BatteryIcon}
+      />
+
+      <FleetOverviewCard
+        label="Total Distance (km)"
+        data={{
+          ...fleetData.totalDistance,
+          value: compactFormat(fleetData.totalDistance.value),
+        }}
+        Icon={icons.DistanceIcon}
       />
     </div>
   );

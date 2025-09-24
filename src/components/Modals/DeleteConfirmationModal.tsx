@@ -77,20 +77,18 @@ export function DeleteConfirmationModal({
         {/* Action Buttons */}
         <div className="flex justify-end space-x-3">
           <Button
-            type="button"
             label="Cancel"
             variant="outlineDark"
             icon={<X className="h-4 w-4" />}
             onClick={onClose}
-            disabled={isLoading}
+            className={isLoading ? 'opacity-50 cursor-not-allowed' : ''}
           />
           <Button
-            type="button"
             label={isLoading ? "Deleting..." : "Delete"}
-            variant="red"
+            variant="dark"
             icon={<Trash2 className="h-4 w-4" />}
             onClick={handleConfirm}
-            disabled={isLoading}
+            className={isLoading ? 'opacity-50 cursor-not-allowed' : ''}
           />
         </div>
       </div>

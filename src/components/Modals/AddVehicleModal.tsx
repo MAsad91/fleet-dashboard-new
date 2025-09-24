@@ -367,7 +367,6 @@ export function AddVehicleModal({ isOpen, onClose, onSuccess, fleetOperator }: A
               value={formData.efficiency_km_per_kwh}
               handleChange={handleInputChange}
               placeholder="Enter efficiency"
-              step="0.1"
             />
           </div>
         </div>

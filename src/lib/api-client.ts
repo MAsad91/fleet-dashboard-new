@@ -84,7 +84,12 @@ class ApiClient {
 
   private setToken(token: string): void {
     if (typeof window === 'undefined') return;
-    Cookies.set('access_token', token, { expires: 7 }); // 7 days
+    // Set cookie with longer expiration for better persistence
+    Cookies.set('access_token', token, { 
+      expires: 30, // 30 days
+      secure: window.location.protocol === 'https:',
+      sameSite: 'lax'
+    });
     localStorage.setItem('access_token', token);
     localStorage.setItem('authToken', token);
   }
@@ -233,19 +238,24 @@ class ApiClient {
 
   // Fleet API methods
   async getDashboardSummary(dateRange: string = 'today', startDate?: string, endDate?: string) {
-    let url = `/fleet/dashboard/summary/`;
-    const params = new URLSearchParams();
-    
-    if (startDate && endDate) {
-      params.append('start_date', startDate);
-      params.append('end_date', endDate);
-    } else {
-      params.append('date_range', dateRange);
+    try {
+      let url = `/fleet/dashboard/summary/`;
+      const params = new URLSearchParams();
+      
+      if (startDate && endDate) {
+        params.append('start_date', startDate);
+        params.append('end_date', endDate);
+      } else {
+        params.append('date_range', dateRange);
+      }
+      
+      url += `?${params.toString()}`;
+          const response = await this.client.get(url);
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ API Client: Dashboard summary error:', error.response?.data || error.message);
+      throw error;
     }
-    
-    url += `?${params.toString()}`;
-    const response = await this.client.get(url);
-    return response.data;
   }
 
   async getVehiclesStats(dateRange: string = 'today', startDate?: string, endDate?: string) {
@@ -297,19 +307,60 @@ class ApiClient {
   }
 
   async getAlertsStats(dateRange: string = 'today', startDate?: string, endDate?: string) {
-    let url = `/fleet/alerts/dashboard_stats/`;
-    const params = new URLSearchParams();
-    
-    if (startDate && endDate) {
-      params.append('start_date', startDate);
-      params.append('end_date', endDate);
-    } else {
-      params.append('date_range', dateRange);
+    try {
+      // Try the main alerts endpoint first as it's more reliable
+      let url = `/fleet/alerts/`;
+      const params = new URLSearchParams();
+      
+      // Add status filter to get active alerts
+      params.append('status', 'active');
+      
+      // Add date filters if provided
+      if (startDate && endDate) {
+        params.append('start_date', startDate);
+        params.append('end_date', endDate);
+      } else {
+        params.append('date_range', dateRange);
+      }
+      
+      url += `?${params.toString()}`;
+          const response = await this.client.get(url);
+      
+      // Transform the response to match expected format
+      return {
+        results: response.data.results || [],
+        count: response.data.count || 0,
+        summary: {
+          total_alerts: response.data.count || 0,
+          active_alerts: response.data.results?.filter((alert: any) => alert.status === 'active').length || 0,
+          critical_alerts: response.data.results?.filter((alert: any) => alert.severity === 'critical').length || 0,
+        }
+      };
+    } catch (error: any) {
+      console.error('❌ API Client: Alerts error:', error.response?.data || error.message);
+      
+      // Fallback to dashboard stats endpoint
+      try {
+        console.log('🔄 API Client: Trying dashboard stats endpoint as fallback...');
+        let fallbackUrl = `/fleet/alerts/dashboard_stats/`;
+        const fallbackParams = new URLSearchParams();
+        
+        if (startDate && endDate) {
+          fallbackParams.append('start_date', startDate);
+          fallbackParams.append('end_date', endDate);
+        } else {
+          fallbackParams.append('date_range', dateRange);
+        }
+        
+        fallbackUrl += `?${fallbackParams.toString()}`;
+        const fallbackResponse = await this.client.get(fallbackUrl);
+        console.log('✅ API Client: Dashboard stats fallback response:', fallbackResponse.data);
+        return fallbackResponse.data;
+      } catch (fallbackError: any) {
+        console.error('❌ API Client: Both alerts endpoints failed:', fallbackError.response?.data || fallbackError.message);
+        throw fallbackError;
+      }
     }
-    
-    url += `?${params.toString()}`;
-    const response = await this.client.get(url);
-    return response.data;
   }
 
   async getMaintenanceStats(dateRange: string = 'today', startDate?: string, endDate?: string) {

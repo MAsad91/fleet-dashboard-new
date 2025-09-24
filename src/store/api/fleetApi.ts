@@ -1,13 +1,15 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { API_CONFIG } from '@/config/api';
 
-// Define types for our API responses
+// Define types for our API responses - Updated to match postman collection specification
 export interface DashboardSummary {
   total_vehicles: number;
+  online_vehicles: number;
   total_active_trips: number;
+  critical_alerts: number;
   open_maintenance: number;
-  total_distance_travelled_km: number;
   average_battery_level: number;
+  total_distance_travelled_km: number;
   vehicle_status_breakdown: {
     available: number;
     in_use: number;
@@ -35,20 +37,68 @@ export interface DashboardSummary {
     };
   };
   most_active_vehicle?: {
-    vehicle_id: string;
-    vehicle_name: string;
-    total_distance: number;
-    total_trips: number;
+    id: number;
+    license_plate: string;
+    total_distance_km: number;
   };
 }
 
 export interface Alert {
   id: number;
-  severity: string;
+  alert_type: string;
+  system: string;
+  vehicle: number | string | {
+    id: number;
+    license_plate: string;
+    make?: string;
+    model?: string;
+    vin?: string;
+    name?: string;
+  };
+  obd_device?: number;
+  driver: number | string | {
+    id: number;
+    name?: string;
+    username?: string;
+    first_name?: string;
+    last_name?: string;
+    full_name?: string;
+    display_name?: string;
+  };
   title: string;
-  vehicle: string;
+  message: string;
+  severity: string;
+  read: boolean;
+  ignored: boolean;
+  resolved: boolean;
+  resolved_at?: string;
+  status_label: string;
+  vehicle_info?: {
+    license_plate?: string;
+    make?: string;
+    model?: string;
+    vin?: string;
+    name?: string;
+  };
+  device_id?: string;
   created_at: string;
-  status: string;
+  updated_at?: string;
+  acknowledged_at?: string;
+  acknowledged_by?: {
+    id: number;
+    username: string;
+    first_name?: string;
+    last_name?: string;
+  };
+  // Legacy fields for backward compatibility
+  description?: string;
+  priority?: string;
+  source?: string;
+  category?: string;
+  tags?: string;
+  location?: string;
+  mileage?: number;
+  status?: string;
 }
 
 export interface Trip {
@@ -90,8 +140,9 @@ export const fleetApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: API_CONFIG.PROXY_URL,
     prepareHeaders: (headers) => {
-      // Get token from localStorage or cookies
-      const token = localStorage.getItem('authToken') || 
+      // Get token from localStorage or cookies - check both access_token and authToken
+      const token = localStorage.getItem('access_token') || 
+                   localStorage.getItem('authToken') ||
                    (typeof document !== 'undefined' ? 
                     document.cookie.split('; ').find(row => row.startsWith('authToken='))?.split('=')[1] : 
                     null);
@@ -99,6 +150,13 @@ export const fleetApi = createApi({
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
+      
+      // Add company name header if available
+      const companyName = localStorage.getItem('company_name');
+      if (companyName) {
+        headers.set('X-Company-Name', companyName);
+      }
+      
       return headers;
     },
   }),
@@ -106,13 +164,23 @@ export const fleetApi = createApi({
     'Dashboard',
     'Vehicles',
     'Drivers',
+    'DriverDocuments',
     'Trips',
+    'Telemetry',
     'Alerts',
+    'AlertRules',
     'Maintenance',
+    'Insurance',
     'Dashcams',
     'VehicleDocuments',
     'VehicleTypes',
+    'FleetOperators',
     'OBDDevices',
+    'SimCards',
+    'Analytics',
+    'Firmware',
+    'Performance',
+    'FleetSettings',
   ],
   endpoints: (builder) => ({
     // Dashboard summary (Postman uses date_range param)
@@ -162,6 +230,9 @@ export const fleetApi = createApi({
         if (system !== undefined) params.set('system', system);
         if (page !== undefined) params.set('page', String(page));
         if (limit !== undefined) params.set('limit', String(limit));
+        // Add parameters to include related data
+        params.set('include', 'driver,vehicle');
+        params.set('expand', 'driver,vehicle');
         return `/fleet/alerts/?${params.toString()}`;
       },
       providesTags: ['Alerts'],
@@ -262,6 +333,21 @@ export const fleetApi = createApi({
       query: (body) => ({ url: `/fleet/trips/cancel_trips/`, method: 'POST', body }),
       invalidatesTags: ['Trips'],
     }),
+
+    // Telemetry endpoints
+    getObdTelemetry: builder.query<any, { vehicle_id?: string; device_id?: string; date_range?: string; start_date?: string; end_date?: string }>({
+      query: (paramsInit) => {
+        const params = new URLSearchParams();
+        const { vehicle_id, device_id, date_range, start_date, end_date } = paramsInit || {};
+        if (vehicle_id !== undefined) params.set('vehicle_id', vehicle_id);
+        if (device_id !== undefined) params.set('device_id', device_id);
+        if (date_range !== undefined) params.set('date_range', date_range);
+        if (start_date !== undefined) params.set('start_date', start_date);
+        if (end_date !== undefined) params.set('end_date', end_date);
+        return `/fleet/obd-telemetry/?${params.toString()}`;
+      },
+      providesTags: ['Telemetry'],
+    }),
     // Vehicles endpoints
     listVehicles: builder.query<PaginatedResponse<any>, { fleet?: string; vehicle_type?: string; has_obd?: string; online?: string; health_status?: string; page?: number }>({
       query: (paramsInit) => {
@@ -316,26 +402,101 @@ export const fleetApi = createApi({
       invalidatesTags: ['Vehicles'],
     }),
 
+    // Driver endpoints
+    getDrivers: builder.query<any, { page?: number; limit?: number; search?: string; status?: string }>({
+      query: ({ page = 1, limit = 10, search = '', status = '' }) => {
+        const params = new URLSearchParams();
+        if (page !== undefined) params.set('page', String(page));
+        if (limit !== undefined) params.set('limit', String(limit));
+        if (search !== undefined) params.set('search', search);
+        if (status !== undefined) params.set('status', status);
+        return `/fleet/drivers/?${params.toString()}`;
+      },
+      providesTags: ['Drivers'],
+    }),
+    getDriverById: builder.query<any, string>({
+      query: (driverId) => `/fleet/drivers/${driverId}/`,
+      providesTags: ['Drivers'],
+    }),
+    createDriver: builder.mutation<any, any>({
+      query: (body) => ({ url: `/fleet/drivers/`, method: 'POST', body }),
+      invalidatesTags: ['Drivers'],
+    }),
+    updateDriver: builder.mutation<any, { id: string; body: any }>({
+      query: ({ id, body }) => ({ url: `/fleet/drivers/${id}/`, method: 'PATCH', body }),
+      invalidatesTags: ['Drivers'],
+    }),
+    deleteDriver: builder.mutation<any, string>({
+      query: (id) => ({ url: `/fleet/drivers/${id}/`, method: 'DELETE' }),
+      invalidatesTags: ['Drivers'],
+    }),
+
+    // Driver Documents endpoints
+    getDriverDocuments: builder.query<any, void>({
+      query: () => `/fleet/driver-documents/`,
+      providesTags: ['DriverDocuments'],
+    }),
+    createDriverDocument: builder.mutation<any, any>({
+      query: (body) => ({ url: `/fleet/driver-documents/`, method: 'POST', body }),
+      invalidatesTags: ['DriverDocuments'],
+    }),
+    getDriverDocumentById: builder.query<any, string>({
+      query: (id) => `/fleet/driver-documents/${id}/`,
+      providesTags: ['DriverDocuments'],
+    }),
+    updateDriverDocument: builder.mutation<any, { id: string; body: any }>({
+      query: ({ id, body }) => ({ url: `/fleet/driver-documents/${id}/`, method: 'PATCH', body }),
+      invalidatesTags: ['DriverDocuments'],
+    }),
+    deleteDriverDocument: builder.mutation<any, string>({
+      query: (id) => ({ url: `/fleet/driver-documents/${id}/`, method: 'DELETE' }),
+      invalidatesTags: ['DriverDocuments'],
+    }),
+
     // Vehicle documents
     listVehicleDocuments: builder.query<PaginatedResponse<any>, void>({
       query: () => `/fleet/vehicle-documents/`,
       providesTags: ['VehicleDocuments'],
     }),
-    createVehicleDocument: builder.mutation<any, any>({
-      query: (body) => ({ url: `/fleet/vehicle-documents/`, method: 'POST', body }),
+    createVehicleDocument: builder.mutation<any, FormData>({
+      query: (body) => ({ 
+        url: `/fleet/vehicle-documents/`, 
+        method: 'POST', 
+        body,
+        formData: true
+      }),
       invalidatesTags: ['VehicleDocuments'],
     }),
     getVehicleDocumentById: builder.query<any, string>({
       query: (id) => `/fleet/vehicle-documents/${id}/`,
       providesTags: ['VehicleDocuments'],
     }),
-    updateVehicleDocument: builder.mutation<any, { id: string; body: any }>({
-      query: ({ id, body }) => ({ url: `/fleet/vehicle-documents/${id}/`, method: 'PATCH', body }),
+    updateVehicleDocument: builder.mutation<any, { id: string; body: FormData }>({
+      query: ({ id, body }) => ({ 
+        url: `/fleet/vehicle-documents/${id}/`, 
+        method: 'PATCH', 
+        body,
+        formData: true
+      }),
       invalidatesTags: ['VehicleDocuments'],
     }),
     deleteVehicleDocument: builder.mutation<any, string>({
       query: (id) => ({ url: `/fleet/vehicle-documents/${id}/`, method: 'DELETE' }),
       invalidatesTags: ['VehicleDocuments'],
+    }),
+    bulkDeleteVehicleDocuments: builder.mutation<any, { ids: string[] }>({
+      query: ({ ids }) => ({ 
+        url: `/fleet/vehicle-documents/bulk_delete/`, 
+        method: 'POST', 
+        body: { ids }
+      }),
+      invalidatesTags: ['VehicleDocuments'],
+    }),
+
+    // Fleet operators
+    listFleetOperators: builder.query<PaginatedResponse<any>, void>({
+      query: () => `/fleet/fleet-operators/`,
+      providesTags: ['FleetOperators'],
     }),
 
     // Vehicle types
@@ -343,13 +504,39 @@ export const fleetApi = createApi({
       query: () => `/fleet/vehicle-types/`,
       providesTags: ['VehicleTypes'],
     }),
+    getVehicleTypeById: builder.query<any, string>({
+      query: (id) => `/fleet/vehicle-types/${id}/`,
+      providesTags: ['VehicleTypes'],
+    }),
+    createVehicleType: builder.mutation<any, any>({
+      query: (body) => ({ url: `/fleet/vehicle-types/`, method: 'POST', body }),
+      invalidatesTags: ['VehicleTypes'],
+    }),
+    updateVehicleType: builder.mutation<any, { id: string; body: any }>({
+      query: ({ id, body }) => ({ url: `/fleet/vehicle-types/${id}/`, method: 'PATCH', body }),
+      invalidatesTags: ['VehicleTypes'],
+    }),
+    deleteVehicleType: builder.mutation<any, string>({
+      query: (id) => ({ url: `/fleet/vehicle-types/${id}/`, method: 'DELETE' }),
+      invalidatesTags: ['VehicleTypes'],
+    }),
+    uploadVehicleTypesCSV: builder.mutation<any, FormData>({
+      query: (formData) => ({ 
+        url: `/fleet/vehicle-types/upload-csv/`, 
+        method: 'POST', 
+        body: formData,
+        formData: true
+      }),
+      invalidatesTags: ['VehicleTypes'],
+    }),
 
-    // Dashcams
-    listDashcams: builder.query<PaginatedResponse<any>, { page?: number; status?: string }>({
-      query: ({ page, status }) => {
+    // Dashcams - Added missing parameters from postman collection
+    listDashcams: builder.query<PaginatedResponse<any>, { page?: number; search?: string; vehicle_id?: string }>({
+      query: ({ page, search, vehicle_id }) => {
         const params = new URLSearchParams();
         if (page !== undefined) params.set('page', String(page));
-        if (status !== undefined) params.set('status', status);
+        if (search !== undefined) params.set('search', search);
+        if (vehicle_id !== undefined) params.set('vehicle_id', vehicle_id);
         return `/fleet/dashcams/?${params.toString()}`;
       },
       providesTags: ['Dashcams'],
@@ -374,8 +561,12 @@ export const fleetApi = createApi({
       query: ({ id }) => ({ url: `/fleet/dashcams/${id}/refresh_api_key/`, method: 'POST' }),
       invalidatesTags: ['Dashcams'],
     }),
+    bulkRefreshDashcamApiKeys: builder.mutation<any, { selected_records: string[] }>({
+      query: (body) => ({ url: `/fleet/dashcams/bulk_refresh_api_key/`, method: 'POST', body }),
+      invalidatesTags: ['Dashcams'],
+    }),
 
-    // Maintenance
+    // Maintenance - Added missing endpoints from postman collection
     listScheduledMaintenance: builder.query<PaginatedResponse<any>, { page?: number; status?: string }>({
       query: ({ page, status }) => {
         const params = new URLSearchParams();
@@ -384,6 +575,54 @@ export const fleetApi = createApi({
         return `/fleet/scheduled-maintenance/?${params.toString()}`;
       },
       providesTags: ['Maintenance'],
+    }),
+    listMaintenanceRecords: builder.query<PaginatedResponse<any>, { vehicle?: string; status?: string; start_date?: string; end_date?: string; page?: number }>({
+      query: ({ vehicle, status, start_date, end_date, page }) => {
+        const params = new URLSearchParams();
+        if (vehicle !== undefined) params.set('vehicle', vehicle);
+        if (status !== undefined) params.set('status', status);
+        if (start_date !== undefined) params.set('start_date', start_date);
+        if (end_date !== undefined) params.set('end_date', end_date);
+        if (page !== undefined) params.set('page', String(page));
+        return `/fleet/maintenance-records/?${params.toString()}`;
+      },
+      providesTags: ['Maintenance'],
+    }),
+    getMaintenanceRecordsOverviewMetrics: builder.query<any, void>({
+      query: () => `/fleet/maintenance-records/overview_metrics/`,
+      providesTags: ['Maintenance'],
+    }),
+    getMaintenanceRecordById: builder.query<any, string>({
+      query: (id) => `/fleet/maintenance-records/${id}/`,
+      providesTags: ['Maintenance'],
+    }),
+    createMaintenanceRecord: builder.mutation<any, any>({
+      query: (body) => ({ url: `/fleet/maintenance-records/`, method: 'POST', body }),
+      invalidatesTags: ['Maintenance'],
+    }),
+    updateMaintenanceRecord: builder.mutation<any, { id: string; body: any }>({
+      query: ({ id, body }) => ({ url: `/fleet/maintenance-records/${id}/`, method: 'PATCH', body }),
+      invalidatesTags: ['Maintenance'],
+    }),
+    deleteMaintenanceRecord: builder.mutation<any, string>({
+      query: (id) => ({ url: `/fleet/maintenance-records/${id}/`, method: 'DELETE' }),
+      invalidatesTags: ['Maintenance'],
+    }),
+    scheduleMaintenanceRecord: builder.mutation<any, { id: string; body?: any }>({
+      query: ({ id, body }) => ({ url: `/fleet/maintenance-records/${id}/schedule/`, method: 'POST', body }),
+      invalidatesTags: ['Maintenance'],
+    }),
+    startMaintenanceRecord: builder.mutation<any, { id: string; body?: any }>({
+      query: ({ id, body }) => ({ url: `/fleet/maintenance-records/${id}/start/`, method: 'POST', body }),
+      invalidatesTags: ['Maintenance'],
+    }),
+    completeMaintenanceRecord: builder.mutation<any, { id: string; body?: any }>({
+      query: ({ id, body }) => ({ url: `/fleet/maintenance-records/${id}/complete/`, method: 'POST', body }),
+      invalidatesTags: ['Maintenance'],
+    }),
+    cancelMaintenanceRecord: builder.mutation<any, { id: string; body?: any }>({
+      query: ({ id, body }) => ({ url: `/fleet/maintenance-records/${id}/cancel/`, method: 'POST', body }),
+      invalidatesTags: ['Maintenance'],
     }),
     createScheduledMaintenance: builder.mutation<any, any>({
       query: (body) => ({ url: `/fleet/scheduled-maintenance/`, method: 'POST', body }),
@@ -432,6 +671,235 @@ export const fleetApi = createApi({
       query: (id) => ({ url: `/fleet/obd-devices/${id}/`, method: 'DELETE' }),
       invalidatesTags: ['OBDDevices'],
     }),
+
+    // SIM Cards endpoints - Added missing parameters and endpoints from postman collection
+    getSimCards: builder.query<any, { status?: string; plan?: string; device?: string; page?: number }>({
+      query: ({ status, plan, device, page }) => {
+        const params = new URLSearchParams();
+        if (status !== undefined) params.set('status', status);
+        if (plan !== undefined) params.set('plan', plan);
+        if (device !== undefined) params.set('device', device);
+        if (page !== undefined) params.set('page', String(page));
+        return `/fleet/sim-cards/?${params.toString()}`;
+      },
+      providesTags: ['SimCards'],
+    }),
+    createSimCard: builder.mutation<any, any>({
+      query: (body) => ({ url: `/fleet/sim-cards/`, method: 'POST', body }),
+      invalidatesTags: ['SimCards'],
+    }),
+    getSimCardById: builder.query<any, string>({
+      query: (id) => `/fleet/sim-cards/${id}/`,
+      providesTags: ['SimCards'],
+    }),
+    updateSimCard: builder.mutation<any, { id: string; body: any }>({
+      query: ({ id, body }) => ({ url: `/fleet/sim-cards/${id}/`, method: 'PATCH', body }),
+      invalidatesTags: ['SimCards'],
+    }),
+    deleteSimCard: builder.mutation<any, string>({
+      query: (id) => ({ url: `/fleet/sim-cards/${id}/`, method: 'DELETE' }),
+      invalidatesTags: ['SimCards'],
+    }),
+    activateSimCard: builder.mutation<any, { id: string }>({
+      query: ({ id }) => ({ url: `/fleet/sim-cards/${id}/activate/`, method: 'POST' }),
+      invalidatesTags: ['SimCards'],
+    }),
+    deactivateSimCard: builder.mutation<any, { id: string }>({
+      query: ({ id }) => ({ url: `/fleet/sim-cards/${id}/deactivate/`, method: 'POST' }),
+      invalidatesTags: ['SimCards'],
+    }),
+    suspendSimCard: builder.mutation<any, { id: string }>({
+      query: ({ id }) => ({ url: `/fleet/sim-cards/${id}/suspend/`, method: 'POST' }),
+      invalidatesTags: ['SimCards'],
+    }),
+    updateSimCardUsage: builder.mutation<any, { id: string; body: any }>({
+      query: ({ id, body }) => ({ url: `/fleet/sim-cards/${id}/update-usage/`, method: 'POST', body }),
+      invalidatesTags: ['SimCards'],
+    }),
+    getSimCardsSummary: builder.query<any, void>({
+      query: () => `/fleet/sim-cards/summary/`,
+      providesTags: ['SimCards'],
+    }),
+
+    // Analytics endpoints - Added missing parameters from postman collection
+    getAnalytics: builder.query<any, { start_date?: string; end_date?: string; vehicle_type?: string; vehicle?: string; driver?: string; metrics?: string[]; group_by?: string }>({
+      query: ({ start_date, end_date, vehicle_type, vehicle, driver, metrics, group_by }) => {
+        const params = new URLSearchParams();
+        if (start_date !== undefined) params.set('start_date', start_date);
+        if (end_date !== undefined) params.set('end_date', end_date);
+        if (vehicle_type !== undefined) params.set('vehicle_type', vehicle_type);
+        if (vehicle !== undefined) params.set('vehicle', vehicle);
+        if (driver !== undefined) params.set('driver', driver);
+        if (metrics !== undefined && metrics.length > 0) {
+          metrics.forEach(metric => params.append('metrics', metric));
+        }
+        if (group_by !== undefined) params.set('group_by', group_by);
+        return `/fleet/analytics/?${params.toString()}`;
+      },
+      providesTags: ['Analytics'],
+    }),
+
+    // Alert Rules endpoints
+    getAlertRules: builder.query<any, void>({
+      query: () => `/fleet/alert-rules/`,
+      providesTags: ['AlertRules'],
+    }),
+    createAlertRule: builder.mutation<any, any>({
+      query: (body) => ({ url: `/fleet/alert-rules/`, method: 'POST', body }),
+      invalidatesTags: ['AlertRules'],
+    }),
+    getAlertRuleById: builder.query<any, string>({
+      query: (id) => `/fleet/alert-rules/${id}/`,
+      providesTags: ['AlertRules'],
+    }),
+    updateAlertRule: builder.mutation<any, { id: string; body: any }>({
+      query: ({ id, body }) => ({ url: `/fleet/alert-rules/${id}/`, method: 'PATCH', body }),
+      invalidatesTags: ['AlertRules'],
+    }),
+    deleteAlertRule: builder.mutation<any, string>({
+      query: (id) => ({ url: `/fleet/alert-rules/${id}/`, method: 'DELETE' }),
+      invalidatesTags: ['AlertRules'],
+    }),
+
+    // Insurance endpoints
+    getInsurancePolicies: builder.query<any, void>({
+      query: () => `/fleet/insurance-policies/`,
+      providesTags: ['Insurance'],
+    }),
+    createInsurancePolicy: builder.mutation<any, any>({
+      query: (body) => ({ url: `/fleet/insurance-policies/`, method: 'POST', body }),
+      invalidatesTags: ['Insurance'],
+    }),
+    getInsurancePolicyById: builder.query<any, string>({
+      query: (id) => `/fleet/insurance-policies/${id}/`,
+      providesTags: ['Insurance'],
+    }),
+    updateInsurancePolicy: builder.mutation<any, { id: string; body: any }>({
+      query: ({ id, body }) => ({ url: `/fleet/insurance-policies/${id}/`, method: 'PATCH', body }),
+      invalidatesTags: ['Insurance'],
+    }),
+    deleteInsurancePolicy: builder.mutation<any, string>({
+      query: (id) => ({ url: `/fleet/insurance-policies/${id}/`, method: 'DELETE' }),
+      invalidatesTags: ['Insurance'],
+    }),
+
+    // Firmware Updates endpoints - Added missing endpoints from postman collection
+    listFirmwareUpdates: builder.query<PaginatedResponse<any>, { component?: string; status?: string; version?: string; page?: number }>({
+      query: ({ component, status, version, page }) => {
+        const params = new URLSearchParams();
+        if (component !== undefined) params.set('component', component);
+        if (status !== undefined) params.set('status', status);
+        if (version !== undefined) params.set('version', version);
+        if (page !== undefined) params.set('page', String(page));
+        return `/fleet/firmware-updates/?${params.toString()}`;
+      },
+      providesTags: ['Firmware'],
+    }),
+    createFirmwareUpdate: builder.mutation<any, FormData>({
+      query: (formData) => ({ 
+        url: `/fleet/firmware-updates/`, 
+        method: 'POST', 
+        body: formData,
+        formData: true
+      }),
+      invalidatesTags: ['Firmware'],
+    }),
+    getFirmwareUpdateById: builder.query<any, string>({
+      query: (id) => `/fleet/firmware-updates/${id}/`,
+      providesTags: ['Firmware'],
+    }),
+    getFirmwareUpdateSummary: builder.query<any, string>({
+      query: (id) => `/fleet/firmware-updates/${id}/summary/`,
+      providesTags: ['Firmware'],
+    }),
+    updateFirmwareUpdate: builder.mutation<any, { id: string; body: any }>({
+      query: ({ id, body }) => ({ url: `/fleet/firmware-updates/${id}/`, method: 'PATCH', body }),
+      invalidatesTags: ['Firmware'],
+    }),
+    deleteFirmwareUpdate: builder.mutation<any, string>({
+      query: (id) => ({ url: `/fleet/firmware-updates/${id}/`, method: 'DELETE' }),
+      invalidatesTags: ['Firmware'],
+    }),
+    pauseFirmwareUpdate: builder.mutation<any, { id: string }>({
+      query: ({ id }) => ({ url: `/fleet/firmware-updates/${id}/pause/`, method: 'POST' }),
+      invalidatesTags: ['Firmware'],
+    }),
+    resumeFirmwareUpdate: builder.mutation<any, { id: string }>({
+      query: ({ id }) => ({ url: `/fleet/firmware-updates/${id}/resume/`, method: 'POST' }),
+      invalidatesTags: ['Firmware'],
+    }),
+
+    // Performance endpoints - Added missing endpoints from postman collection
+    listDriverPerformance: builder.query<PaginatedResponse<any>, { driver?: string; start_date?: string; end_date?: string; min_safety_score?: number; max_safety_score?: number; min_eco_score?: number; max_eco_score?: number; page?: number }>({
+      query: ({ driver, start_date, end_date, min_safety_score, max_safety_score, min_eco_score, max_eco_score, page }) => {
+        const params = new URLSearchParams();
+        if (driver !== undefined) params.set('driver', driver);
+        if (start_date !== undefined) params.set('start_date', start_date);
+        if (end_date !== undefined) params.set('end_date', end_date);
+        if (min_safety_score !== undefined) params.set('min_safety_score', String(min_safety_score));
+        if (max_safety_score !== undefined) params.set('max_safety_score', String(max_safety_score));
+        if (min_eco_score !== undefined) params.set('min_eco_score', String(min_eco_score));
+        if (max_eco_score !== undefined) params.set('max_eco_score', String(max_eco_score));
+        if (page !== undefined) params.set('page', String(page));
+        return `/fleet/driver-performance/?${params.toString()}`;
+      },
+      providesTags: ['Performance'],
+    }),
+    getDriverPerformanceById: builder.query<any, string>({
+      query: (id) => `/fleet/driver-performance/${id}/`,
+      providesTags: ['Performance'],
+    }),
+    createDriverPerformance: builder.mutation<any, any>({
+      query: (body) => ({ url: `/fleet/driver-performance/`, method: 'POST', body }),
+      invalidatesTags: ['Performance'],
+    }),
+    updateDriverPerformance: builder.mutation<any, { id: string; body: any }>({
+      query: ({ id, body }) => ({ url: `/fleet/driver-performance/${id}/`, method: 'PATCH', body }),
+      invalidatesTags: ['Performance'],
+    }),
+    deleteDriverPerformance: builder.mutation<any, string>({
+      query: (id) => ({ url: `/fleet/driver-performance/${id}/`, method: 'DELETE' }),
+      invalidatesTags: ['Performance'],
+    }),
+    listVehiclePerformance: builder.query<PaginatedResponse<any>, { vehicle?: string; start_date?: string; end_date?: string; min_battery_health?: number; max_downtime?: number; page?: number }>({
+      query: ({ vehicle, start_date, end_date, min_battery_health, max_downtime, page }) => {
+        const params = new URLSearchParams();
+        if (vehicle !== undefined) params.set('vehicle', vehicle);
+        if (start_date !== undefined) params.set('start_date', start_date);
+        if (end_date !== undefined) params.set('end_date', end_date);
+        if (min_battery_health !== undefined) params.set('min_battery_health', String(min_battery_health));
+        if (max_downtime !== undefined) params.set('max_downtime', String(max_downtime));
+        if (page !== undefined) params.set('page', String(page));
+        return `/fleet/vehicle-performance/?${params.toString()}`;
+      },
+      providesTags: ['Performance'],
+    }),
+    getVehiclePerformanceById: builder.query<any, string>({
+      query: (id) => `/fleet/vehicle-performance/${id}/`,
+      providesTags: ['Performance'],
+    }),
+    createVehiclePerformance: builder.mutation<any, any>({
+      query: (body) => ({ url: `/fleet/vehicle-performance/`, method: 'POST', body }),
+      invalidatesTags: ['Performance'],
+    }),
+    updateVehiclePerformance: builder.mutation<any, { id: string; body: any }>({
+      query: ({ id, body }) => ({ url: `/fleet/vehicle-performance/${id}/`, method: 'PATCH', body }),
+      invalidatesTags: ['Performance'],
+    }),
+    deleteVehiclePerformance: builder.mutation<any, string>({
+      query: (id) => ({ url: `/fleet/vehicle-performance/${id}/`, method: 'DELETE' }),
+      invalidatesTags: ['Performance'],
+    }),
+
+    // Fleet Settings endpoints - Added missing endpoints from postman collection
+    getFleetSettings: builder.query<any, void>({
+      query: () => `/fleet/fleet-settings/`,
+      providesTags: ['FleetSettings'],
+    }),
+    updateFleetSettings: builder.mutation<any, any>({
+      query: (body) => ({ url: `/fleet/fleet-settings/`, method: 'PATCH', body }),
+      invalidatesTags: ['FleetSettings'],
+    }),
   }),
 });
 
@@ -467,6 +935,7 @@ export const {
   useCancelTripMutation,
   useCommandTripMutation,
   useBulkCancelTripsMutation,
+  useGetObdTelemetryQuery,
   useListVehiclesQuery,
   useCreateVehicleMutation,
   useGetVehicleByIdQuery,
@@ -476,12 +945,29 @@ export const {
   useGetVehicleHistoryQuery,
   useSetVehiclesForMaintenanceMutation,
   useRetireVehiclesMutation,
+  useGetDriversQuery,
+  useGetDriverByIdQuery,
+  useCreateDriverMutation,
+  useUpdateDriverMutation,
+  useDeleteDriverMutation,
+  useGetDriverDocumentsQuery,
+  useCreateDriverDocumentMutation,
+  useGetDriverDocumentByIdQuery,
+  useUpdateDriverDocumentMutation,
+  useDeleteDriverDocumentMutation,
   useListVehicleDocumentsQuery,
   useCreateVehicleDocumentMutation,
   useGetVehicleDocumentByIdQuery,
   useUpdateVehicleDocumentMutation,
   useDeleteVehicleDocumentMutation,
+  useBulkDeleteVehicleDocumentsMutation,
+  useListFleetOperatorsQuery,
   useListVehicleTypesQuery,
+  useGetVehicleTypeByIdQuery,
+  useCreateVehicleTypeMutation,
+  useUpdateVehicleTypeMutation,
+  useDeleteVehicleTypeMutation,
+  useUploadVehicleTypesCSVMutation,
   useListDashcamsQuery,
   useCreateDashcamMutation,
   useGetDashcamByIdQuery,
@@ -499,4 +985,57 @@ export const {
   useGetObdDeviceByIdQuery,
   useUpdateObdDeviceMutation,
   useDeleteObdDeviceMutation,
+  useGetSimCardsQuery,
+  useCreateSimCardMutation,
+  useGetSimCardByIdQuery,
+  useUpdateSimCardMutation,
+  useDeleteSimCardMutation,
+  useActivateSimCardMutation,
+  useDeactivateSimCardMutation,
+  useSuspendSimCardMutation,
+  useUpdateSimCardUsageMutation,
+  useGetSimCardsSummaryQuery,
+  useGetAnalyticsQuery,
+  useGetAlertRulesQuery,
+  useCreateAlertRuleMutation,
+  useGetAlertRuleByIdQuery,
+  useUpdateAlertRuleMutation,
+  useDeleteAlertRuleMutation,
+  useGetInsurancePoliciesQuery,
+  useCreateInsurancePolicyMutation,
+  useGetInsurancePolicyByIdQuery,
+  useUpdateInsurancePolicyMutation,
+  useDeleteInsurancePolicyMutation,
+  // New exports for added endpoints
+  useBulkRefreshDashcamApiKeysMutation,
+  useListMaintenanceRecordsQuery,
+  useGetMaintenanceRecordsOverviewMetricsQuery,
+  useGetMaintenanceRecordByIdQuery,
+  useCreateMaintenanceRecordMutation,
+  useUpdateMaintenanceRecordMutation,
+  useDeleteMaintenanceRecordMutation,
+  useScheduleMaintenanceRecordMutation,
+  useStartMaintenanceRecordMutation,
+  useCompleteMaintenanceRecordMutation,
+  useCancelMaintenanceRecordMutation,
+  useListFirmwareUpdatesQuery,
+  useCreateFirmwareUpdateMutation,
+  useGetFirmwareUpdateByIdQuery,
+  useGetFirmwareUpdateSummaryQuery,
+  useUpdateFirmwareUpdateMutation,
+  useDeleteFirmwareUpdateMutation,
+  usePauseFirmwareUpdateMutation,
+  useResumeFirmwareUpdateMutation,
+  useListDriverPerformanceQuery,
+  useGetDriverPerformanceByIdQuery,
+  useCreateDriverPerformanceMutation,
+  useUpdateDriverPerformanceMutation,
+  useDeleteDriverPerformanceMutation,
+  useListVehiclePerformanceQuery,
+  useGetVehiclePerformanceByIdQuery,
+  useCreateVehiclePerformanceMutation,
+  useUpdateVehiclePerformanceMutation,
+  useDeleteVehiclePerformanceMutation,
+  useGetFleetSettingsQuery,
+  useUpdateFleetSettingsMutation,
 } = fleetApi;

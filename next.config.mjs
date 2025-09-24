@@ -3,6 +3,12 @@ const nextConfig = {
   // Disable automatic trailing slash handling
   trailingSlash: false,
   
+  // Environment variables
+  env: {
+    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyA7-xn4sjsIh8EJAG0nPjWFOO_QSj20iew',
+    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://oem.platform-api-test.joulepoint.com',
+  },
+  
   images: {
     remotePatterns: [
       {

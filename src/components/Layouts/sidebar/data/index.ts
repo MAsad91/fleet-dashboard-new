@@ -17,9 +17,33 @@ export const NAV_DATA = [
         items: [],
       },
       {
+        title: "Vehicle Documents",
+        icon: Icons.DocumentIcon,
+        url: "/vehicle-documents",
+        items: [],
+      },
+      {
+        title: "Vehicle Types",
+        icon: Icons.SettingsIcon,
+        url: "/vehicle-types",
+        items: [],
+      },
+      {
         title: "Drivers",
         icon: Icons.DriverIcon,
         url: "/drivers",
+        items: [],
+      },
+      {
+        title: "Driver Documents",
+        icon: Icons.DocumentIcon,
+        url: "/driver-documents",
+        items: [],
+      },
+      {
+        title: "Driver Logs",
+        icon: Icons.ClockIcon,
+        url: "/driver-logs",
         items: [],
       },
       {
@@ -29,9 +53,21 @@ export const NAV_DATA = [
         items: [],
       },
       {
+        title: "Telemetry",
+        icon: Icons.PieChart,
+        url: "/telemetry",
+        items: [],
+      },
+      {
         title: "Alerts",
         icon: Icons.AlertIcon,
         url: "/alerts",
+        items: [],
+      },
+      {
+        title: "Alert Rules",
+        icon: Icons.SettingsIcon,
+        url: "/alert-rules",
         items: [],
       },
       {
@@ -41,9 +77,21 @@ export const NAV_DATA = [
         items: [],
       },
       {
+        title: "SIM Cards",
+        icon: Icons.SimCardIcon,
+        url: "/sim-cards",
+        items: [],
+      },
+      {
         title: "Maintenance",
         icon: Icons.WrenchIcon,
         url: "/maintenance",
+        items: [],
+      },
+      {
+        title: "Insurance",
+        icon: Icons.ShieldIcon,
+        url: "/insurance",
         items: [],
       },
       {
@@ -52,50 +100,44 @@ export const NAV_DATA = [
         url: "/dashcams",
         items: [],
       },
+      {
+        title: "Firmware Updates",
+        icon: Icons.SettingsIcon,
+        url: "/firmware-updates",
+        items: [],
+      },
     ],
   },
   {
-    label: "ANALYTICS",
+    label: "ANALYTICS & PERFORMANCE",
     items: [
       {
-        title: "Fuel Analytics",
-        icon: Icons.FuelIcon,
-        url: "/fleet/fuel",
-        items: [],
-      },
-      {
-        title: "Energy Consumption",
+        title: "Analytics",
         icon: Icons.PieChart,
-        url: "/fleet/energy",
+        url: "/analytics",
         items: [],
       },
       {
-        title: "Performance Reports",
+        title: "Performance",
         icon: Icons.Table,
-        url: "/fleet/reports",
+        url: "/performance",
         items: [],
       },
     ],
   },
   {
-    label: "SYSTEM",
+    label: "SYSTEM & SETTINGS",
     items: [
       {
-        title: "Notifications",
-        icon: Icons.BellIcon,
-        url: "/fleet/notifications",
+        title: "Fleet Settings",
+        icon: Icons.SettingsIcon,
+        url: "/fleet-settings",
         items: [],
       },
       {
-        title: "Profile",
+        title: "Users & Permissions",
         icon: Icons.User,
-        url: "/profile",
-        items: [],
-      },
-      {
-        title: "Help & Support",
-        icon: Icons.FourCircle,
-        url: "/fleet/support",
+        url: "/users",
         items: [],
       },
     ],

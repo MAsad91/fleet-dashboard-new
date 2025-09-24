@@ -1,0 +1,296 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { FallbackMapComponent } from "./FallbackMapComponent";
+
+interface RealGoogleMapProps {
+  center?: { lat: number; lng: number };
+  zoom?: number;
+  className?: string;
+  vehicles?: Array<{
+    id: string;
+    lat: number;
+    lng: number;
+    name: string;
+    status: string;
+    battery?: number;
+  }>;
+}
+
+export function RealGoogleMap({ 
+  center = { lat: 40.7128, lng: -74.0060 },
+  zoom = 12,
+  className = "h-96 w-full",
+  vehicles = []
+}: RealGoogleMapProps) {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
+  const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
+
+  // Use environment variable or fallback API key
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || process.env.NEXT_MAP_API_KEY || 'AIzaSyBFw0Qbyq9zTFTd-tUY6dgsW6T9bWqJ1zI';
+  
+
+  useEffect(() => {
+    // Define global callback for Google Maps
+    (window as any).initMap = () => {
+      console.log('🎯 Google Maps callback triggered');
+      initializeMap();
+    };
+
+    const loadGoogleMaps = async () => {
+      try {
+        // Check if Google Maps is already loaded
+        if (window.google && window.google.maps) {
+          console.log('✅ Google Maps already loaded');
+          initializeMap();
+          return;
+        }
+
+        // Check if script is already loading
+        if (document.getElementById('google-maps-script')) {
+          console.log('🔄 Google Maps script already loading, waiting...');
+          // Wait for it to load
+          const checkLoaded = setInterval(() => {
+            if (window.google && window.google.maps) {
+              clearInterval(checkLoaded);
+              console.log('✅ Google Maps loaded from existing script');
+              initializeMap();
+            }
+          }, 100);
+          return;
+        }
+
+        console.log('🌍 Loading Google Maps API...');
+        
+        // Load Google Maps API
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
+        script.async = true;
+        script.defer = true;
+        script.id = 'google-maps-script';
+
+        // Set a timeout for loading
+        const timeout = setTimeout(() => {
+          if (!mapLoaded) {
+            console.warn('⚠️ Google Maps loading timeout, using fallback');
+            setError('Google Maps loading timeout - using fallback mode');
+          }
+        }, 15000); // 15 second timeout
+
+        script.onload = () => {
+          clearTimeout(timeout);
+          console.log('✅ Google Maps API script loaded successfully');
+          // The callback will handle initialization
+        };
+
+        script.onerror = (error) => {
+          clearTimeout(timeout);
+          console.error('❌ Failed to load Google Maps API:', error);
+          setError('Failed to load Google Maps. Using fallback mode.');
+        };
+
+        document.head.appendChild(script);
+
+      } catch (err) {
+        console.error('❌ Error loading Google Maps:', err);
+        setError('Error loading Google Maps');
+      }
+    };
+
+            const initializeMap = () => {
+              const tryInitialize = () => {
+                if (!mapRef.current) {
+                  console.error('❌ Map ref not available');
+                  setError('Map container not found');
+                  return;
+                }
+                
+                // Check if the element has dimensions (is visible)
+                const rect = mapRef.current.getBoundingClientRect();
+                if (rect.width === 0 || rect.height === 0) {
+                  console.log('🔄 Map container not ready, retrying...');
+                  setTimeout(tryInitialize, 100);
+                  return;
+                }
+                
+                if (!window.google || !window.google.maps) {
+                  console.error('❌ Google Maps API not loaded');
+                  setError('Google Maps API failed to load');
+                  return;
+                }
+
+                try {
+                  console.log('🗺️ Initializing Google Map...');
+                  
+                  const map = new google.maps.Map(mapRef.current, {
+          center: center,
+          zoom: zoom,
+          mapTypeId: google.maps.MapTypeId.ROADMAP,
+          mapTypeControl: true,
+          mapTypeControlOptions: {
+            position: google.maps.ControlPosition.BOTTOM_LEFT,
+            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+            mapTypeIds: [
+              google.maps.MapTypeId.ROADMAP,
+              google.maps.MapTypeId.SATELLITE
+            ]
+          },
+          streetViewControl: true,
+          streetViewControlOptions: {
+            position: google.maps.ControlPosition.RIGHT_BOTTOM
+          },
+          fullscreenControl: true,
+          fullscreenControlOptions: {
+            position: google.maps.ControlPosition.RIGHT_TOP
+          },
+          zoomControl: true,
+          zoomControlOptions: {
+            position: google.maps.ControlPosition.RIGHT_TOP
+          },
+          gestureHandling: "cooperative",
+          styles: [
+            {
+              featureType: "poi",
+              elementType: "labels",
+              stylers: [{ visibility: "on" }],
+            },
+            {
+              featureType: "transit",
+              elementType: "labels",
+              stylers: [{ visibility: "on" }],
+            },
+          ],
+        });
+
+        setMapInstance(map);
+        setMapLoaded(true);
+        setError(null);
+
+        // Add vehicle markers
+        addVehicleMarkers(map);
+
+                  console.log('✅ Real Google Map initialized successfully');
+                } catch (err) {
+                  console.error('❌ Error initializing map:', err);
+                  setError('Failed to initialize map');
+                }
+              };
+              
+              // Start trying to initialize
+              tryInitialize();
+            };
+
+    const addVehicleMarkers = (map: google.maps.Map) => {
+      // Clear existing markers
+      markers.forEach(marker => marker.setMap(null));
+
+      const newMarkers: google.maps.Marker[] = [];
+
+      vehicles.forEach((vehicle) => {
+        const marker = new google.maps.Marker({
+          position: { lat: vehicle.lat, lng: vehicle.lng },
+          map: map,
+          title: vehicle.name,
+          icon: {
+            url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+              <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="16" cy="16" r="14" fill="${getStatusColor(vehicle.status)}" stroke="#FFFFFF" stroke-width="2"/>
+                <text x="16" y="20" text-anchor="middle" fill="white" font-size="12" font-weight="bold">🚗</text>
+              </svg>
+            `)}`,
+            scaledSize: new google.maps.Size(32, 32),
+            anchor: new google.maps.Point(16, 16),
+          },
+          animation: google.maps.Animation.DROP,
+        });
+
+        const infoWindow = new google.maps.InfoWindow({
+          content: `
+            <div style="padding: 10px; min-width: 200px;">
+              <h3 style="margin: 0 0 8px 0; color: #1F2937; font-size: 16px;">${vehicle.name}</h3>
+              <div style="display: flex; align-items: center; margin: 4px 0;">
+                <div style="width: 12px; height: 12px; background: ${getStatusColor(vehicle.status)}; border-radius: 50%; margin-right: 8px;"></div>
+                <span style="color: #6B7280; font-size: 14px; text-transform: capitalize;">${vehicle.status}</span>
+              </div>
+              ${vehicle.battery ? `<p style="margin: 4px 0; color: #6B7280; font-size: 14px;">Battery: ${vehicle.battery}%</p>` : ''}
+              <p style="margin: 4px 0; color: #9CA3AF; font-size: 12px;">${vehicle.lat.toFixed(4)}, ${vehicle.lng.toFixed(4)}</p>
+            </div>
+          `,
+        });
+
+        marker.addListener('click', () => {
+          // Close all other info windows
+          newMarkers.forEach(m => {
+            if (m !== marker) {
+              (m as any).infoWindow?.close();
+            }
+          });
+          
+          infoWindow.open(map, marker);
+          (marker as any).infoWindow = infoWindow;
+        });
+
+        newMarkers.push(marker);
+      });
+
+      setMarkers(newMarkers);
+    };
+
+    loadGoogleMaps();
+
+        return () => {
+          // Cleanup markers
+          markers.forEach(marker => marker.setMap(null));
+          // Cleanup global callback
+          delete (window as any).initMap;
+        };
+  }, [center, zoom, vehicles]);
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'available': return '#10B981';
+      case 'in use': return '#3B82F6';
+      case 'in_progress': return '#3B82F6';
+      case 'maintenance': return '#F59E0B';
+      case 'offline': return '#EF4444';
+      default: return '#6B7280';
+    }
+  };
+
+  if (error) {
+    return (
+      <FallbackMapComponent
+        center={center}
+        zoom={zoom}
+        className={className}
+        vehicles={vehicles}
+      />
+    );
+  }
+
+  if (!mapLoaded) {
+    return (
+      <div className={className}>
+        <div className="flex items-center justify-center h-full bg-gray-100 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Loading real-time map...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={className}>
+      <div 
+        ref={mapRef} 
+        className="w-full h-full rounded-lg border border-gray-200 dark:border-gray-700"
+        style={{ minHeight: '300px' }}
+      />
+    </div>
+  );
+}

@@ -24,13 +24,33 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
     setIsHydrated(true);
   }, []);
 
-  // Redirect unauthenticated users to sign-in
+  // Handle all redirects based on authentication and current route
   useEffect(() => {
-    if (isHydrated && !loading && !isAuthenticated && !isAuthPage) {
-      console.log('🔄 ConditionalLayout: Redirecting to sign-in');
+    console.log('🔄 ConditionalLayout: Auth state changed', { isHydrated, loading, isAuthenticated, isAuthPage, pathname });
+    
+    if (!isHydrated || loading) {
+      console.log('🔄 ConditionalLayout: Not ready yet', { isHydrated, loading });
+      return;
+    }
+
+    // Handle root route redirects
+    if (pathname === '/') {
+      if (isAuthenticated) {
+        console.log('🔄 ConditionalLayout: Root route - authenticated user, redirecting to /fleet');
+        router.replace('/fleet');
+      } else {
+        console.log('🔄 ConditionalLayout: Root route - not authenticated, redirecting to /auth/sign-in');
+        router.replace('/auth/sign-in');
+      }
+      return;
+    }
+
+    // Handle other routes
+    if (!isAuthenticated && !isAuthPage) {
+      console.log('🔄 ConditionalLayout: Unauthenticated user on protected route, redirecting to sign-in');
       router.replace('/auth/sign-in');
     }
-  }, [isHydrated, loading, isAuthenticated, isAuthPage, router]);
+  }, [isHydrated, loading, isAuthenticated, isAuthPage, pathname, router]);
 
   // Redirect authenticated users away from auth pages
   useEffect(() => {
@@ -79,6 +99,9 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
             Redirecting to Sign In...
           </h1>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            If this takes too long, please refresh the page
+          </p>
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto"></div>
         </div>
       </div>

@@ -1,24 +1,11 @@
 "use client";
 
 import { useAuth } from "../../contexts/AuthContext";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 export default function Home() {
-  const { isAuthenticated, loading } = useAuth();
-  const router = useRouter();
+  const { loading } = useAuth();
 
-  useEffect(() => {
-    if (!loading) {
-      if (isAuthenticated) {
-        router.replace('/fleet');
-      } else {
-        router.replace('/auth/sign-in');
-      }
-    }
-  }, [isAuthenticated, loading, router]);
-
-  // Show loading state while checking authentication
+  // Show loading state while ConditionalLayout handles redirects
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="text-center">
@@ -26,7 +13,7 @@ export default function Home() {
           Fleet Management Dashboard
         </h1>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
-          Loading...
+          {loading ? 'Loading...' : 'Redirecting...'}
         </p>
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto"></div>
       </div>

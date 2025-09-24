@@ -110,7 +110,7 @@ export function AlertViewModal({ isOpen, onClose, alertId }: AlertViewModalProps
               </h3>
               <div className="flex items-center space-x-2 mt-1">
                 {getSeverityBadge(alert.severity)}
-                {getStatusBadge(alert.status)}
+                {getStatusBadge(alert.status || 'unknown')}
               </div>
             </div>
           </div>
@@ -142,7 +142,7 @@ export function AlertViewModal({ isOpen, onClose, alertId }: AlertViewModalProps
               <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
                 Status
               </label>
-              {getStatusBadge(alert.status)}
+              {getStatusBadge(alert.status || 'unknown')}
             </div>
 
             <div>
@@ -152,7 +152,7 @@ export function AlertViewModal({ isOpen, onClose, alertId }: AlertViewModalProps
               <div className="flex items-center space-x-2">
                 <Car className="h-4 w-4 text-gray-400" />
                 <span className="text-sm text-gray-900 dark:text-white">
-                  {alert.vehicle || "N/A"}
+                  {typeof alert.vehicle === 'string' ? alert.vehicle : typeof alert.vehicle === 'object' && alert.vehicle?.license_plate || "N/A"}
                 </span>
               </div>
             </div>
@@ -204,7 +204,7 @@ export function AlertViewModal({ isOpen, onClose, alertId }: AlertViewModalProps
           </label>
           <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
             <p className="text-sm text-gray-900 dark:text-white">
-              {alert.message || "No message available"}
+              {alert.description || "No description available"}
             </p>
           </div>
         </div>

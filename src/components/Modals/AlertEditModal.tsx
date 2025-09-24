@@ -22,10 +22,8 @@ export function AlertEditModal({ isOpen, onClose, alertId }: AlertEditModalProps
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    message: "",
     severity: "",
     status: "",
-    notes: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -36,10 +34,8 @@ export function AlertEditModal({ isOpen, onClose, alertId }: AlertEditModalProps
       setFormData({
         title: alert.title || "",
         description: alert.description || "",
-        message: alert.message || "",
         severity: alert.severity || "",
         status: alert.status || "",
-        notes: alert.notes || "",
       });
     }
   }, [alert]);
@@ -167,19 +163,6 @@ export function AlertEditModal({ isOpen, onClose, alertId }: AlertEditModalProps
               />
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Message
-              </label>
-              <textarea
-                name="message"
-                value={formData.message}
-                onChange={handleInputChange}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
-                placeholder="Enter alert message..."
-              />
-            </div>
           </div>
         </div>
 
@@ -244,19 +227,6 @@ export function AlertEditModal({ isOpen, onClose, alertId }: AlertEditModalProps
             Additional Information
           </h3>
           
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Notes
-            </label>
-            <textarea
-              name="notes"
-              value={formData.notes}
-              onChange={handleInputChange}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
-              placeholder="Enter any additional notes..."
-            />
-          </div>
         </div>
 
         {/* Form Actions */}
@@ -270,7 +240,6 @@ export function AlertEditModal({ isOpen, onClose, alertId }: AlertEditModalProps
           <Button
             label={isUpdating ? "Updating..." : "Update Alert"}
             variant="primary"
-            type="submit"
             className={isUpdating ? "opacity-50 cursor-not-allowed" : ""}
             icon={isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : undefined}
           />

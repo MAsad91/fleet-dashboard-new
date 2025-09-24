@@ -1,11 +1,9 @@
 "use client";
 import { EmailIcon, PasswordIcon, CompanyIcon } from "@/assets/icons";
 import { useAuth } from "@/contexts/AuthContext";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import InputGroup from "../FormElements/InputGroup";
-import { Checkbox } from "../FormElements/checkbox";
 import { ErrorModal } from "../Modals/ErrorModal";
 
 export default function SigninWithPassword() {
@@ -15,7 +13,6 @@ export default function SigninWithPassword() {
     companyName: "",
     username: process.env.NEXT_PUBLIC_DEMO_USER_MAIL || "testadmin",
     password: process.env.NEXT_PUBLIC_DEMO_USER_PASS || "testadmin123",
-    remember: false,
   });
 
   const [loading, setLoading] = useState(false);
@@ -42,14 +39,19 @@ export default function SigninWithPassword() {
     if (isMounted && formRef.current) {
       // Small delay to ensure DOM is ready after redirect
       const timer = setTimeout(() => {
-        const inputs = formRef.current?.querySelectorAll('input');
-        inputs?.forEach(input => {
+        const inputs = formRef.current?.querySelectorAll('input, button');
+        inputs?.forEach(element => {
           // Force input to be focusable and editable
-          input.removeAttribute('readonly');
-          input.removeAttribute('disabled');
-          // Ensure the input is properly initialized
-          input.style.pointerEvents = 'auto';
-          input.style.opacity = '1';
+          element.removeAttribute('readonly');
+          element.removeAttribute('disabled');
+          // Ensure the element is properly initialized
+          const htmlElement = element as HTMLElement;
+          htmlElement.style.pointerEvents = 'auto';
+          htmlElement.style.opacity = '1';
+          // Force re-enable button
+          if (element.tagName === 'BUTTON') {
+            (element as HTMLButtonElement).disabled = false;
+          }
         });
       }, 200);
 
@@ -73,6 +75,14 @@ export default function SigninWithPassword() {
     input.removeAttribute('disabled');
     input.style.pointerEvents = 'auto';
     input.style.opacity = '1';
+  };
+
+  const handleButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    // Ensure button is clickable when clicked
+    const button = e.target as HTMLButtonElement;
+    button.removeAttribute('disabled');
+    button.style.pointerEvents = 'auto';
+    button.style.opacity = '1';
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -196,33 +206,12 @@ export default function SigninWithPassword() {
         onClick={handleInputClick}
       />
 
-      <div className="mb-6 flex items-center justify-between gap-2 py-2 font-medium">
-        <Checkbox
-          label="Remember me"
-          name="remember"
-          withIcon="check"
-          minimal
-          radius="md"
-          onChange={(e) =>
-            setData({
-              ...data,
-              remember: e.target.checked,
-            })
-          }
-        />
-
-        <Link
-          href="/auth/forgot-password"
-          className="hover:text-primary dark:text-white dark:hover:text-primary"
-        >
-          Forgot Password?
-        </Link>
-      </div>
 
       <div className="mb-4.5">
         <button
           type="submit"
           disabled={loading}
+          onClick={handleButtonClick}
           className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary p-4 font-medium text-white transition hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Sign In
