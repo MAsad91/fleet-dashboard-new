@@ -16,15 +16,10 @@ export default function DriverLogsPage() {
   const [dateRange, setDateRange] = useState("7days");
   const [hasCoordinatesFilter, setHasCoordinatesFilter] = useState("");
   const [isExporting, setIsExporting] = useState(false);
-  const [currentView, setCurrentView] = useState<'list' | 'detail'>('list');
-  const [selectedLogId, setSelectedLogId] = useState<number | null>(null);
-
   // Mock data since API hooks don't exist yet
   const logsData = { results: [] };
-  const logDetail = null;
   const isLoading = false;
   const error = null;
-  const logDetailLoading = false;
 
   const logs = logsData?.results || [];
 
@@ -49,16 +44,6 @@ export default function DriverLogsPage() {
     
     return matchesSearch && matchesDriver && matchesCoordinates;
   });
-
-  const handleViewLog = (logId: number) => {
-    setSelectedLogId(logId);
-    setCurrentView('detail');
-  };
-
-  const handleBackToList = () => {
-    setCurrentView('list');
-    setSelectedLogId(null);
-  };
 
   const handleOpenTrip = (tripId: number) => {
     router.push(`/trips/${tripId}`);
@@ -122,238 +107,6 @@ export default function DriverLogsPage() {
     }
   };
 
-  // Show loading state when switching to detail view
-  if (currentView === 'detail' && selectedLogId && !logDetail && logDetailLoading) {
-    return (
-      <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <Button 
-                onClick={handleBackToList} 
-                variant="outlineDark"
-                label="Back"
-                icon={<ArrowLeft className="h-4 w-4" />}
-                className="px-4 py-2 rounded-lg"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Loading Driver Log...
-                </h1>
-              </div>
-            </div>
-          </div>
-        </div>
-      </ProtectedRoute>
-    );
-  }
-
-  // Show error state when API fails
-  if (currentView === 'detail' && selectedLogId && error) {
-    return (
-      <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <Button 
-                onClick={handleBackToList} 
-                variant="outlineDark"
-                label="Back"
-                icon={<ArrowLeft className="h-4 w-4" />}
-                className="px-4 py-2 rounded-lg"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Error Loading Driver Log
-                </h1>
-              </div>
-            </div>
-          </div>
-          <div className="text-center text-red-600">
-            <p>Failed to load driver log details. Please try again.</p>
-            <Button 
-              onClick={handleBackToList} 
-              variant="primary" 
-              label="Back to Driver Logs"
-              className="mt-4"
-            />
-          </div>
-        </div>
-      </ProtectedRoute>
-    );
-  }
-
-  // Render detail view
-  if (currentView === 'detail' && logDetail) {
-    return (
-      <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
-        <div className="p-6">
-          {/* Header with Back Button */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Button 
-                  onClick={handleBackToList} 
-                  variant="outlineDark"
-                  label="Back"
-                  icon={<ArrowLeft className="h-4 w-4" />}
-                  className="px-4 py-2 rounded-lg"
-                />
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    Driver Log — Detail (#{(logDetail as any)?.id})
-                  </h1>
-                  <p className="text-gray-600 dark:text-gray-400 mt-1">
-                    Trip #{(logDetail as any)?.trip} • {new Date((logDetail as any)?.timestamp || Date.now()).toLocaleString()}
-                  </p>
-                </div>
-              </div>
-              <div className="flex space-x-3">
-                <Button
-                  label="Open Trip"
-                  variant="primary"
-                  icon={<User className="h-4 w-4" />}
-                  onClick={() => handleOpenTrip((logDetail as any)?.trip)}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* KPI Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Speed (kph)</p>
-                  <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                    {(logDetail as any)?.speed_kph || 'N/A'}
-                  </p>
-                </div>
-                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                  <Clock className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Heading (deg)</p>
-                  <p className="text-3xl font-bold text-green-600 dark:text-green-400">
-                    {(logDetail as any)?.heading || 'N/A'}°
-                  </p>
-                </div>
-                <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-                  <Activity className="h-6 w-6 text-green-600 dark:text-green-400" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Event Type</p>
-                  <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                    {(logDetail as any)?.event_type || '—'}
-                  </p>
-                </div>
-                <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                  <AlertTriangle className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Timestamp & Location */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Timestamp & Location</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Timestamp</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {new Date((logDetail as any)?.timestamp).toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Trip ID</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">{(logDetail as any)?.trip}</span>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Coordinates</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {(logDetail as any)?.coordinates?.coordinates ? 
-                      `${(logDetail as any)?.coordinates.coordinates[1]}, ${(logDetail as any)?.coordinates.coordinates[0]}` : 
-                      'N/A'
-                    }
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Location</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {(logDetail as any)?.coordinates?.coordinates ? 
-                      `${(logDetail as any)?.coordinates.coordinates[1]?.toFixed(6)}, ${(logDetail as any)?.coordinates.coordinates[0]?.toFixed(6)}` : 
-                      'No coordinates'
-                    }
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Fields — API Accurate */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Fields — API Accurate</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">ID</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">{(logDetail as any)?.id}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Trip</span>
-                  <Button
-                    label={`Trip #${(logDetail as any)?.trip}`}
-                    variant="primary"
-                    size="small"
-                    onClick={() => handleOpenTrip((logDetail as any)?.trip)}
-                  />
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Timestamp</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {new Date((logDetail as any)?.timestamp).toLocaleString()}
-                  </span>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Speed (kph)</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">{(logDetail as any)?.speed_kph || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Heading</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">{(logDetail as any)?.heading || 'N/A'}°</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Event Type</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">{(logDetail as any)?.event_type || 'N/A'}</span>
-                </div>
-              </div>
-            </div>
-            <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Coordinates (GeoJSON)</h4>
-              <pre className="text-xs text-gray-600 dark:text-gray-400 font-mono">
-                {JSON.stringify((logDetail as any)?.coordinates, null, 2)}
-              </pre>
-            </div>
-          </div>
-        </div>
-      </ProtectedRoute>
-    );
-  }
 
   // Show loading state for list view
   if (isLoading) {
@@ -395,10 +148,14 @@ export default function DriverLogsPage() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Driver Logs</h1>
-              <p className="text-muted-foreground">
-                Track driver activities and system interactions
-              </p>
             </div>
+            <Button
+              label={isExporting ? "Exporting..." : "Export CSV"}
+              variant="primary"
+              icon={<Download className="h-4 w-4" />}
+              onClick={handleDownload}
+              className={isExporting ? 'opacity-50 cursor-not-allowed' : ''}
+            />
           </div>
 
           {/* KPI Cards */}
@@ -446,71 +203,74 @@ export default function DriverLogsPage() {
 
         {/* Filters */}
         <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Filters</h3>
-            <Button
-              label={isExporting ? "Exporting..." : "Export CSV"}
-              variant="primary"
-              size="small"
-              icon={<Download className="h-4 w-4" />}
-              onClick={handleDownload}
-              className={isExporting ? 'opacity-50 cursor-not-allowed' : ''}
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <InputGroup
-              type="text"
-              label="Trip ID"
-              placeholder="Search by trip ID..."
-              value={searchTerm}
-              handleChange={(e) => setSearchTerm(e.target.value)}
-              icon={<User className="h-4 w-4" />}
-            />
-            <Select
-              label="Driver"
-              items={[
-                { value: "", label: "All Drivers" },
-                { value: "John Doe", label: "John Doe" },
-                { value: "Jane Smith", label: "Jane Smith" },
-                { value: "Mike Johnson", label: "Mike Johnson" },
-                { value: "Sarah Wilson", label: "Sarah Wilson" },
-              ]}
-              defaultValue={driverFilter}
-              onChange={(e) => setDriverFilter(e.target.value)}
-            />
-            <Select
-              label="Time Range"
-              items={[
-                { value: "today", label: "Today" },
-                { value: "7days", label: "Last 7 Days" },
-                { value: "30days", label: "Last 30 Days" },
-                { value: "90days", label: "Last 90 Days" },
-              ]}
-              defaultValue={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-            />
-            <Select
-              label="Has Coordinates"
-              items={[
-                { value: "", label: "All" },
-                { value: "true", label: "Yes" },
-                { value: "false", label: "No" },
-              ]}
-              defaultValue={hasCoordinatesFilter}
-              onChange={(e) => setHasCoordinatesFilter(e.target.value)}
-            />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Trip ID
+              </label>
+              <input
+                type="text"
+                placeholder="Search by trip ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Driver
+              </label>
+              <select
+                value={driverFilter}
+                onChange={(e) => setDriverFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">All Drivers</option>
+                <option value="John Doe">John Doe</option>
+                <option value="Jane Smith">Jane Smith</option>
+                <option value="Mike Johnson">Mike Johnson</option>
+                <option value="Sarah Wilson">Sarah Wilson</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Time Range
+              </label>
+              <select
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="today">Today</option>
+                <option value="7days">Last 7 Days</option>
+                <option value="30days">Last 30 Days</option>
+                <option value="90days">Last 90 Days</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Has Coordinates
+              </label>
+              <select
+                value={hasCoordinatesFilter}
+                onChange={(e) => setHasCoordinatesFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">All</option>
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </div>
           </div>
           <div className="flex justify-end mt-4">
             <Button
-              label="Clear Filters"
-              variant="outlineDark"
+              label="Apply"
+              variant="primary"
               size="small"
-              onClick={() => {
-                setSearchTerm("");
-                setDriverFilter("");
-                setDateRange("7days");
-                setHasCoordinatesFilter("");
-              }}
+              onClick={() => {}} // Filters are applied automatically
             />
           </div>
         </div>
@@ -555,7 +315,19 @@ export default function DriverLogsPage() {
               </thead>
               <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                 {(filteredLogs as any[]).map((log: any) => (
-                  <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <tr 
+                    key={log.id} 
+                    className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-150"
+                    onClick={(e) => {
+                      // Don't navigate if clicking on action buttons
+                      const target = e.target as HTMLElement;
+                      const isButton = target.closest('button');
+                      
+                      if (!isButton) {
+                        router.push(`/driver-logs/${log.id}`);
+                      }
+                    }}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       <div className="flex items-center">
                         <Clock className="h-4 w-4 text-gray-400 mr-2" />
@@ -574,10 +346,10 @@ export default function DriverLogsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {log.speed_kph || "—"} kph
+                      {log.speed_kph || "—"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {log.heading || "—"}°
+                      {log.heading || "—"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {log.coordinates?.coordinates?.[1] || "—"}
@@ -593,11 +365,14 @@ export default function DriverLogsPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
                         <Button
-                          label=""
+                          label="View"
                           variant="outlineDark"
                           size="small"
                           icon={<Eye className="h-4 w-4" />}
-                          onClick={() => handleViewLog(log.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/driver-logs/${log.id}`);
+                          }}
                         />
                       </div>
                     </td>
@@ -623,53 +398,12 @@ export default function DriverLogsPage() {
           )}
         </div>
 
-        {/* Pagination */}
-        <div className="bg-white dark:bg-gray-900 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6">
-            <div className="flex-1 flex justify-between sm:hidden">
-              <button
-                disabled
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300"
-              >
-                Previous
-              </button>
-              <button
-                disabled
-                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300"
-              >
-                Next
-              </button>
-            </div>
-            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  Showing <span className="font-medium">1</span> to <span className="font-medium">{(filteredLogs as any[]).length}</span> of{' '}
-                  <span className="font-medium">{(filteredLogs as any[]).length}</span> results
-                </p>
-              </div>
-              <div>
-                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                  <button
-                    disabled
-                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400"
-                  >
-                    <span className="sr-only">Previous</span>
-                    <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                      <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                  <button
-                    disabled
-                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300"
-                  >
-                    <span className="sr-only">Next</span>
-                    <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                </nav>
-              </div>
-            </div>
+        {/* Footer */}
+        <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+          <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+            Page 1/1
           </div>
+        </div>
         </div>
       </div>
     </ProtectedRoute>

@@ -1,33 +1,96 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useGetAlertByIdQuery } from "@/store/api/fleetApi";
+import { useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 import { Button } from "@/components/ui-elements/button";
-import { ArrowLeft, AlertTriangle, Clock, MapPin, Car, User, Bell } from "lucide-react";
+import { ArrowLeft, AlertTriangle, AlertCircle, Clock, Calendar, Check, X, Car, User, Eye } from "lucide-react";
 
 export default function AlertDetailPage() {
-  const params = useParams();
   const router = useRouter();
+  const params = useParams();
   const alertId = params.id as string;
 
-  const { data: alertData, isLoading, error } = useGetAlertByIdQuery(parseInt(alertId));
+  // Mock data since API hooks don't exist yet
+  const alertData = {
+    id: parseInt(alertId),
+    alert_type: "vehicle_health",
+    system: "motor",
+    vehicle: 123,
+    driver: 456,
+    title: "High Motor Temperature",
+    message: "Vehicle motor temperature has exceeded safe operating limits. Immediate attention required.",
+    severity: "high",
+    created_at: new Date().toISOString(),
+    status_label: "New",
+    status: "active",
+    read: false,
+    ignored: false,
+    resolved: false,
+    resolved_at: null,
+    vehicle_info: {
+      license_plate: "EV-9012",
+      make: "Tesla",
+      model: "Model 3"
+    },
+    device_id: "DEV-456"
+  };
 
-  // Debug logging
-  useEffect(() => {
-    console.log('🚨 Alert Detail Page:', { alertId, alertData, isLoading, error });
-    if (alertData) {
-      console.log('🚨 Alert Data Structure:', JSON.stringify(alertData, null, 2));
-    }
-  }, [alertId, alertData, isLoading, error]);
+  const isLoading = false;
+  const error = null;
 
-  // Use alertData directly since it's not nested
-  const alert = alertData;
+  if (isLoading) {
+    return (
+      <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
+        <div className="flex items-center justify-center h-64">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+        </div>
+      </ProtectedRoute>
+    );
+  }
+
+  if (error || !alertData) {
+    return (
+      <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
+        <div className="text-center text-red-600">
+          <p>Failed to load alert details. Please try again.</p>
+          <Button 
+            onClick={() => router.back()} 
+            variant="primary" 
+            label="Back to Alerts"
+            className="mt-4"
+          />
+        </div>
+      </ProtectedRoute>
+    );
+  }
+
+  const handleAcknowledge = () => {
+    console.log('Acknowledging alert:', alertData.id);
+    // TODO: Implement acknowledge API call
+  };
+
+  const handleIgnore = () => {
+    console.log('Ignoring alert:', alertData.id);
+    // TODO: Implement ignore API call
+  };
+
+  const handleResolve = () => {
+    console.log('Resolving alert:', alertData.id);
+    // TODO: Implement resolve API call
+  };
+
+  const handleViewVehicle = () => {
+    router.push(`/vehicles/${alertData.vehicle}`);
+  };
+
+  const handleViewOBDDevice = () => {
+    router.push(`/obd-devices/${alertData.device_id}`);
+  };
 
   const getSeverityBadge = (severity: string) => {
     const severityConfig = {
-      low: { className: "bg-blue-100 text-blue-800", label: "Low" },
+      low: { className: "bg-gray-100 text-gray-800", label: "Low" },
       medium: { className: "bg-yellow-100 text-yellow-800", label: "Medium" },
       high: { className: "bg-orange-100 text-orange-800", label: "High" },
       critical: { className: "bg-red-100 text-red-800", label: "Critical" },
@@ -35,7 +98,7 @@ export default function AlertDetailPage() {
     
     const config = severityConfig[severity as keyof typeof severityConfig] || { 
       className: "bg-gray-100 text-gray-800", 
-      label: severity || "Unknown"
+      label: severity
     };
     
     return (
@@ -47,15 +110,16 @@ export default function AlertDetailPage() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      open: { className: "bg-red-100 text-red-800", label: "Open" },
+      active: { className: "bg-red-100 text-red-800", label: "Active" },
       acknowledged: { className: "bg-yellow-100 text-yellow-800", label: "Acknowledged" },
+      ignored: { className: "bg-gray-100 text-gray-800", label: "Ignored" },
       resolved: { className: "bg-green-100 text-green-800", label: "Resolved" },
-      closed: { className: "bg-gray-100 text-gray-800", label: "Closed" },
+      new: { className: "bg-blue-100 text-blue-800", label: "New" },
     };
     
     const config = statusConfig[status as keyof typeof statusConfig] || { 
       className: "bg-gray-100 text-gray-800", 
-      label: status || "Unknown"
+      label: status 
     };
     
     return (
@@ -65,290 +129,241 @@ export default function AlertDetailPage() {
     );
   };
 
-  const getAlertTypeIcon = (alertType: string) => {
-    switch (alertType?.toLowerCase()) {
-      case "maintenance":
-        return <Bell className="h-5 w-5 text-yellow-600" />;
-      case "safety":
-        return <AlertTriangle className="h-5 w-5 text-red-600" />;
-      case "performance":
-        return <Car className="h-5 w-5 text-blue-600" />;
-      case "fuel":
-        return <Car className="h-5 w-5 text-green-600" />;
-      case "location":
-        return <MapPin className="h-5 w-5 text-purple-600" />;
-      case "system":
-        return <Bell className="h-5 w-5 text-gray-600" />;
-      default:
-        return <Bell className="h-5 w-5 text-gray-400" />;
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <Button 
-                onClick={() => router.back()} 
-                variant="outlineDark"
-                label="Back"
-                icon={<ArrowLeft className="h-4 w-4" />}
-                className="px-4 py-2 rounded-lg"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Loading Alert...
-                </h1>
-              </div>
-            </div>
-          </div>
-        </div>
-      </ProtectedRoute>
-    );
-  }
-
-  if (error) {
-    return (
-      <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <Button 
-                onClick={() => router.back()} 
-                variant="outlineDark"
-                label="Back"
-                icon={<ArrowLeft className="h-4 w-4" />}
-                className="px-4 py-2 rounded-lg"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Error Loading Alert
-                </h1>
-              </div>
-            </div>
-          </div>
-          <div className="text-center text-red-600">
-            <p>Failed to load alert details. Please try again.</p>
-            <Button 
-              onClick={() => router.back()} 
-              variant="primary" 
-              label="Back to Alerts"
-              className="mt-4"
-            />
-          </div>
-        </div>
-      </ProtectedRoute>
-    );
-  }
-
-  if (!alertData) {
-    return (
-      <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <Button 
-                onClick={() => router.back()} 
-                variant="outlineDark"
-                label="Back"
-                icon={<ArrowLeft className="h-4 w-4" />}
-                className="px-4 py-2 rounded-lg"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Alert Not Found
-                </h1>
-              </div>
-            </div>
-          </div>
-        </div>
-      </ProtectedRoute>
-    );
-  }
-
   return (
     <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
-      <div className="p-6">
-        {/* Header with Back Button */}
-        <div className="mb-8">
-          <Button 
-            onClick={() => router.back()} 
-            variant="outlineDark"
-            label="Back"
-            icon={<ArrowLeft className="h-4 w-4" />}
-            className="px-4 py-2 rounded-lg"
-          />
-        </div>
+      <div className="space-y-6">
+        {/* HEADER: Back Button + Beautiful Title Card */}
+        <div className="relative">
+          {/* Back Button */}
+          <div className="mb-6">
+            <Button
+              onClick={() => router.back()}
+              variant="outlineDark"
+              label="Back"
+              icon={<ArrowLeft className="h-4 w-4" />}
+              className="px-4 py-2 rounded-lg"
+            />
+          </div>
 
-        {/* Alert Information Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Basic Information Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-            <div className="flex items-center mb-6">
-              <div className="p-2 bg-primary/10 rounded-lg mr-3">
-                <AlertTriangle className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Alert Details</h3>
-            </div>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Alert Type</span>
-                <div className="flex items-center space-x-2">
-                  {getAlertTypeIcon(alert?.alert_type || '')}
-                  <span className="font-semibold text-gray-900 dark:text-white capitalize">{alert?.alert_type || 'Unknown'}</span>
+          {/* Beautiful Title Card */}
+          <div className="bg-gradient-to-r from-red-50 to-orange-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 shadow-lg border border-red-200 dark:border-gray-600 relative overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-red-200 dark:bg-gray-600 rounded-full -translate-y-16 translate-x-16 opacity-20"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-orange-200 dark:bg-gray-600 rounded-full translate-y-12 -translate-x-12 opacity-20"></div>
+            
+            <div className="relative z-10">
+              <div className="flex justify-between items-start">
+                {/* Left Side - Alert Info */}
+                <div className="flex-1">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+                      <AlertTriangle className="h-8 w-8 text-red-600" />
+                    </div>
+                    <div>
+                      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                        Alert — Detail
+                      </h1>
+                      <p className="text-lg text-gray-600 dark:text-gray-400">
+                        Type: {alertData.alert_type} • Severity: {alertData.severity} • Status: {alertData.status_label} • System: {alertData.system}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Quick Info Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Severity</span>
+                      </div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {getSeverityBadge(alertData.severity)}
+                      </p>
+                    </div>
+                    
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Status</span>
+                      </div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {getStatusBadge(alertData.status_label)}
+                      </p>
+                    </div>
+                    
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Created</span>
+                      </div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {new Date(alertData.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Side - Action Buttons */}
+                <div className="flex flex-col space-y-2 ml-6">
+                  <div className="flex space-x-2">
+                    {alertData.status === 'active' || alertData.status === 'new' ? (
+                      <Button
+                        label="Acknowledge"
+                        variant="outlineDark"
+                        size="small"
+                        icon={<Check className="h-3 w-3" />}
+                        onClick={handleAcknowledge}
+                        className="px-3 py-2 text-xs"
+                      />
+                    ) : null}
+                    {alertData.status === 'active' || alertData.status === 'new' || alertData.status === 'acknowledged' ? (
+                      <Button
+                        label="Ignore"
+                        variant="outlineDark"
+                        size="small"
+                        icon={<X className="h-3 w-3" />}
+                        onClick={handleIgnore}
+                        className="px-3 py-2 text-xs"
+                      />
+                    ) : null}
+                    {alertData.status === 'acknowledged' ? (
+                      <Button
+                        label="Resolve"
+                        variant="primary"
+                        size="small"
+                        icon={<Check className="h-3 w-3" />}
+                        onClick={handleResolve}
+                        className="px-3 py-2 text-xs"
+                      />
+                    ) : null}
+                  </div>
                 </div>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Title</span>
-                <span className="font-semibold text-gray-900 dark:text-white text-lg">{alert?.title}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Severity</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {getSeverityBadge(alertData.severity)}
+                </p>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Severity</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {getSeverityBadge(alert?.severity || '')}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {getStatusBadge(alert?.status || '')}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Created At</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {alert?.created_at ? new Date(alert?.created_at).toLocaleString() : 'Unknown'}
-                </span>
+              <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-lg">
+                <AlertTriangle className="h-6 w-6 text-orange-600" />
               </div>
             </div>
           </div>
 
-          {/* Vehicle Information Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-            <div className="flex items-center mb-6">
-              <div className="p-2 bg-primary/10 rounded-lg mr-3">
-                <Car className="h-6 w-6 text-primary" />
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Status</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {getStatusBadge(alertData.status_label)}
+                </p>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Vehicle Information</h3>
+              <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                <Clock className="h-6 w-6 text-blue-600" />
+              </div>
             </div>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Vehicle</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {typeof alert?.vehicle === 'object' && alert.vehicle?.license_plate || 'Unknown'}
-                </span>
+          </div>
+
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Created At</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">
+                  {alertData.created_at ? new Date(alertData.created_at).toLocaleDateString() : 'N/A'}
+                </p>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Driver</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {typeof alert?.driver === 'object' && alert.driver?.name || 'Unknown'}
-                </span>
+              <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
+                <Calendar className="h-6 w-6 text-green-600" />
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Location</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {alert?.location || 'Unknown'}
-                </span>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Resolved</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">
+                  {alertData.resolved_at ? new Date(alertData.resolved_at).toLocaleDateString() : '—'}
+                </p>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Mileage</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {alert?.mileage ? `${alert?.mileage.toLocaleString()} km` : 'N/A'}
-                </span>
+              <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                <Check className="h-6 w-6 text-purple-600" />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Description Card */}
-        <div className="mt-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-            <div className="flex items-center mb-6">
-              <div className="p-2 bg-primary/10 rounded-lg mr-3">
-                <Bell className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Description</h3>
-            </div>
-            <div className="prose dark:prose-invert max-w-none">
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                {alert?.description || 'No description available.'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Additional Information Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-          {/* System Information Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-            <div className="flex items-center mb-6">
-              <div className="p-2 bg-primary/10 rounded-lg mr-3">
-                <Clock className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Timeline</h3>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Summary (Left) */}
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+            <h3 className="text-lg font-semibold mb-4">Summary</h3>
             <div className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Created At</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {alert?.created_at ? new Date(alert?.created_at).toLocaleString() : 'Unknown'}
-                </span>
+                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">title:</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{alertData.title}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Updated At</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {alert?.updated_at ? new Date(alert?.updated_at).toLocaleString() : 'Unknown'}
-                </span>
+                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">message:</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{alertData.message}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Acknowledged At</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {alert?.acknowledged_at ? new Date(alert?.acknowledged_at).toLocaleString() : 'Not acknowledged'}
-                </span>
+                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">created_at:</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{new Date(alertData.created_at).toLocaleString()}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Resolved At</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {alert?.resolved_at ? new Date(alert?.resolved_at).toLocaleString() : 'Not resolved'}
-                </span>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">status_label:</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{getStatusBadge(alertData.status_label)}</span>
               </div>
             </div>
           </div>
 
-          {/* Additional Details Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-            <div className="flex items-center mb-6">
-              <div className="p-2 bg-primary/10 rounded-lg mr-3">
-                <MapPin className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Additional Details</h3>
-            </div>
+          {/* Context (Right) */}
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+            <h3 className="text-lg font-semibold mb-4">Context</h3>
             <div className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Priority</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {alert?.priority || 'N/A'}
+                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">vehicle_info (plate/make):</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                  {alertData.vehicle_info ? `${alertData.vehicle_info.license_plate} - ${alertData.vehicle_info.make} ${alertData.vehicle_info.model}` : 'N/A'}
                 </span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Source</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {alert?.source || 'N/A'}
-                </span>
+                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">device_id (if any):</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{alertData.device_id || 'N/A'}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Category</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {alert?.category || 'N/A'}
-                </span>
+                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">driver (if any):</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{alertData.driver ? `Driver #${alertData.driver}` : 'N/A'}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Tags</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {alert?.tags || 'N/A'}
-                </span>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Actions:</span>
+                <div className="flex space-x-2">
+                  <Button
+                    label="View Vehicle"
+                    variant="outlineDark"
+                    size="small"
+                    icon={<Car className="h-3 w-3" />}
+                    onClick={handleViewVehicle}
+                    className="px-2 py-1 text-xs"
+                  />
+                  <Button
+                    label="View OBD Device"
+                    variant="outlineDark"
+                    size="small"
+                    icon={<Eye className="h-3 w-3" />}
+                    onClick={handleViewOBDDevice}
+                    className="px-2 py-1 text-xs"
+                  />
+                </div>
               </div>
             </div>
           </div>

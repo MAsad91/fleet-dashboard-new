@@ -20,11 +20,6 @@ export default function TripsPage() {
   const [selectedTrips, setSelectedTrips] = useState<string[]>([]);
   const [tripIdFilter, setTripIdFilter] = useState("");
   
-  // Full-page view states
-  const [currentView, setCurrentView] = useState<'list' | 'view' | 'edit'>('list');
-  const [tripData, setTripData] = useState<any>(null);
-  const [formData, setFormData] = useState<any>({});
-  const [errors, setErrors] = useState<Record<string, string>>({});
   
   const { data: tripsData, isLoading, error } = useGetTripsQuery({
     page: pagination.page,
@@ -42,27 +37,9 @@ export default function TripsPage() {
   const { data: driversData } = useGetDriversQuery({ page: 1 });
   const { data: vehiclesData } = useListVehiclesQuery({ page: 1 });
 
-  // API hooks for full-page views
-  const { 
-    data: tripDetails, 
-    isLoading: tripLoading, 
-    error: tripError 
-  } = useGetTripByIdQuery(selectedTripId!, {
-    skip: !selectedTripId
-  });
-
-  const [updateTrip, { isLoading: isUpdating }] = useUpdateTripMutation();
   const [startTrip] = useStartTripMutation();
   const [endTrip] = useEndTripMutation();
   const [cancelTrip] = useCancelTripMutation();
-
-  // Update trip data when API response changes
-  useEffect(() => {
-    if (tripDetails) {
-      setTripData(tripDetails);
-      setFormData(tripDetails);
-    }
-  }, [tripDetails]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(setTripsFilters({ search: e.target.value }));
@@ -128,82 +105,6 @@ export default function TripsPage() {
     }
   };
 
-  const handleViewTrip = (tripId: string) => {
-    console.log('Opening trip view:', tripId);
-    setSelectedTripId(tripId);
-    setCurrentView('view');
-  };
-
-  const handleEditTrip = (tripId: string) => {
-    console.log('Opening trip edit:', tripId);
-    setSelectedTripId(tripId);
-    setCurrentView('edit');
-  };
-
-  const handleBackToList = () => {
-    console.log('Going back to list');
-    setCurrentView('list');
-    // Don't reset selectedTripId to allow re-navigation
-  };
-
-  const handleClearSelection = () => {
-    console.log('Clearing selection');
-    setSelectedTripId(null);
-    setTripData(null);
-    setFormData({});
-    setErrors({});
-    setCurrentView('list');
-  };
-
-  // Form handling for edit view
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev: any) => ({
-      ...prev,
-      [name]: value
-    }));
-    
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-    
-    if (!formData.start_location?.trim()) {
-      newErrors.start_location = 'Start location is required';
-    }
-    if (!formData.end_location?.trim()) {
-      newErrors.end_location = 'End location is required';
-    }
-    if (!formData.purpose?.trim()) {
-      newErrors.purpose = 'Purpose is required';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSaveTrip = async () => {
-    if (!validateForm()) return;
-    
-    try {
-      await updateTrip({
-        id: selectedTripId!,
-        body: formData
-      }).unwrap();
-      
-      console.log('Trip updated successfully');
-      handleClearSelection();
-    } catch (error) {
-      console.error('Failed to update trip:', error);
-    }
-  };
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -221,67 +122,6 @@ export default function TripsPage() {
     );
   };
 
-  const getActionButton = (trip: any) => {
-    const statusButtons = (() => {
-      switch (trip.status) {
-        case "scheduled":
-          return (
-            <Button
-              label="Start"
-              variant="green"
-              size="small"
-              icon={<Play className="h-4 w-4" />}
-              onClick={() => handleStartTrip(trip.id)}
-            />
-          );
-        case "in_progress":
-          return (
-            <div className="flex gap-2">
-              <Button
-                label="End"
-                variant="primary"
-                size="small"
-                icon={<Square className="h-4 w-4" />}
-                onClick={() => handleEndTrip(trip.id)}
-              />
-              <Button
-                label="Cancel"
-                variant="outlineDark"
-                size="small"
-                icon={<X className="h-4 w-4" />}
-                onClick={() => handleCancelTrip(trip.id)}
-              />
-            </div>
-          );
-        default:
-          return null;
-      }
-    })();
-
-    return (
-      <div className="flex items-center space-x-2">
-        <Button
-          label=""
-          variant="outlineDark"
-          size="small"
-          icon={<Eye className="h-4 w-4" />}
-          onClick={() => handleViewTrip(trip.id)}
-        />
-        <Button
-          label=""
-          variant="outlineDark"
-          size="small"
-          icon={<Edit className="h-4 w-4" />}
-          onClick={() => handleEditTrip(trip.id)}
-        />
-        {statusButtons && (
-          <div className="ml-2">
-            {statusButtons}
-          </div>
-        )}
-      </div>
-    );
-  };
 
   if (error) {
     return (
@@ -293,385 +133,6 @@ export default function TripsPage() {
     );
   }
 
-  // Debug current state
-  console.log('Current Trips state:', { currentView, selectedTripId, tripData: !!tripData, tripLoading });
-
-  // Show loading state when switching trips
-  if ((currentView === 'view' || currentView === 'edit') && selectedTripId && !tripData && tripLoading) {
-    return (
-      <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <Button 
-                onClick={handleBackToList} 
-                variant="outlineDark"
-                label="Back"
-                icon={<ArrowLeft className="h-4 w-4" />}
-                className="px-4 py-2 rounded-lg"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Loading Trip...
-                </h1>
-              </div>
-            </div>
-          </div>
-        </div>
-      </ProtectedRoute>
-    );
-  }
-
-  // Show error state when API fails
-  if ((currentView === 'view' || currentView === 'edit') && selectedTripId && tripError) {
-    return (
-      <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <Button 
-                onClick={handleBackToList} 
-                variant="outlineDark"
-                label="Back"
-                icon={<ArrowLeft className="h-4 w-4" />}
-                className="px-4 py-2 rounded-lg"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Error Loading Trip
-                </h1>
-              </div>
-            </div>
-          </div>
-          <div className="text-center text-red-600">
-            <p>Failed to load trip details. Please try again.</p>
-            <Button 
-              onClick={handleBackToList} 
-              variant="primary" 
-              label="Back to Trips"
-              className="mt-4"
-            />
-          </div>
-        </div>
-      </ProtectedRoute>
-    );
-  }
-
-  // Render different views based on currentView state
-  if (currentView === 'view' && tripData) {
-    return (
-      <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
-        <div key={`view-${selectedTripId}`} className="p-6">
-          {/* Header with Back Button */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Button 
-                  onClick={handleBackToList} 
-                  variant="outlineDark"
-                  label="Back"
-                  icon={<ArrowLeft className="h-4 w-4" />}
-                  className="px-4 py-2 rounded-lg"
-                />
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    Trip — Detail
-                  </h1>
-                  <p className="text-gray-600 dark:text-gray-400 mt-1">
-                    Trip: {tripData.trip_id} • Vehicle: {tripData.vehicle?.plate_number || tripData.vehicle?.license_plate || 'N/A'} • Driver: {tripData.driver?.name || tripData.driver?.full_name || 'N/A'} • Status: {tripData.status}
-                  </p>
-                </div>
-              </div>
-              <div className="flex space-x-3">
-                {tripData.status === 'scheduled' && (
-                  <Button
-                    label="Start"
-                    variant="primary"
-                    icon={<Play className="h-4 w-4" />}
-                    onClick={() => handleStartTrip(tripData.id)}
-                  />
-                )}
-                {tripData.status === 'in_progress' && (
-                  <div className="flex space-x-2">
-                    <Button
-                      label="End"
-                      variant="primary"
-                      icon={<Square className="h-4 w-4" />}
-                      onClick={() => handleEndTrip(tripData.id)}
-                    />
-                    <Button
-                      label="Cancel"
-                      variant="outlineDark"
-                      icon={<X className="h-4 w-4" />}
-                      onClick={() => handleCancelTrip(tripData.id)}
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* KPI Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Driver Dist (km)</p>
-                  <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                    {tripData.driver_distance_km || 'N/A'}
-                  </p>
-                </div>
-                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                  <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">OBD Dist (km)</p>
-                  <p className="text-3xl font-bold text-green-600 dark:text-green-400">
-                    {tripData.obd_distance_km || 'N/A'}
-                  </p>
-                </div>
-                <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-                  <Car className="h-6 w-6 text-green-600 dark:text-green-400" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Est. Cost</p>
-                  <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
-                    ${tripData.estimated_cost || 'N/A'}
-                  </p>
-                </div>
-                <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
-                  <Calendar className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Actual Cost</p>
-                  <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                    ${tripData.actual_cost || 'N/A'}
-                  </p>
-                </div>
-                <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                  <Clock className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Trip Information Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Basic Information Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-              <div className="flex items-center mb-6">
-                <div className="p-2 bg-primary/10 rounded-lg mr-3">
-                  <MapPin className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Trip Details</h3>
-              </div>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Start Location</span>
-                  <span className="font-semibold text-gray-900 dark:text-white text-lg">{tripData.start_location}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">End Location</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">{tripData.end_location}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {getStatusBadge(tripData.status)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Purpose</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">{tripData.purpose || 'Not Specified'}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Created At</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {tripData.created_at ? new Date(tripData.created_at).toLocaleString() : 'Unknown'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Additional Information Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-              <div className="flex items-center mb-6">
-                <div className="p-2 bg-primary/10 rounded-lg mr-3">
-                  <Car className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Trip Information</h3>
-              </div>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Driver</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {tripData.driver ? `${tripData.driver.first_name} ${tripData.driver.last_name}` : 'Not Assigned'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Vehicle</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {tripData.vehicle ? `${tripData.vehicle.make} ${tripData.vehicle.model} (${tripData.vehicle.license_plate})` : 'Not Assigned'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Start Time</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {tripData.start_time ? new Date(tripData.start_time).toLocaleString() : 'Not Started'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">End Time</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {tripData.end_time ? new Date(tripData.end_time).toLocaleString() : 'Not Ended'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </ProtectedRoute>
-    );
-  }
-
-  if (currentView === 'edit' && tripData) {
-    return (
-      <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
-        <div key={`edit-${selectedTripId}`} className="p-6">
-          {/* Header with Back Button */}
-          <div className="mb-8">
-            <Button 
-              onClick={handleBackToList} 
-              variant="outlineDark"
-              label="Back"
-              icon={<ArrowLeft className="h-4 w-4" />}
-              className="px-4 py-2 rounded-lg"
-            />
-          </div>
-
-          {/* Edit Form */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Basic Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Trip Details</h3>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Start Location
-                  </label>
-                  <input
-                    type="text"
-                    name="start_location"
-                    value={formData.start_location || ''}
-                    onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
-                      errors.start_location ? "border-red-500" : "border-gray-300 dark:border-gray-600"
-                    }`}
-                  />
-                  {errors.start_location && (
-                    <p className="mt-1 text-sm text-red-600">{errors.start_location}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    End Location
-                  </label>
-                  <input
-                    type="text"
-                    name="end_location"
-                    value={formData.end_location || ''}
-                    onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
-                      errors.end_location ? "border-red-500" : "border-gray-300 dark:border-gray-600"
-                    }`}
-                  />
-                  {errors.end_location && (
-                    <p className="mt-1 text-sm text-red-600">{errors.end_location}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Purpose
-                  </label>
-                  <textarea
-                    name="purpose"
-                    value={formData.purpose || ''}
-                    onChange={handleInputChange}
-                    rows={3}
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white ${
-                      errors.purpose ? "border-red-500" : "border-gray-300 dark:border-gray-600"
-                    }`}
-                    placeholder="Enter trip purpose..."
-                  />
-                  {errors.purpose && (
-                    <p className="mt-1 text-sm text-red-600">{errors.purpose}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Status Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Status Information</h3>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Status
-                  </label>
-                  <select
-                    name="status"
-                    value={formData.status || ''}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
-                  >
-                    <option value="scheduled">Scheduled</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-            
-            {/* Form Actions */}
-            <div className="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-              <Button 
-                onClick={handleBackToList} 
-                variant="outlineDark"
-                label="Cancel"
-                icon={<X className="h-4 w-4" />}
-                className="px-4 py-2 rounded-lg"
-              />
-              <Button 
-                onClick={handleSaveTrip} 
-                variant="primary" 
-                label={isUpdating ? 'Saving...' : 'Save Changes'}
-                icon={<Save className="h-4 w-4" />}
-                className="px-6 py-2 rounded-lg"
-              />
-            </div>
-          </div>
-        </div>
-      </ProtectedRoute>
-    );
-  }
 
   return (
     <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
@@ -681,16 +142,19 @@ export default function TripsPage() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Trips</h1>
-              <p className="text-muted-foreground">
-                Manage and monitor all fleet trips
-              </p>
             </div>
-            <Button
-              label="Create Trip"
-              variant="primary"
-              icon={<Plus className="h-4 w-4" />}
-              onClick={() => router.push('/trips/add')}
-            />
+            <div className="flex space-x-3">
+              <Button
+                label="+ Create"
+                variant="primary"
+                onClick={() => router.push('/trips/add')}
+              />
+              <Button
+                label="Bulk ▼"
+                variant="outlineDark"
+                onClick={() => {}}
+              />
+            </div>
           </div>
 
           {/* KPI Cards */}
@@ -751,71 +215,79 @@ export default function TripsPage() {
 
         {/* Filters */}
         <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-          <h3 className="text-lg font-semibold mb-4">Filters</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Select
-              label="Status"
-              items={[
-                { value: "all", label: "All Status" },
-                { value: "scheduled", label: "Scheduled" },
-                { value: "in_progress", label: "In Progress" },
-                { value: "completed", label: "Completed" },
-                { value: "cancelled", label: "Cancelled" },
-              ]}
-              defaultValue={filters.status || "all"}
-              placeholder="Select status"
-              onChange={handleStatusFilter}
-            />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Status
+              </label>
+              <select
+                value={filters.status || "all"}
+                onChange={handleStatusFilter}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="all">All Status</option>
+                <option value="scheduled">Scheduled</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
             
-            <Select
-              label="Vehicle"
-              items={[
-                { value: "", label: "All Vehicles" },
-                ...(vehiclesData?.results?.map((vehicle: any) => ({
-                  value: vehicle.id.toString(),
-                  label: `${vehicle.plate_number || vehicle.license_plate || 'N/A'} - ${vehicle.make || ''} ${vehicle.model || ''}`
-                })) || [])
-              ]}
-              defaultValue={filters.vehicle_id || ""}
-              onChange={(e) => dispatch(setTripsFilters({ vehicle_id: e.target.value || undefined }))}
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Vehicle
+              </label>
+              <select
+                value={filters.vehicle_id || ""}
+                onChange={(e) => dispatch(setTripsFilters({ vehicle_id: e.target.value || undefined }))}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">All Vehicles</option>
+                {vehiclesData?.results?.map((vehicle: any) => (
+                  <option key={vehicle.id} value={vehicle.id.toString()}>
+                    {vehicle.plate_number || vehicle.license_plate || 'N/A'} - {vehicle.make || ''} {vehicle.model || ''}
+                  </option>
+                ))}
+              </select>
+            </div>
             
-            <Select
-              label="Driver"
-              items={[
-                { value: "", label: "All Drivers" },
-                ...(driversData?.results?.map((driver: any) => ({
-                  value: driver.id.toString(),
-                  label: `${driver.name || driver.full_name || driver.username || 'N/A'} (${driver.phone || 'N/A'})`
-                })) || [])
-              ]}
-              defaultValue={filters.driver_id || ""}
-              onChange={(e) => dispatch(setTripsFilters({ driver_id: e.target.value || undefined }))}
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Driver
+              </label>
+              <select
+                value={filters.driver_id || ""}
+                onChange={(e) => dispatch(setTripsFilters({ driver_id: e.target.value || undefined }))}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">All Drivers</option>
+                {driversData?.results?.map((driver: any) => (
+                  <option key={driver.id} value={driver.id.toString()}>
+                    {driver.name || driver.full_name || driver.username || 'N/A'} ({driver.phone || 'N/A'})
+                  </option>
+                ))}
+              </select>
+            </div>
             
-            <InputGroup
-              label="Trip ID"
-              type="text"
-              placeholder="Search by trip ID..."
-              value={tripIdFilter}
-              handleChange={(e) => setTripIdFilter(e.target.value)}
-              icon={<Search className="h-4 w-4 text-gray-400" />}
-              iconPosition="left"
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Trip ID
+              </label>
+              <input
+                type="text"
+                placeholder="Search by trip ID..."
+                value={tripIdFilter}
+                onChange={(e) => setTripIdFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              />
+            </div>
           </div>
           <div className="flex justify-end mt-4">
             <Button
-              label="Clear Filters"
-              variant="outlineDark"
+              label="Apply"
+              variant="primary"
               size="small"
-              onClick={() => {
-                dispatch(setTripsFilters({ 
-                  status: undefined,
-                  vehicle_id: undefined,
-                  driver_id: undefined
-                }));
-                setTripIdFilter("");
-              }}
+              onClick={() => {}} // Filters are applied automatically
             />
           </div>
         </div>
@@ -834,29 +306,27 @@ export default function TripsPage() {
             <div className="bg-gray-50 dark:bg-gray-800 px-6 py-3 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={selectedTrips.length === tripsData.results.length}
-                      onChange={handleSelectAll}
-                      className="rounded border-gray-300 text-primary focus:ring-primary"
-                    />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                      Select All ({selectedTrips.length} selected)
-                    </span>
-                  </label>
-                </div>
-                
-                {selectedTrips.length > 0 && (
-                  <div className="flex items-center space-x-2">
+                  <Button
+                    label="Select All"
+                    variant="outlineDark"
+                    size="small"
+                    onClick={handleSelectAll}
+                    className="text-sm"
+                  />
+                  {selectedTrips.length > 0 && (
                     <Button
                       label="Cancel Selected"
                       variant="outlineDark"
+                      size="small"
                       onClick={handleBulkCancel}
                       className="text-sm text-red-600 hover:text-red-700"
                     />
-                  </div>
-                )}
+                  )}
+                </div>
+                
+                <div className="text-sm text-gray-700 dark:text-gray-300">
+                  Page 1/2
+                </div>
               </div>
             </div>
           )}
@@ -917,12 +387,28 @@ export default function TripsPage() {
                 </thead>
                 <tbody className="bg-white dark:bg-gray-dark divide-y divide-gray-200 dark:divide-gray-700">
                   {tripsData?.results?.map((trip: any) => (
-                    <tr key={trip.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <tr 
+                      key={trip.id} 
+                      className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-150"
+                      onClick={(e) => {
+                        // Don't navigate if clicking on checkboxes or action buttons
+                        const target = e.target as HTMLInputElement;
+                        const isCheckbox = target.type === 'checkbox';
+                        const isButton = target.closest('button');
+                        
+                        if (!isCheckbox && !isButton) {
+                          router.push(`/trips/${trip.id}`);
+                        }
+                      }}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <input
                           type="checkbox"
                           checked={selectedTrips.includes(trip.id)}
-                          onChange={() => handleSelectTrip(trip.id)}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            handleSelectTrip(trip.id);
+                          }}
                           className="rounded border-gray-300 text-primary focus:ring-primary"
                         />
                       </td>
@@ -957,7 +443,64 @@ export default function TripsPage() {
                         {getStatusBadge(trip.status)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        {getActionButton(trip)}
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            label=""
+                            variant="outlineDark"
+                            size="small"
+                            icon={<Eye className="h-4 w-4" />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/trips/${trip.id}`);
+                            }}
+                          />
+                          <Button
+                            label=""
+                            variant="outlineDark"
+                            size="small"
+                            icon={<Edit className="h-4 w-4" />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/trips/${trip.id}/edit`);
+                            }}
+                          />
+                          {trip.status === 'scheduled' && (
+                            <Button
+                              label="Start"
+                              variant="green"
+                              size="small"
+                              icon={<Play className="h-4 w-4" />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStartTrip(trip.id);
+                              }}
+                            />
+                          )}
+                          {trip.status === 'in_progress' && (
+                            <div className="flex gap-2">
+                              <Button
+                                label="End"
+                                variant="primary"
+                                size="small"
+                                icon={<Square className="h-4 w-4" />}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEndTrip(trip.id);
+                                }}
+                              />
+                              <Button
+                                label="Cancel"
+                                variant="outlineDark"
+                                size="small"
+                                icon={<X className="h-4 w-4" />}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCancelTrip(trip.id);
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

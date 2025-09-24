@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useGetVehicleTypeByIdQuery, useUpdateVehicleTypeMutation } from "@/store/api/fleetApi";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 import { Button } from "@/components/ui-elements/button";
-import { ArrowLeft, Save, X } from "lucide-react";
+import { ArrowLeft, Save, X, Truck, Battery, CheckCircle, AlertTriangle } from "lucide-react";
 
 interface VehicleTypeEditPageProps {
   params: Promise<{
@@ -148,20 +148,94 @@ export default function VehicleTypeEditPage({ params }: VehicleTypeEditPageProps
 
   return (
     <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'FLEET_USER']}>
-      <div className="p-6">
-        {/* Header */}
-        <div className="mb-6">
-          <Button
-            label=""
-            variant="outlineDark"
-            icon={<ArrowLeft className="h-4 w-4" />}
-            onClick={() => router.back()}
-            className="p-2"
-          />
+      <div className="space-y-6">
+        {/* HEADER: Back Button + Beautiful Title Card */}
+        <div className="relative">
+          {/* Back Button */}
+          <div className="mb-6">
+            <Button
+              onClick={() => router.back()}
+              variant="outlineDark"
+              label="Back"
+              icon={<ArrowLeft className="h-4 w-4" />}
+              className="px-4 py-2 rounded-lg"
+            />
+          </div>
+
+          {/* Beautiful Title Card */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 shadow-lg border border-blue-200 dark:border-gray-600 relative overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200 dark:bg-gray-600 rounded-full -translate-y-16 translate-x-16 opacity-20"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-200 dark:bg-gray-600 rounded-full translate-y-12 -translate-x-12 opacity-20"></div>
+            
+            <div className="relative z-10">
+              <div className="flex justify-between items-start">
+                {/* Left Side - Vehicle Type Info */}
+                <div className="flex-1">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+                      <Truck className="h-8 w-8 text-blue-600" />
+                    </div>
+                    <div>
+                      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                        Edit Vehicle Type
+                      </h1>
+                      <p className="text-lg text-gray-600 dark:text-gray-400">
+                        #{id} • {typeData?.name || 'Vehicle Type'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Quick Info Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+                      <div className="flex items-center space-x-2">
+                        <Truck className="h-5 w-5 text-gray-500" />
+                        <div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Category</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            {typeData?.category || 'Unknown'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+                      <div className="flex items-center space-x-2">
+                        <Battery className="h-5 w-5 text-gray-500" />
+                        <div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Battery</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            {typeData?.battery_capacity_kwh || 'N/A'} kWh
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+                      <div className="flex items-center space-x-2">
+                        {typeData?.status === 'active' ? (
+                          <CheckCircle className="h-5 w-5 text-green-500" />
+                        ) : (
+                          <AlertTriangle className="h-5 w-5 text-red-500" />
+                        )}
+                        <div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Status</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            {typeData?.status === 'active' ? 'Active' : 'Inactive'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Form */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Code */}
             <div className="md:col-span-1">

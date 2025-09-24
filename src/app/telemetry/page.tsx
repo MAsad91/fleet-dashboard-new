@@ -118,9 +118,6 @@ export default function TelemetryPage() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Telemetry — Explorer</h1>
-              <p className="text-muted-foreground">
-                Real-time OBD device telemetry and performance data
-              </p>
             </div>
             <div className="flex space-x-3">
               <Button
@@ -241,137 +238,195 @@ export default function TelemetryPage() {
 
           {/* Filters */}
           <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <h3 className="text-lg font-semibold mb-4">Filters</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Select
-                label="Vehicle"
-                items={[
-                  { value: "", label: "All Vehicles" },
-                  ...(vehiclesData?.results?.map((vehicle: any) => ({
-                    value: vehicle.id.toString(),
-                    label: `${vehicle.plate_number || vehicle.license_plate || 'N/A'} - ${vehicle.make || ''} ${vehicle.model || ''}`
-                  })) || [])
-                ]}
-                defaultValue={vehicleFilter}
-                onChange={(e) => setVehicleFilter(e.target.value)}
-              />
-              
-              <InputGroup
-                type="text"
-                label="Trip ID"
-                placeholder="Search by trip ID..."
-                value={tripIdFilter}
-                handleChange={(e) => setTripIdFilter(e.target.value)}
-                icon={<Activity className="h-4 w-4" />}
-              />
-              
-              <InputGroup
-                type="number"
-                label="Min Speed (kph)"
-                placeholder="0"
-                value={minSpeed}
-                handleChange={(e) => setMinSpeed(e.target.value)}
-                icon={<Gauge className="h-4 w-4" />}
-              />
-              
-              <InputGroup
-                type="number"
-                label="Max Speed (kph)"
-                placeholder="200"
-                value={maxSpeed}
-                handleChange={(e) => setMaxSpeed(e.target.value)}
-                icon={<Gauge className="h-4 w-4" />}
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-              <InputGroup
-                type="number"
-                label="Min Battery (%)"
-                placeholder="0"
-                value={minBattery}
-                handleChange={(e) => setMinBattery(e.target.value)}
-                icon={<Battery className="h-4 w-4" />}
-              />
-              
-              <InputGroup
-                type="number"
-                label="Max Battery (%)"
-                placeholder="100"
-                value={maxBattery}
-                handleChange={(e) => setMaxBattery(e.target.value)}
-                icon={<Battery className="h-4 w-4" />}
-              />
-              
-              <InputGroup
-                type="number"
-                label="Min Motor Temp (°C)"
-                placeholder="0"
-                value={minMotorTemp}
-                handleChange={(e) => setMinMotorTemp(e.target.value)}
-                icon={<Thermometer className="h-4 w-4" />}
-              />
-              
-              <InputGroup
-                type="number"
-                label="Max Motor Temp (°C)"
-                placeholder="100"
-                value={maxMotorTemp}
-                handleChange={(e) => setMaxMotorTemp(e.target.value)}
-                icon={<Thermometer className="h-4 w-4" />}
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-              <InputGroup
-                type="number"
-                label="Min Range (km)"
-                placeholder="0"
-                value={minRange}
-                handleChange={(e) => setMinRange(e.target.value)}
-                icon={<MapPin className="h-4 w-4" />}
-              />
-              
-              <InputGroup
-                type="number"
-                label="Max Range (km)"
-                placeholder="500"
-                value={maxRange}
-                handleChange={(e) => setMaxRange(e.target.value)}
-                icon={<MapPin className="h-4 w-4" />}
-              />
-              
-              <Select
-                label="Has Error Codes"
-                items={[
-                  { value: "", label: "All Records" },
-                  { value: "true", label: "With Errors" },
-                  { value: "false", label: "No Errors" },
-                ]}
-                defaultValue={hasErrorCodes}
-                onChange={(e) => setHasErrorCodes(e.target.value)}
-              />
-              
-              <div className="flex items-end">
-                <Button
-                  label="Clear Filters"
-                  variant="outlineDark"
-                  size="small"
-                  onClick={() => {
-                    setVehicleFilter("");
-                    setTripIdFilter("");
-                    setMinSpeed("");
-                    setMaxSpeed("");
-                    setMinBattery("");
-                    setMaxBattery("");
-                    setMinMotorTemp("");
-                    setMaxMotorTemp("");
-                    setMinRange("");
-                    setMaxRange("");
-                    setHasErrorCodes("");
-                  }}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Time: after
+                </label>
+                <input
+                  type="datetime-local"
+                  value=""
+                  onChange={() => {}}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
                 />
               </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Time: before
+                </label>
+                <input
+                  type="datetime-local"
+                  value=""
+                  onChange={() => {}}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Vehicle
+                </label>
+                <select
+                  value={vehicleFilter}
+                  onChange={(e) => setVehicleFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="">All Vehicles</option>
+                  {vehiclesData?.results?.map((vehicle: any) => (
+                    <option key={vehicle.id} value={vehicle.id.toString()}>
+                      {vehicle.plate_number || vehicle.license_plate || 'N/A'} - {vehicle.make || ''} {vehicle.model || ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Trip ID
+                </label>
+                <input
+                  type="text"
+                  placeholder="Search by trip ID..."
+                  value={tripIdFilter}
+                  onChange={(e) => setTripIdFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Min Speed (kph)
+                </label>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={minSpeed}
+                  onChange={(e) => setMinSpeed(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Max Speed (kph)
+                </label>
+                <input
+                  type="number"
+                  placeholder="200"
+                  value={maxSpeed}
+                  onChange={(e) => setMaxSpeed(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Min Battery (%)
+                </label>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={minBattery}
+                  onChange={(e) => setMinBattery(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Max Battery (%)
+                </label>
+                <input
+                  type="number"
+                  placeholder="100"
+                  value={maxBattery}
+                  onChange={(e) => setMaxBattery(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Min Motor Temp (°C)
+                </label>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={minMotorTemp}
+                  onChange={(e) => setMinMotorTemp(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Max Motor Temp (°C)
+                </label>
+                <input
+                  type="number"
+                  placeholder="100"
+                  value={maxMotorTemp}
+                  onChange={(e) => setMaxMotorTemp(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Min Range (km)
+                </label>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={minRange}
+                  onChange={(e) => setMinRange(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Max Range (km)
+                </label>
+                <input
+                  type="number"
+                  placeholder="500"
+                  value={maxRange}
+                  onChange={(e) => setMaxRange(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Has Error Codes
+                </label>
+                <select
+                  value={hasErrorCodes}
+                  onChange={(e) => setHasErrorCodes(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="">All Records</option>
+                  <option value="true">With Errors</option>
+                  <option value="false">No Errors</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="flex justify-end mt-4">
+              <Button
+                label="Apply"
+                variant="primary"
+                size="small"
+                onClick={() => {}} // Filters are applied automatically
+              />
             </div>
           </div>
 
@@ -415,9 +470,21 @@ export default function TelemetryPage() {
                 </thead>
                 <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                   {filteredRecords.map((record: any, index: number) => (
-                    <tr key={record.id || index} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <tr 
+                      key={record.id || index} 
+                      className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-150"
+                      onClick={(e) => {
+                        // Don't navigate if clicking on action buttons
+                        const target = e.target as HTMLElement;
+                        const isButton = target.closest('button');
+                        
+                        if (!isButton) {
+                          router.push(`/telemetry/${record.id}`);
+                        }
+                      }}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {record.timestamp ? new Date(record.timestamp).toLocaleString() : 'N/A'}
+                        {record.timestamp ? new Date(record.timestamp).toLocaleTimeString() : 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                         {record.vehicle?.license_plate || record.vehicle?.vin || record.vehicle_id || 'N/A'}
@@ -470,11 +537,14 @@ export default function TelemetryPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center space-x-2">
                           <Button
-                            label=""
+                            label="View"
                             variant="outlineDark"
                             size="small"
                             icon={<Eye className="h-4 w-4" />}
-                            onClick={() => handleViewTelemetry(record.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/telemetry/${record.id}`);
+                            }}
                           />
                         </div>
                       </td>
@@ -500,90 +570,152 @@ export default function TelemetryPage() {
             )}
           </div>
 
-          {/* Insights Panel */}
-          {showInsights && (
-            <div className="bg-white dark:bg-gray-dark rounded-lg shadow-1">
-              <div className="p-6 border-b border-stroke dark:border-dark-3">
-                <h3 className="text-lg font-semibold">Insights Panel</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Aggregated KPIs and Top Error Codes
-                </p>
-              </div>
-              
-              <div className="p-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {/* Aggregated KPIs */}
-                  <div>
-                    <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Aggregated KPIs</h4>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Record Count</span>
-                        <span className="font-semibold text-gray-900 dark:text-white">{aggregatedData?.record_count || 0}</span>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Vehicle Count</span>
-                        <span className="font-semibold text-gray-900 dark:text-white">{aggregatedData?.vehicle_count || 0}</span>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Error Record Count</span>
-                        <span className="font-semibold text-gray-900 dark:text-white">{aggregatedData?.error_record_count || 0}</span>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Speed (kph)</span>
-                        <span className="font-semibold text-gray-900 dark:text-white">
-                          {aggregatedData?.averages?.speed_kph ? Math.round(aggregatedData.averages.speed_kph) : 0}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Battery (%)</span>
-                        <span className="font-semibold text-gray-900 dark:text-white">
-                          {aggregatedData?.averages?.battery_percent ? Math.round(aggregatedData.averages.battery_percent) : 0}%
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Motor Temp (°C)</span>
-                        <span className="font-semibold text-gray-900 dark:text-white">
-                          {aggregatedData?.averages?.motor_temp_c ? Math.round(aggregatedData.averages.motor_temp_c) : 0}°C
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Range (km)</span>
-                        <span className="font-semibold text-gray-900 dark:text-white">
-                          {aggregatedData?.averages?.range_km ? Math.round(aggregatedData.averages.range_km) : 0} km
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Top Error Codes */}
-                  <div>
-                    <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Top Error Codes</h4>
-                    {topErrorsData?.top_error_codes && topErrorsData.top_error_codes.length > 0 ? (
-                      <div className="space-y-3">
-                        {topErrorsData.top_error_codes.map((error: any, index: number) => (
-                          <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                            <span className="text-sm font-medium text-gray-900 dark:text-white">{error.code}</span>
-                            <span className="text-sm text-gray-500 dark:text-gray-400">{error.count} occurrences</span>
-                          </div>
-                        ))}
-                        <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                          <div className="text-sm text-gray-600 dark:text-gray-400">
-                            <div>Total Error Types: {topErrorsData.total_error_types || 0}</div>
-                            <div>Vehicles with Errors: {topErrorsData.vehicles_with_errors || 0}</div>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                        <AlertTriangle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p>No error codes found for the current filters</p>
-                      </div>
-                    )}
-                  </div>
+          {/* Row Actions */}
+          {filteredRecords.length > 0 && (
+            <div className="bg-gray-50 dark:bg-gray-800 px-6 py-3 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <Button
+                    label="View Detail"
+                    variant="outlineDark"
+                    size="small"
+                    onClick={() => {}}
+                    className="text-sm"
+                  />
                 </div>
+                
+                {vehicleFilter && (
+                  <Button
+                    label="Vehicle Snapshot"
+                    variant="primary"
+                    size="small"
+                    onClick={handleVehicleSnapshot}
+                    icon={<Car className="h-3 w-3" />}
+                    className="text-sm"
+                  />
+                )}
               </div>
             </div>
           )}
+
+          {/* EXTRA: Vehicle Snapshot (when vehicle selected) */}
+          {vehicleFilter && (
+            <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Vehicle Snapshot</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Opens recent 20‑point snapshot (speed/battery/coords)
+                </p>
+              </div>
+              <div className="text-center">
+                <Button
+                  label="Open Vehicle Snapshot"
+                  variant="primary"
+                  icon={<Car className="h-4 w-4" />}
+                  onClick={handleVehicleSnapshot}
+                  className="px-6 py-3"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  API: GET /api/fleet/vehicles/{vehicleFilter}/telemetry_data/
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* INSIGHTS PANEL */}
+          <div className="bg-white dark:bg-gray-dark rounded-lg shadow-1">
+            <div className="p-6 border-b border-stroke dark:border-dark-3">
+              <h3 className="text-lg font-semibold">Insights Panel</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Aggregated KPIs and Top Error Codes
+              </p>
+            </div>
+            
+            <div className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Aggregated KPIs */}
+                <div>
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                    • Aggregated → GET …/obd-telemetry/?aggregated=true&…filters…
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Averages: speed</span>
+                      <span className="font-semibold text-gray-900 dark:text-white">
+                        {aggregatedData?.averages?.speed_kph ? Math.round(aggregatedData.averages.speed_kph) : 0} kph
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">battery</span>
+                      <span className="font-semibold text-gray-900 dark:text-white">
+                        {aggregatedData?.averages?.battery_percent ? Math.round(aggregatedData.averages.battery_percent) : 0}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">temp</span>
+                      <span className="font-semibold text-gray-900 dark:text-white">
+                        {aggregatedData?.averages?.motor_temp_c ? Math.round(aggregatedData.averages.motor_temp_c) : 0}°C
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">range</span>
+                      <span className="font-semibold text-gray-900 dark:text-white">
+                        {aggregatedData?.averages?.range_km ? Math.round(aggregatedData.averages.range_km) : 0} km
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Counts: records</span>
+                      <span className="font-semibold text-gray-900 dark:text-white">{aggregatedData?.record_count || 0}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">vehicles</span>
+                      <span className="font-semibold text-gray-900 dark:text-white">{aggregatedData?.vehicle_count || 0}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">errors</span>
+                      <span className="font-semibold text-gray-900 dark:text-white">{aggregatedData?.error_record_count || 0}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Top Error Codes */}
+                <div>
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                    • Top Errors → GET …/obd-telemetry/?top_errors=true&limit=10&…filters…
+                  </h4>
+                  {topErrorsData?.top_error_codes && topErrorsData.top_error_codes.length > 0 ? (
+                    <div className="space-y-3">
+                      {topErrorsData.top_error_codes.map((error: any, index: number) => (
+                        <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">{error.code}</span>
+                          <span className="text-sm text-gray-500 dark:text-gray-400">{error.count} occurrences</span>
+                        </div>
+                      ))}
+                      <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          <div>Total Error Types: {topErrorsData.total_error_types || 0}</div>
+                          <div>Vehicles with Errors: {topErrorsData.vehicles_with_errors || 0}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <AlertTriangle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p>No error codes found for the current filters</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* FOOTER */}
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+            <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+              Page 1/5
+            </div>
+          </div>
+
         </div>
       </div>
     </ProtectedRoute>

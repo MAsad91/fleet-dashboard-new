@@ -152,16 +152,20 @@ export default function DriverDocumentsPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Driver Documents</h1>
-            <p className="text-muted-foreground">
-              Manage driver documents and certifications
-            </p>
           </div>
-          <Button
-            label="Add Document"
-            variant="primary"
-            icon={<Plus className="h-4 w-4" />}
-            onClick={() => router.push('/driver-documents/add')}
-          />
+          <div className="flex space-x-2">
+            <Button
+              label="+ Create"
+              variant="primary"
+              icon={<Plus className="h-4 w-4" />}
+              onClick={() => router.push('/driver-documents/add')}
+            />
+            <Button
+              label="Bulk ▼"
+              variant="outlineDark"
+              onClick={() => {}} // TODO: Add bulk actions dropdown
+            />
+          </div>
         </div>
 
         {/* KPI Cards */}
@@ -220,67 +224,65 @@ export default function DriverDocumentsPage() {
 
         {/* Filters */}
         <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-          <h3 className="text-lg font-semibold mb-4">Filters</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <InputGroup
-              type="text"
-              label="Search"
-              placeholder="Search documents..."
-              value={searchTerm}
-              handleChange={(e) => setSearchTerm(e.target.value)}
-              icon={<FileText className="h-4 w-4" />}
-            />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Driver
+              </label>
+              <select
+                value={driverFilter}
+                onChange={(e) => setDriverFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">All Drivers</option>
+                {driversData?.results?.map((driver: any) => (
+                  <option key={driver.id} value={driver.id.toString()}>
+                    {driver.name || driver.full_name || driver.username || `Driver #${driver.id}`}
+                  </option>
+                ))}
+              </select>
+            </div>
             
-            <Select
-              label="Driver"
-              items={[
-                { value: "", label: "All Drivers" },
-                ...(driversData?.results?.map((driver: any) => ({
-                  value: driver.id.toString(),
-                  label: driver.name || driver.full_name || driver.username || `Driver #${driver.id}`
-                })) || [])
-              ]}
-              defaultValue={driverFilter}
-              onChange={(e) => setDriverFilter(e.target.value)}
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Doc Type
+              </label>
+              <select
+                value={docTypeFilter}
+                onChange={(e) => setDocTypeFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">All Types</option>
+                <option value="license">License</option>
+                <option value="insurance">Insurance</option>
+                <option value="medical">Medical</option>
+                <option value="training">Training</option>
+                <option value="background">Background</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
             
-            <Select
-              label="Doc Type"
-              items={[
-                { value: "", label: "All Types" },
-                { value: "license", label: "License" },
-                { value: "insurance", label: "Insurance" },
-                { value: "medical", label: "Medical" },
-                { value: "training", label: "Training" },
-                { value: "background", label: "Background" },
-                { value: "other", label: "Other" },
-              ]}
-              defaultValue={docTypeFilter}
-              onChange={(e) => setDocTypeFilter(e.target.value)}
-            />
-            
-            <Select
-              label="Active"
-              items={[
-                { value: "", label: "All" },
-                { value: "active", label: "Active" },
-                { value: "inactive", label: "Inactive" },
-              ]}
-              defaultValue={activeFilter}
-              onChange={(e) => setActiveFilter(e.target.value)}
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Active
+              </label>
+              <select
+                value={activeFilter}
+                onChange={(e) => setActiveFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">All</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
           </div>
           <div className="flex justify-end mt-4">
             <Button
-              label="Clear Filters"
-              variant="outlineDark"
+              label="Apply"
+              variant="primary"
               size="small"
-              onClick={() => {
-                setSearchTerm("");
-                setDriverFilter("");
-                setDocTypeFilter("");
-                setActiveFilter("");
-              }}
+              onClick={() => {}} // Filters are applied automatically
             />
           </div>
         </div>
@@ -299,29 +301,26 @@ export default function DriverDocumentsPage() {
             <div className="bg-gray-50 dark:bg-gray-800 px-6 py-3 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={selectedDocuments.length === filteredDocuments.length}
-                      onChange={handleSelectAll}
-                      className="rounded border-gray-300 text-primary focus:ring-primary"
-                    />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                      Select All ({selectedDocuments.length} selected)
-                    </span>
-                  </label>
-                </div>
-                
-                {selectedDocuments.length > 0 && (
-                  <div className="flex items-center space-x-2">
+                  <Button
+                    label="Select All"
+                    variant="outlineDark"
+                    size="small"
+                    onClick={handleSelectAll}
+                    className="text-sm"
+                  />
+                  {selectedDocuments.length > 0 && (
                     <Button
                       label="Delete Selected"
                       variant="outlineDark"
+                      size="small"
                       onClick={handleBulkDelete}
                       className="text-sm text-red-600 hover:text-red-700"
                     />
-                  </div>
-                )}
+                  )}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  Page 1/1
+                </div>
               </div>
             </div>
           )}
@@ -363,12 +362,28 @@ export default function DriverDocumentsPage() {
               </thead>
               <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredDocuments.map((document: any) => (
-                  <tr key={document.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <tr 
+                    key={document.id} 
+                    className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-150"
+                    onClick={(e) => {
+                      // Don't navigate if clicking on checkbox or action buttons
+                      const target = e.target as HTMLElement;
+                      const isCheckbox = (target as HTMLInputElement).type === 'checkbox' || target.closest('input[type="checkbox"]');
+                      const isButton = target.closest('button');
+                      
+                      if (!isCheckbox && !isButton) {
+                        router.push(`/driver-documents/${document.id}`);
+                      }
+                    }}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <input
                         type="checkbox"
                         checked={selectedDocuments.includes(document.id)}
-                        onChange={() => handleSelectDocument(document.id)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleSelectDocument(document.id);
+                        }}
                         className="rounded border-gray-300 text-primary focus:ring-primary"
                       />
                     </td>
@@ -404,25 +419,14 @@ export default function DriverDocumentsPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
                         <Button
-                          label=""
+                          label="View"
                           variant="outlineDark"
                           size="small"
                           icon={<Eye className="h-4 w-4" />}
-                          onClick={() => handleViewDocument(document.id)}
-                        />
-                        <Button
-                          label=""
-                          variant="outlineDark"
-                          size="small"
-                          icon={<Edit className="h-4 w-4" />}
-                          onClick={() => handleEditDocument(document.id)}
-                        />
-                        <Button
-                          label=""
-                          variant="outlineDark"
-                          size="small"
-                          icon={<Trash2 className="h-4 w-4" />}
-                          onClick={() => handleDeleteDocument(document.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/driver-documents/${document.id}`);
+                          }}
                         />
                       </div>
                     </td>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { useListVehiclesQuery, useDeleteVehicleMutation, useListVehicleTypesQuery, useSetVehiclesForMaintenanceMutation, useRetireVehiclesMutation, useGetVehiclesDashboardStatsQuery } from "@/store/api/fleetApi";
+import { useListVehiclesQuery, useDeleteVehicleMutation, useListVehicleTypesQuery, useSetVehiclesForMaintenanceMutation, useRetireVehiclesMutation, useGetVehiclesDashboardStatsQuery, useListFleetOperatorsQuery } from "@/store/api/fleetApi";
 import { useRealtimeEntityUpdates } from "@/hooks/useRealtimeData";
 import { setVehiclesFilters, setVehiclesPagination } from "@/store/slices/vehiclesUISlice";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
@@ -73,6 +73,7 @@ export default function VehiclesPage() {
   });
 
   const { data: vehicleTypesData } = useListVehicleTypesQuery();
+  const { data: fleetOperatorsData } = useListFleetOperatorsQuery();
   const [deleteVehicle] = useDeleteVehicleMutation();
   const [setVehiclesForMaintenance] = useSetVehiclesForMaintenanceMutation();
   const [retireVehicles] = useRetireVehiclesMutation();
@@ -133,6 +134,11 @@ export default function VehiclesPage() {
 
   const handleHealthStatusFilter = (e: React.ChangeEvent<HTMLSelectElement>) => {
     dispatch(setVehiclesFilters({ health_status: e.target.value === "all" ? undefined : e.target.value }));
+    dispatch(setVehiclesPagination({ page: 1 }));
+  };
+
+  const handleFleetFilter = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    dispatch(setVehiclesFilters({ fleet: e.target.value === "all" ? undefined : e.target.value }));
     dispatch(setVehiclesPagination({ page: 1 }));
   };
 
@@ -269,25 +275,31 @@ export default function VehiclesPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Vehicles</h1>
-            <p className="text-muted-foreground">
-              Manage your fleet vehicles and their information
-            </p>
           </div>
-          <Button
-            label="Add Vehicle"
-            variant="primary"
-            icon={<Plus className="h-4 w-4" />}
-            onClick={() => router.push('/vehicles/add')}
-          />
+          <div className="flex items-center space-x-2">
+            <Button
+              label="+ Create"
+              variant="primary"
+              icon={<Plus className="h-4 w-4" />}
+              onClick={() => router.push('/vehicles/add')}
+            />
+            <div className="relative">
+              <Button
+                label="Bulk ▼"
+                variant="outlineDark"
+                onClick={() => {}} // TODO: Add bulk actions dropdown
+              />
+            </div>
+          </div>
         </div>
 
-        {/* KPI Cards */}
+        {/* KPI Cards - First Row (4 cards) */}
         {dashboardStats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Vehicles</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {dashboardStats.total_vehicles || 0}
                   </p>
@@ -342,7 +354,7 @@ export default function VehiclesPage() {
           </div>
         )}
 
-        {/* Additional KPI Row */}
+        {/* KPI Cards - Second Row (2 cards) */}
         {dashboardStats && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
@@ -378,7 +390,7 @@ export default function VehiclesPage() {
         {/* Filters */}
         <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
           <h3 className="text-lg font-semibold mb-4">Filters</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
             <InputGroup
               label="Search"
               type="text"
@@ -416,7 +428,7 @@ export default function VehiclesPage() {
             />
 
             <Select
-              label="Online Status"
+              label="Online"
               items={[
                 { value: "all", label: "All" },
                 { value: "true", label: "Online" },
@@ -428,7 +440,7 @@ export default function VehiclesPage() {
             />
 
             <Select
-              label="Health Status"
+              label="Health"
               items={[
                 { value: "all", label: "All" },
                 { value: "Good", label: "Good" },
@@ -439,22 +451,48 @@ export default function VehiclesPage() {
               placeholder="Select health"
               onChange={handleHealthStatusFilter}
             />
+
+            <Select
+              label="Fleet"
+              items={[
+                { value: "all", label: "All Fleets" },
+                ...(fleetOperatorsData?.results?.map((operator: any) => ({
+                  value: operator.id.toString(),
+                  label: operator.name
+                })) || [])
+              ]}
+              defaultValue={filters.fleet?.toString() || "all"}
+              placeholder="Select fleet"
+              onChange={handleFleetFilter}
+            />
           </div>
           
-          <div className="flex justify-end mt-4">
-            <Button
-              label="Clear Filters"
-              variant="outlineDark"
-              size="small"
-              onClick={() => dispatch(setVehiclesFilters({ 
-                search: "", 
-                status: undefined, 
-                vehicle_type: undefined,
-                has_obd: undefined,
-                online: undefined,
-                health_status: undefined
-              }))}
-            />
+          <div className="flex justify-between items-center mt-4">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Legend: Online = green/grey • Health = Good/Warning/Critical
+            </div>
+            <div className="flex space-x-2">
+              <Button
+                label="Apply"
+                variant="primary"
+                size="small"
+                onClick={() => refetchVehicles()}
+              />
+              <Button
+                label="Clear Filters"
+                variant="outlineDark"
+                size="small"
+                onClick={() => dispatch(setVehiclesFilters({ 
+                  search: "", 
+                  status: undefined, 
+                  vehicle_type: undefined,
+                  has_obd: undefined,
+                  online: undefined,
+                  health_status: undefined,
+                  fleet: undefined
+                }))}
+              />
+            </div>
           </div>
         </div>
 
@@ -462,9 +500,6 @@ export default function VehiclesPage() {
         <div className="bg-white dark:bg-gray-dark rounded-lg shadow-1">
           <div className="p-6 border-b border-stroke dark:border-dark-3">
             <h3 className="text-lg font-semibold">Vehicle List</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {totalFilteredCount} vehicles found
-            </p>
           </div>
           
           <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
@@ -507,27 +542,33 @@ export default function VehiclesPage() {
                             className="rounded border-gray-300 text-primary focus:ring-primary"
                           />
                           <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                            Select All ({selectedVehicles.length} selected)
+                            [Select All]
                           </span>
                         </label>
                       </div>
                       
-                      {selectedVehicles.length > 0 && (
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            label="Set for Maintenance"
-                            variant="outlineDark"
-                            onClick={isBulkActionLoading ? undefined : handleBulkMaintenance}
-                            className={`text-sm ${isBulkActionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          />
-                          <Button
-                            label="Retire"
-                            variant="outlineDark"
-                            onClick={isBulkActionLoading ? undefined : handleBulkRetire}
-                            className={`text-sm ${isBulkActionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          />
+                      <div className="flex items-center space-x-4">
+                        {selectedVehicles.length > 0 && (
+                          <>
+                            <Button
+                              label="[Set for Maintenance]"
+                              variant="outlineDark"
+                              onClick={isBulkActionLoading ? undefined : handleBulkMaintenance}
+                              className={`text-sm ${isBulkActionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            />
+                            <Button
+                              label="[Retire]"
+                              variant="outlineDark"
+                              onClick={isBulkActionLoading ? undefined : handleBulkRetire}
+                              className={`text-sm ${isBulkActionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            />
+                          </>
+                        )}
+                        
+                        <div className="text-sm text-gray-700 dark:text-gray-300">
+                          Page {pagination.page}/{Math.ceil(totalFilteredCount / pagination.limit)}
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -571,12 +612,29 @@ export default function VehiclesPage() {
                 </thead>
                 <tbody className="bg-white dark:bg-gray-dark divide-y divide-gray-200 dark:divide-gray-700">
                   {paginatedVehicles.map((vehicle) => (
-                    <tr key={vehicle.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <tr 
+                      key={vehicle.id} 
+                      className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-150"
+                      onClick={(e) => {
+                        // Don't navigate if clicking on checkbox, action buttons, or their children
+                        const target = e.target as HTMLElement;
+                        const isCheckbox = (target as HTMLInputElement).type === 'checkbox' || target.closest('input[type="checkbox"]');
+                        const isActionButton = target.closest('button') || target.closest('[role="button"]');
+                        
+                        if (!isCheckbox && !isActionButton) {
+                          router.push(`/vehicles/${vehicle.id}/view`);
+                        }
+                      }}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <input
                           type="checkbox"
                           checked={selectedVehicles.includes(vehicle.id)}
-                          onChange={() => handleSelectVehicle(vehicle.id)}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            handleSelectVehicle(vehicle.id);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
                           className="rounded border-gray-300 text-primary focus:ring-primary"
                         />
                       </td>
@@ -624,21 +682,30 @@ export default function VehiclesPage() {
                             variant="outlineDark"
                             size="small"
                             icon={<Eye className="h-4 w-4" />}
-                            onClick={() => handleViewVehicle(vehicle.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewVehicle(vehicle.id);
+                            }}
                           />
                           <Button
                             label=""
                             variant="outlineDark"
                             size="small"
                             icon={<Edit className="h-4 w-4" />}
-                            onClick={() => handleEditVehicle(vehicle.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditVehicle(vehicle.id);
+                            }}
                           />
                           <Button
                             label=""
                             variant="outlineDark"
                             size="small"
                             icon={<Trash2 className="h-4 w-4" />}
-                            onClick={() => handleDeleteVehicle(vehicle.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteVehicle(vehicle.id);
+                            }}
                           />
                         </div>
                       </td>

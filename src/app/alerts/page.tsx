@@ -903,20 +903,27 @@ export default function AlertsPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Alerts</h1>
-            <p className="text-muted-foreground">
-              Monitor and manage fleet alerts and notifications
-            </p>
           </div>
-          <Button
-            label="Create Alert"
-            variant="primary"
-            icon={<Plus className="h-4 w-4" />}
-              onClick={() => router.push('/alerts/add')}
-          />
+          <div className="flex space-x-3">
+            <Button
+              label="Mark Read"
+              variant="outlineDark"
+              icon={<Check className="h-4 w-4" />}
+              onClick={handleBulkMarkRead}
+              className={selectedAlerts.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+            />
+            <Button
+              label="Resolve"
+              variant="primary"
+              icon={<Check className="h-4 w-4" />}
+              onClick={handleBulkResolve}
+              className={selectedAlerts.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+            />
+          </div>
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
             <div className="flex items-center justify-between">
               <div>
@@ -946,19 +953,6 @@ export default function AlertsPage() {
           <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Critical</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {dashboardStats?.critical_alerts || alertsData?.results?.filter((alert: any) => alert.severity === 'critical').length || 0}
-                </p>
-              </div>
-              <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
-                <Clock className="h-6 w-6 text-yellow-600" />
-              </div>
-            </div>
-          </div>
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <div className="flex items-center justify-between">
-              <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Resolved</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {dashboardStats?.resolved_alerts || alertsData?.results?.filter((alert: any) => alert.status === 'resolved').length || 0}
@@ -971,14 +965,12 @@ export default function AlertsPage() {
           </div>
         </div>
 
-        {/* Distribution Charts */}
+        {/* Distribution */}
         <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-          <h3 className="text-lg font-semibold mb-4">Distribution</h3>
-          
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Severity Distribution */}
             <div>
-              <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">By Severity</h4>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">• By Severity: low [#] | medium [#] | high [#] | critical [#]</h4>
               <div className="space-y-3">
                 {['low', 'medium', 'high', 'critical'].map((severity) => {
                   const count = dashboardStats?.severity_distribution?.[severity] || 0;
@@ -992,15 +984,13 @@ export default function AlertsPage() {
                   const bar = '█'.repeat(barWidth);
                   
                   return (
-                    <div key={severity} className="flex items-center justify-between">
+                    <div key={severity} className="flex items-center">
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize w-16">
                         {severity}
                       </span>
-                      <div className="flex-1 mx-4">
-                        <span className="text-xs font-mono text-gray-600 dark:text-gray-400">
-                          {bar.padEnd(7, ' ')} {Number(count)}
-                        </span>
-                      </div>
+                      <span className="text-sm font-mono text-gray-600 dark:text-gray-400 ml-4">
+                        | {bar.padEnd(7, ' ')} {Number(count)}
+                      </span>
                     </div>
                   );
                 })}
@@ -1009,7 +999,7 @@ export default function AlertsPage() {
             
             {/* Type Distribution */}
             <div>
-              <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">By Type</h4>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">• By Type: vehicle_health [#] | maintenance_due [#] | system [#] …</h4>
               <div className="space-y-3">
                 {dashboardStats?.type_distribution ? Object.entries(dashboardStats.type_distribution).map(([type, count]) => {
                   const maxCount = Math.max(...Object.values(dashboardStats.type_distribution).map(v => Number(v)));
@@ -1017,15 +1007,13 @@ export default function AlertsPage() {
                   const bar = '█'.repeat(barWidth);
                   
                   return (
-                    <div key={type} className="flex items-center justify-between">
+                    <div key={type} className="flex items-center">
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize w-20 truncate">
                         {type.replace('_', ' ')}
                       </span>
-                      <div className="flex-1 mx-4">
-                        <span className="text-xs font-mono text-gray-600 dark:text-gray-400">
-                          {bar.padEnd(7, ' ')} {Number(count)}
-                        </span>
-                      </div>
+                      <span className="text-sm font-mono text-gray-600 dark:text-gray-400 ml-4">
+                        | {bar.padEnd(7, ' ')} {Number(count)}
+                      </span>
                     </div>
                   );
                 }) : (
@@ -1040,158 +1028,89 @@ export default function AlertsPage() {
 
         {/* Filters */}
         <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-          <h3 className="text-lg font-semibold mb-4">Filters</h3>
-          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-            <div className="flex gap-4 pb-2" style={{ minWidth: 'max-content' }}>
-              <div className="flex-shrink-0 w-48">
-                <InputGroup
-                  label="Search"
-                  type="text"
-                  placeholder="Search alerts..."
-                  value={filters.search || ""}
-                  handleChange={handleSearchChange}
-                  icon={<Search className="h-4 w-4 text-gray-400" />}
-                  iconPosition="left"
-                />
-              </div>
-              
-              <div className="flex-shrink-0 w-40">
-                <Select
-                  label="Status"
-                  items={[
-                    { value: "all", label: "All Status" },
-                    { value: "active", label: "Active" },
-                    { value: "acknowledged", label: "Acknowledged" },
-                    { value: "ignored", label: "Ignored" },
-                    { value: "resolved", label: "Resolved" },
-                  ]}
-                  defaultValue={filters.status || "all"}
-                  placeholder="Select status"
-                  onChange={handleStatusFilter}
-                />
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Severity
+              </label>
+              <select
+                value={filters.severity || "all"}
+                onChange={handleSeverityFilter}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="all">All Severities</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+              </select>
+            </div>
 
-              <div className="flex-shrink-0 w-40">
-                <Select
-                  label="Severity"
-                  items={[
-                    { value: "all", label: "All Severities" },
-                    { value: "low", label: "Low" },
-                    { value: "medium", label: "Medium" },
-                    { value: "high", label: "High" },
-                    { value: "critical", label: "Critical" },
-                  ]}
-                  defaultValue={filters.severity || "all"}
-                  placeholder="Select severity"
-                  onChange={handleSeverityFilter}
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Status
+              </label>
+              <select
+                value={filters.status || "all"}
+                onChange={handleStatusFilter}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="acknowledged">Acknowledged</option>
+                <option value="ignored">Ignored</option>
+                <option value="resolved">Resolved</option>
+              </select>
+            </div>
 
-              <div className="flex-shrink-0 w-40">
-                <Select
-                  label="Alert Type"
-                  items={[
-                    { value: "all", label: "All Types" },
-                    { value: "maintenance", label: "Maintenance" },
-                    { value: "safety", label: "Safety" },
-                    { value: "performance", label: "Performance" },
-                    { value: "fuel", label: "Fuel" },
-                    { value: "location", label: "Location" },
-                  ]}
-                  defaultValue={filters.alert_type || "all"}
-                  placeholder="Select type"
-                  onChange={handleAlertTypeFilter}
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Vehicle
+              </label>
+              <select
+                value={filters.vehicle_id || ""}
+                onChange={(e) => dispatch(setAlertsFilters({ vehicle_id: e.target.value || undefined }))}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">All Vehicles</option>
+                {vehiclesData?.results?.map((vehicle: any) => (
+                  <option key={vehicle.id} value={vehicle.id.toString()}>
+                    {vehicle.plate_number || vehicle.license_plate || 'N/A'} - {vehicle.make || ''} {vehicle.model || ''}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-              <div className="flex-shrink-0 w-40">
-                <Select
-                  label="Vehicle"
-                  items={[
-                    { value: "", label: "All Vehicles" },
-                    ...(vehiclesData?.results?.map((vehicle: any) => ({
-                      value: vehicle.id.toString(),
-                      label: `${vehicle.plate_number || vehicle.license_plate || 'N/A'} - ${vehicle.make || ''} ${vehicle.model || ''}`
-                    })) || [])
-                  ]}
-                  defaultValue={filters.vehicle_id || ""}
-                  onChange={(e) => dispatch(setAlertsFilters({ vehicle_id: e.target.value || undefined }))}
-                />
-              </div>
-
-              <div className="flex-shrink-0 w-40">
-                <InputGroup
-                  label="Start Date"
-                  type="date"
-                  placeholder="Start date"
-                  value={filters.start_date || ""}
-                  handleChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                    dispatch(setAlertsFilters({ start_date: e.target.value }))
-                  }
-                />
-              </div>
-              
-              <div className="flex-shrink-0 w-40">
-                <InputGroup
-                  label="End Date"
-                  type="date"
-                  placeholder="End date"
-                  value={filters.end_date || ""}
-                  handleChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                    dispatch(setAlertsFilters({ end_date: e.target.value }))
-                  }
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                System
+              </label>
+              <select
+                value={filters.alert_type || "all"}
+                onChange={handleAlertTypeFilter}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="all">All Systems</option>
+                <option value="vehicle_health">Vehicle Health</option>
+                <option value="maintenance_due">Maintenance Due</option>
+                <option value="system">System</option>
+                <option value="geofence">Geofence</option>
+              </select>
             </div>
           </div>
+          
           <div className="flex justify-end mt-4">
             <Button
-              label="Clear Filters"
-              variant="outlineDark"
+              label="Apply"
+              variant="primary"
               size="small"
-              onClick={() => dispatch(setAlertsFilters({ 
-                search: "", 
-                status: undefined, 
-                severity: undefined, 
-                alert_type: undefined,
-                start_date: "",
-                end_date: ""
-              }))}
+              onClick={() => {}} // Filters are applied automatically
             />
           </div>
         </div>
 
-        {/* Alerts Table */}
+        {/* Table */}
         <div className="bg-white dark:bg-gray-dark rounded-lg shadow-1">
-          <div className="p-6 border-b border-stroke dark:border-dark-3">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-lg font-semibold">Alert List</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {totalFilteredCount} alerts found
-                </p>
-              </div>
-              <div className="flex space-x-2">
-                <Button
-                  label="Mark Read"
-                  variant="outlineDark"
-                  size="small"
-                  icon={<Check className="h-4 w-4" />}
-                  onClick={handleBulkMarkRead}
-                  className={selectedAlerts.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
-                />
-                <Button
-                  label="Resolve"
-                  variant="primary"
-                  size="small"
-                  icon={<Check className="h-4 w-4" />}
-                  onClick={handleBulkResolve}
-                  className={selectedAlerts.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
-                />
-              </div>
-            </div>
-          </div>
-          
           <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             {isLoading ? (
               <div className="p-6">
@@ -1228,61 +1147,44 @@ export default function AlertsPage() {
                 )}
               </div>
             ) : (
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700" style={{ minWidth: '1000px' }}>
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      <input
-                        type="checkbox"
-                        checked={selectedAlerts.length === filteredAlerts.length && filteredAlerts.length > 0}
-                        onChange={handleSelectAll}
-                        className="rounded border-gray-300 text-primary focus:ring-primary"
-                      />
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Alert
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Severity
+                      Sev
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Type
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Title
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Vehicle
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Driver
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Created
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Actions
+                      St
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-gray-dark divide-y divide-gray-200 dark:divide-gray-700">
                   {filteredAlerts.map((alert) => (
-                    <tr key={alert.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <input
-                          type="checkbox"
-                          checked={selectedAlerts.includes(alert.id.toString())}
-                          onChange={() => handleSelectAlert(alert.id.toString())}
-                          className="rounded border-gray-300 text-primary focus:ring-primary"
-                        />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">
-                            {alert.title}
-                          </div>
-                        </div>
-                      </td>
+                    <tr 
+                      key={alert.id} 
+                      className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-150"
+                      onClick={(e) => {
+                        // Don't navigate if clicking on action buttons
+                        const target = e.target as HTMLElement;
+                        const isButton = target.closest('button');
+                        
+                        if (!isButton) {
+                          router.push(`/alerts/${alert.id}`);
+                        }
+                      }}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         {getSeverityBadge(alert.severity)}
                       </td>
@@ -1290,6 +1192,11 @@ export default function AlertsPage() {
                         <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 capitalize">
                           {alert.alert_type || alert.system || alert.source || alert.category || 'Unknown'}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="font-medium text-gray-900 dark:text-white">
+                          {alert.title}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                         {(() => {
@@ -1324,62 +1231,10 @@ export default function AlertsPage() {
                         })()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {(() => {
-                          // Handle driver field based on new API structure
-                          if (typeof alert.driver === 'object' && alert.driver) {
-                            // Handle object driver field
-                            const driver = alert.driver as any;
-                            if (driver.name) return driver.name;
-                            if (driver.full_name) return driver.full_name;
-                            if (driver.display_name) return driver.display_name;
-                            if (driver.username) return driver.username;
-                            if (driver.first_name && driver.last_name) return `${driver.first_name} ${driver.last_name}`;
-                          }
-                          
-                          if (typeof alert.driver === 'string' && alert.driver.trim() !== '') {
-                            return alert.driver;
-                          }
-                          
-                          if (typeof alert.driver === 'number') {
-                            // Try to get driver name by ID using the drivers API
-                            const driverName = getDriverName(alert.driver);
-                            if (driverName) return driverName;
-                            return `Driver #${alert.driver}`;
-                          }
-                          
-                          return 'N/A';
-                        })()}
+                        {new Date(alert.created_at).toLocaleTimeString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {getStatusBadge(alert.status_label || alert.status || 'unknown')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {new Date(alert.created_at).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            label=""
-                            variant="outlineDark"
-                            size="small"
-                            icon={<Eye className="h-4 w-4" />}
-                            onClick={() => handleViewAlert(alert.id)}
-                          />
-                          <Button
-                            label=""
-                            variant="outlineDark"
-                            size="small"
-                            icon={<Edit className="h-4 w-4" />}
-                            onClick={() => handleEditAlert(alert.id)}
-                          />
-                          <Button
-                            label=""
-                            variant="outlineDark"
-                            size="small"
-                            icon={<Trash className="h-4 w-4" />}
-                            onClick={() => handleDeleteAlert(alert.id)}
-                          />
-                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1388,50 +1243,30 @@ export default function AlertsPage() {
             )}
           </div>
 
-          {/* Pagination */}
-          {totalFilteredCount > 0 && (
-            <div className="px-6 py-4 border-t border-stroke dark:border-dark-3 flex items-center justify-between">
-              <div className="text-sm text-gray-700 dark:text-gray-300">
-                Showing {startIndex + 1} to{" "}
-                {Math.min(endIndex, totalFilteredCount)} of{" "}
-                {totalFilteredCount} results
-              </div>
-              <div className="flex items-center space-x-2">
-                {pagination.page > 1 ? (
+          {/* Bulk Actions */}
+          {filteredAlerts.length > 0 && (
+            <div className="bg-gray-50 dark:bg-gray-800 px-6 py-3 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
                   <Button
-                    label="Previous"
+                    label="Mark Read"
                     variant="outlineDark"
                     size="small"
-                    onClick={() => handlePageChange(pagination.page - 1)}
+                    onClick={handleBulkMarkRead}
+                    className={selectedAlerts.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
                   />
-                ) : (
                   <Button
-                    label="Previous"
-                    variant="outlineDark"
+                    label="Resolve"
+                    variant="primary"
                     size="small"
-                    onClick={() => {}}
-                    className="opacity-50 cursor-not-allowed"
+                    onClick={handleBulkResolve}
+                    className={selectedAlerts.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
                   />
-                )}
-                <span className="text-sm text-gray-700 dark:text-gray-300">
-                  Page {pagination.page} of {Math.ceil(totalFilteredCount / pagination.limit)}
-                </span>
-                {pagination.page < Math.ceil(totalFilteredCount / pagination.limit) ? (
-                  <Button
-                    label="Next"
-                    variant="outlineDark"
-                    size="small"
-                    onClick={() => handlePageChange(pagination.page + 1)}
-                  />
-                ) : (
-                  <Button
-                    label="Next"
-                    variant="outlineDark"
-                    size="small"
-                    onClick={() => {}}
-                    className="opacity-50 cursor-not-allowed"
-                  />
-                )}
+                </div>
+                
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  Page 1/2
+                </div>
               </div>
             </div>
           )}

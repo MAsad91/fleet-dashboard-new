@@ -10,6 +10,7 @@ import { Plus, Eye, Edit, Trash2, FileText, Calendar, Truck, BarChart3, AlertTri
 import InputGroup from "@/components/FormElements/InputGroup";
 import { Select } from "@/components/FormElements/select";
 import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
+import VehicleDocumentFilters from "./_components/filters";
 
 export default function VehicleDocumentsPage() {
   const router = useRouter();
@@ -141,24 +142,28 @@ export default function VehicleDocumentsPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Vehicle Documents</h1>
-            <p className="text-muted-foreground">
-              Manage vehicle documents and certifications
-            </p>
           </div>
-          <Button
-            label="Add Document"
-            variant="primary"
-            icon={<Plus className="h-4 w-4" />}
-            onClick={() => router.push('/vehicle-documents/add')}
-          />
+          <div className="flex items-center space-x-2">
+            <Button
+              label="+ Create"
+              variant="primary"
+              icon={<Plus className="h-4 w-4" />}
+              onClick={() => router.push('/vehicle-documents/add')}
+            />
+            <Button
+              label="Bulk ▼"
+              variant="outlineDark"
+              onClick={() => {}} // TODO: Add bulk actions dropdown
+            />
+          </div>
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Documents</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Docs</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {totalDocs}
                 </p>
@@ -172,7 +177,7 @@ export default function VehicleDocumentsPage() {
           <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Documents</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Docs</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {activeDocs}
                 </p>
@@ -186,7 +191,7 @@ export default function VehicleDocumentsPage() {
           <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Expiring Soon</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Expiring ≤30d</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {expiringDocs}
                 </p>
@@ -196,87 +201,18 @@ export default function VehicleDocumentsPage() {
               </div>
             </div>
           </div>
-
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Compliance Rate</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {totalDocs > 0 ? Math.round((activeDocs / totalDocs) * 100) : 0}%
-                </p>
-              </div>
-              <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                <BarChart3 className="h-6 w-6 text-purple-600" />
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-          <h3 className="text-lg font-semibold mb-4">Filters</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <InputGroup
-              label="Search"
-              type="text"
-              placeholder="Search documents..."
-              value={searchTerm}
-              handleChange={(e) => setSearchTerm(e.target.value)}
-              icon={<Search className="h-4 w-4 text-gray-400" />}
-              iconPosition="left"
-            />
-            
-            <Select
-              label="Vehicle"
-              items={[
-                { value: "", label: "All Vehicles" },
-                ...(vehicles.map((vehicle: any) => ({
-                  value: vehicle.id.toString(),
-                  label: `${vehicle.vin} - ${vehicle.license_plate}`
-                })))
-              ]}
-              defaultValue={vehicleFilter}
-              placeholder="Select vehicle"
-              onChange={(e) => setVehicleFilter(e.target.value)}
-            />
-
-            <Select
-              label="Document Type"
-              items={[
-                { value: "", label: "All Types" },
-                { value: "registration", label: "Registration" },
-                { value: "insurance", label: "Insurance" },
-                { value: "inspection", label: "Inspection" },
-                { value: "permit", label: "Permit" },
-                { value: "other", label: "Other" },
-              ]}
-              defaultValue={docTypeFilter}
-              placeholder="Select type"
-              onChange={(e) => setDocTypeFilter(e.target.value)}
-            />
-
-            <Select
-              label="Status"
-              items={[
-                { value: "", label: "All Status" },
-                { value: "active", label: "Active" },
-                { value: "inactive", label: "Inactive" },
-              ]}
-              defaultValue={activeFilter}
-              placeholder="Select status"
-              onChange={(e) => setActiveFilter(e.target.value)}
-            />
-          </div>
-          
-          <div className="flex justify-end mt-4">
-            <Button
-              label="Clear Filters"
-              variant="outlineDark"
-              size="small"
-              onClick={clearFilters}
-            />
-          </div>
-        </div>
+        <VehicleDocumentFilters
+          vehicles={vehicles}
+          vehicleFilter={vehicleFilter}
+          docTypeFilter={docTypeFilter}
+          activeFilter={activeFilter}
+          onVehicleChange={setVehicleFilter}
+          onDocTypeChange={setDocTypeFilter}
+          onActiveChange={setActiveFilter}
+        />
 
         {/* Documents Table */}
         <div className="bg-white dark:bg-gray-dark rounded-lg shadow-1">
@@ -327,21 +263,25 @@ export default function VehicleDocumentsPage() {
                             className="rounded border-gray-300 text-primary focus:ring-primary"
                           />
                           <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                            Select All ({selectedDocuments.length} selected)
+                            [Select All]
                           </span>
                         </label>
                       </div>
                       
-                      {selectedDocuments.length > 0 && (
-                        <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-4">
+                        {selectedDocuments.length > 0 && (
                           <Button
-                            label="Delete Selected"
+                            label="[Delete Selected]"
                             variant="outlineDark"
                             onClick={handleBulkDelete}
                             className="text-sm"
                           />
+                        )}
+                        
+                        <div className="text-sm text-gray-700 dark:text-gray-300">
+                          Page 1/2
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -358,107 +298,74 @@ export default function VehicleDocumentsPage() {
                         />
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Document
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Vehicle
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Type
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Status
+                        Number
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Expiry Date
+                        Issue
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Actions
+                        Expiry
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Active
                       </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-dark divide-y divide-gray-200 dark:divide-gray-700">
                     {filteredDocuments.map((document: any) => (
-                      <tr key={document.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <tr 
+                        key={document.id} 
+                        className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-150"
+                        onClick={(e) => {
+                          // Don't navigate if clicking on checkbox or action buttons
+                          const target = e.target as HTMLElement;
+                          const isCheckbox = (target as HTMLInputElement).type === 'checkbox' || target.closest('input[type="checkbox"]');
+                          const isActionButton = target.closest('button') || target.closest('[role="button"]');
+                          
+                          if (!isCheckbox && !isActionButton) {
+                            router.push(`/vehicle-documents/${document.id}`);
+                          }
+                        }}
+                      >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <input
                             type="checkbox"
                             checked={selectedDocuments.includes(document.id)}
-                            onChange={() => handleSelectDocument(document.id)}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              handleSelectDocument(document.id);
+                            }}
+                            onClick={(e) => e.stopPropagation()}
                             className="rounded border-gray-300 text-primary focus:ring-primary"
                           />
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center space-x-3">
-                            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                              <FileText className="h-5 w-5 text-blue-600" />
-                            </div>
-                            <div>
-                              <div className="font-medium text-gray-900 dark:text-white">
-                                {document.document_name || 'Unnamed Document'}
-                              </div>
-                              <div className="text-sm text-gray-500 dark:text-gray-400">
-                                {document.document_number || 'No number'}
-                              </div>
-                            </div>
-                          </div>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                          {document.vehicle?.license_plate || document.vehicle?.vin || 'Unknown'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          {document.doc_type || document.document_type || 'Unknown'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          {document.doc_number || document.document_number || 'N/A'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          {document.issue_date ? new Date(document.issue_date).toLocaleDateString() : 'N/A'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          {document.expiry_date ? new Date(document.expiry_date).toLocaleDateString() : 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center space-x-3">
-                            <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                              <Truck className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                            </div>
-                            <div>
-                              <div className="font-medium text-gray-900 dark:text-white">
-                                {document.vehicle?.vin || 'Unknown Vehicle'}
-                              </div>
-                              <div className="text-sm text-gray-500 dark:text-gray-400">
-                                {document.vehicle?.license_plate || 'No plate'}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
-                            {document.document_type || 'Unknown'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            document.is_active
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                              : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                          <span className={`inline-flex items-center ${
+                            document.is_active ? 'text-green-600' : 'text-red-600'
                           }`}>
-                            {document.is_active ? 'Active' : 'Inactive'}
+                            {document.is_active ? '✅' : '❌'}
                           </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                          {document.expiry_date ? new Date(document.expiry_date).toLocaleDateString() : 'No expiry'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              label=""
-                              variant="outlineDark"
-                              size="small"
-                              icon={<Eye className="h-4 w-4" />}
-                              onClick={() => handleViewDocument(document.id)}
-                            />
-                            <Button
-                              label=""
-                              variant="outlineDark"
-                              size="small"
-                              icon={<Edit className="h-4 w-4" />}
-                              onClick={() => handleEditDocument(document.id)}
-                            />
-                            <Button
-                              label=""
-                              variant="outlineDark"
-                              size="small"
-                              icon={<Trash2 className="h-4 w-4" />}
-                              onClick={() => handleDeleteDocument(document.id)}
-                            />
-                          </div>
                         </td>
                       </tr>
                     ))}

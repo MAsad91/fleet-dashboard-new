@@ -152,11 +152,8 @@ export default function VehicleTypesPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Vehicle Types</h1>
-            <p className="text-muted-foreground">
-              Manage vehicle type configurations
-            </p>
           </div>
-          <div className="flex space-x-3">
+          <div className="flex space-x-2">
             <div className="relative">
               <input
                 type="file"
@@ -166,13 +163,13 @@ export default function VehicleTypesPage() {
               />
               <Button
                 label="Upload CSV"
-                variant="outlinePrimary"
+                variant="outlineDark"
                 icon={<Upload className="h-4 w-4" />}
                 onClick={() => {}}
               />
             </div>
             <Button
-              label="Add Vehicle Type"
+              label="+ Create"
               variant="primary"
               icon={<Plus className="h-4 w-4" />}
               onClick={handleAddType}
@@ -181,7 +178,7 @@ export default function VehicleTypesPage() {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
             <div className="flex items-center justify-between">
               <div>
@@ -221,18 +218,7 @@ export default function VehicleTypesPage() {
 
         {/* Filters */}
         <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-          <h3 className="text-lg font-semibold mb-4">Filters</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <InputGroup
-              label="Search"
-              type="text"
-              placeholder="Search by name or code..."
-              value={searchTerm}
-              handleChange={(e) => setSearchTerm(e.target.value)}
-              icon={<Truck className="h-4 w-4 text-gray-400" />}
-              iconPosition="left"
-            />
-            
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Status
@@ -264,19 +250,25 @@ export default function VehicleTypesPage() {
               </select>
             </div>
             
-          </div>
-          <div className="flex justify-end mt-4">
-            <Button
-              label="Clear Filters"
-              variant="outlineDark"
-              size="small"
-              onClick={() => {
-                setSearchTerm("");
-                setStatusFilter("");
-                setCategoryFilter("");
-              }}
+            <InputGroup
+              label="Search name/code"
+              type="text"
+              placeholder="Search by name or code..."
+              value={searchTerm}
+              handleChange={(e) => setSearchTerm(e.target.value)}
+              icon={<Truck className="h-4 w-4 text-gray-400" />}
+              iconPosition="left"
             />
-          </div>
+
+            <div className="flex items-end">
+              <Button
+                label="Apply"
+                variant="primary"
+                size="small"
+                onClick={() => {}} // Filters are applied automatically
+                className="w-full"
+              />
+            </div>
           </div>
         </div>
 
@@ -303,27 +295,31 @@ export default function VehicleTypesPage() {
                         className="rounded border-gray-300 text-primary focus:ring-primary"
                       />
                       <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                        Select All ({selectedTypes.length} selected)
+                        [Select All]
                       </span>
                     </label>
                   </div>
                   
-                  {selectedTypes.length > 0 && (
-                    <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-4">
+                    {selectedTypes.length > 0 && (
                       <Button
-                        label="Delete Selected"
-                        variant="outlinePrimary"
+                        label="[Delete Selected]"
+                        variant="outlineDark"
                         onClick={handleBulkDelete}
-                        className="text-sm text-red-600 hover:text-red-700"
+                        className="text-sm"
                       />
+                    )}
+                    
+                    <div className="text-sm text-gray-700 dark:text-gray-300">
+                      Page 1/2
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
             )}
           
           <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700" style={{ minWidth: '1400px' }}>
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700" style={{ minWidth: '1200px' }}>
               <thead className="bg-gray-50 dark:bg-gray-800">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -361,56 +357,55 @@ export default function VehicleTypesPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Active
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Actions
-                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredTypes.map((type: any) => (
-                  <tr key={type.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <tr 
+                    key={type.id} 
+                    className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-150"
+                    onClick={(e) => {
+                      // Don't navigate if clicking on checkbox
+                      const target = e.target as HTMLElement;
+                      const isCheckbox = (target as HTMLInputElement).type === 'checkbox' || target.closest('input[type="checkbox"]');
+                      
+                      if (!isCheckbox) {
+                        router.push(`/vehicle-types/${type.id}`);
+                      }
+                    }}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <input
                         type="checkbox"
                         checked={selectedTypes.includes(type.id)}
-                        onChange={() => handleSelectType(type.id)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleSelectType(type.id);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
                         className="rounded border-gray-300 text-primary focus:ring-primary"
                       />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       {type.code || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg mr-3">
-                          <Truck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {type.name}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {type.description || 'No description'}
-                          </div>
-                        </div>
-                      </div>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                      {type.name || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
-                        {type.category || 'N/A'}
-                      </span>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {type.category || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {type.drivetrain || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {type.battery_capacity_kwh || 'N/A'} kWh
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {type.battery_capacity_kwh || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {type.motor_power_kw || 'N/A'} kW
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {type.motor_power_kw || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {type.wltp_range_km || 'N/A'} km
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {type.wltp_range_km || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -423,31 +418,6 @@ export default function VehicleTypesPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       {type.active_vehicle_count || 0}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          label=""
-                          variant="outlineDark"
-                          size="small"
-                          icon={<Eye className="h-4 w-4" />}
-                          onClick={() => handleViewType(type.id)}
-                        />
-                        <Button
-                          label=""
-                          variant="outlineDark"
-                          size="small"
-                          icon={<Edit className="h-4 w-4" />}
-                          onClick={() => handleEditType(type.id)}
-                        />
-                        <Button
-                          label=""
-                          variant="outlineDark"
-                          size="small"
-                          icon={<Trash2 className="h-4 w-4" />}
-                          onClick={() => handleDeleteType(type.id)}
-                        />
-                      </div>
                     </td>
                   </tr>
                 ))}
@@ -482,6 +452,7 @@ export default function VehicleTypesPage() {
           confirmText="Delete"
           cancelText="Cancel"
         />
+      </div>
     </ProtectedRoute>
   );
 }

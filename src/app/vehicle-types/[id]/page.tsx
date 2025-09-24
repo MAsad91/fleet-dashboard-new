@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useGetVehicleTypeByIdQuery, useListVehiclesQuery } from "@/store/api/fleetApi";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 import { Button } from "@/components/ui-elements/button";
-import { ArrowLeft, Edit, Trash2, Truck, Battery, Zap, Gauge, BarChart3, FileText, AlertTriangle, Car } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Truck, Battery, Zap, Gauge, BarChart3, FileText, AlertTriangle, Car, CheckCircle } from "lucide-react";
 import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
 
 interface VehicleTypeDetailPageProps {
@@ -72,99 +72,166 @@ export default function VehicleTypeDetailPage({ params }: VehicleTypeDetailPageP
 
   return (
     <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
-      <div className="p-6">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button
-                label=""
-                variant="outlineDark"
-                icon={<ArrowLeft className="h-4 w-4" />}
-                onClick={() => router.back()}
-                className="p-2"
-              />
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                  Vehicle Type — Detail (#{vehicleType.id})
-                </h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-1">
-                  {vehicleType.name} • {vehicleType.code}
-                </p>
+      <div className="space-y-6">
+        {/* HEADER: Back Button + Beautiful Title Card */}
+        <div className="relative">
+          {/* Back Button */}
+          <div className="mb-6">
+            <Button
+              onClick={() => router.back()}
+              variant="outlineDark"
+              label="Back"
+              icon={<ArrowLeft className="h-4 w-4" />}
+              className="px-4 py-2 rounded-lg"
+            />
+          </div>
+
+          {/* Beautiful Title Card */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 shadow-lg border border-blue-200 dark:border-gray-600 relative overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200 dark:bg-gray-600 rounded-full -translate-y-16 translate-x-16 opacity-20"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-200 dark:bg-gray-600 rounded-full translate-y-12 -translate-x-12 opacity-20"></div>
+            
+            <div className="relative z-10">
+              <div className="flex justify-between items-start">
+                {/* Left Side - Vehicle Type Info */}
+                <div className="flex-1">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+                      <Truck className="h-8 w-8 text-blue-600" />
+                    </div>
+                    <div>
+                      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                        Vehicle Type — Detail
+                      </h1>
+                      <p className="text-lg text-gray-600 dark:text-gray-400">
+                        #{vehicleType.id} • {vehicleType.name || 'Vehicle Type'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Quick Info Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+                      <div className="flex items-center space-x-2">
+                        <Truck className="h-5 w-5 text-gray-500" />
+                        <div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Category</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            {vehicleType.category || 'Unknown'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+                      <div className="flex items-center space-x-2">
+                        <Battery className="h-5 w-5 text-gray-500" />
+                        <div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Battery</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            {vehicleType.battery_capacity_kwh || 'N/A'} kWh
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+                      <div className="flex items-center space-x-2">
+                        {vehicleType.status === 'active' ? (
+                          <CheckCircle className="h-5 w-5 text-green-500" />
+                        ) : (
+                          <AlertTriangle className="h-5 w-5 text-red-500" />
+                        )}
+                        <div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Status</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            {vehicleType.status === 'active' ? 'Active' : 'Inactive'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Side - Action Buttons */}
+                <div className="flex flex-col space-y-2">
+                  <Button
+                    label="Edit"
+                    variant="outlineDark"
+                    size="small"
+                    icon={<Edit className="h-3 w-3" />}
+                    onClick={handleEdit}
+                    className="px-3 py-2"
+                  />
+                  <Button
+                    label="Delete"
+                    variant="outlineDark"
+                    size="small"
+                    icon={<Trash2 className="h-3 w-3" />}
+                    onClick={handleDelete}
+                    className="px-3 py-2 text-red-600 hover:text-red-700"
+                  />
+                </div>
               </div>
-            </div>
-            <div className="flex space-x-3">
-              <Button
-                label="Edit"
-                variant="outlineDark"
-                icon={<Edit className="h-4 w-4" />}
-                onClick={handleEdit}
-              />
-              <Button
-                label="Delete"
-                variant="outlineDark"
-                icon={<Trash2 className="h-4 w-4" />}
-                onClick={handleDelete}
-                className="text-red-600 hover:text-red-700"
-              />
             </div>
           </div>
         </div>
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Vehicles</p>
-                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {vehicleType.active_vehicle_count || 0}
                 </p>
               </div>
               <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <Car className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <Car className="h-6 w-6 text-blue-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Battery (kWh)</p>
-                <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {vehicleType.battery_capacity_kwh || 'N/A'}
                 </p>
               </div>
               <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-                <Battery className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <Battery className="h-6 w-6 text-green-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Motor (kW)</p>
-                <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {vehicleType.motor_power_kw || 'N/A'}
                 </p>
               </div>
               <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
-                <Zap className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                <Zap className="h-6 w-6 text-yellow-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">WLTP Range (km)</p>
-                <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {vehicleType.wltp_range_km || 'N/A'}
                 </p>
               </div>
               <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                <Gauge className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                <Gauge className="h-6 w-6 text-purple-600" />
               </div>
             </div>
           </div>
@@ -173,8 +240,7 @@ export default function VehicleTypeDetailPage({ params }: VehicleTypeDetailPageP
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Info Column */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Vehicle Information</h3>
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
             <div className="space-y-4">
               <div className="flex justify-between">
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Code:</span>
@@ -212,8 +278,7 @@ export default function VehicleTypeDetailPage({ params }: VehicleTypeDetailPageP
           </div>
 
           {/* Insights Column */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Insights & Actions</h3>
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
             <div className="space-y-4">
               <Button
                 label="Firmware Lineage"
@@ -248,7 +313,7 @@ export default function VehicleTypeDetailPage({ params }: VehicleTypeDetailPageP
         </div>
 
         {/* Vehicles Table */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="bg-white dark:bg-gray-dark rounded-lg shadow-1 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               Vehicles ({vehicles.length})

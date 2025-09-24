@@ -61,8 +61,7 @@ export default function DriversPage() {
 
   const handleViewDriver = (driverId: number) => {
     console.log('Opening driver view:', driverId);
-    setSelectedDriverId(driverId);
-    setCurrentView('view');
+    router.push(`/drivers/${driverId}`);
   };
 
   const handleEditDriver = (driverId: number) => {
@@ -561,23 +560,18 @@ export default function DriversPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Drivers</h1>
-            <p className="text-muted-foreground">
-              Manage drivers, documents, and status
-            </p>
           </div>
-          <div className="flex space-x-3">
+          <div className="flex space-x-2">
             <Button
-              label={isDownloading ? "Exporting..." : "Export CSV"}
-              variant="outlineDark"
-              icon={<Download className="h-4 w-4" />}
-              onClick={handleExportCsv}
-              className={`${isDownloading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            />
-            <Button
-              label="Add Driver"
+              label="+ Create"
               variant="primary"
               icon={<Plus className="h-4 w-4" />}
               onClick={() => router.push('/drivers/add')}
+            />
+            <Button
+              label="Bulk ▼"
+              variant="outlineDark"
+              onClick={() => {}} // TODO: Add bulk actions dropdown
             />
           </div>
         </div>
@@ -664,48 +658,56 @@ export default function DriversPage() {
 
         {/* Filters */}
         <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-          <h3 className="text-lg font-semibold mb-4">Filters</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <InputGroup
-              label="Search"
-              type="text"
-              placeholder="Search drivers..."
-              value={filters.search || ""}
-              handleChange={handleSearch}
-              icon={<Search className="h-4 w-4 text-gray-400" />}
-              iconPosition="left"
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Status
+              </label>
+              <select
+                value={filters.status || ""}
+                onChange={handleStatus}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="suspended">Suspended</option>
+              </select>
+            </div>
             
-            <Select
-              label="Status"
-              items={[
-                { value: "", label: "All Status" },
-                { value: "active", label: "Active" },
-                { value: "suspended", label: "Suspended" },
-              ]}
-              defaultValue={filters.status || ""}
-              placeholder="Select status"
-              onChange={handleStatus}
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Min Rating
+              </label>
+              <input
+                type="number"
+                placeholder="Min rating (1-5)"
+                value={filters.minRating || ""}
+                onChange={(e) => dispatch(setDriverFilters({ ...filters, minRating: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              />
+            </div>
             
-            <InputGroup
-              label="Min Rating"
-              type="number"
-              placeholder="Min rating (1-5)"
-              value={filters.minRating || ""}
-              handleChange={(e) => dispatch(setDriverFilters({ ...filters, minRating: e.target.value }))}
-              icon={<User className="h-4 w-4 text-gray-400" />}
-              iconPosition="left"
-            />
-          </div>
-          
-          <div className="flex justify-end mt-4">
-            <Button
-              label="Clear Filters"
-              variant="outlineDark"
-              size="small"
-              onClick={() => dispatch(setDriverFilters({ search: "", status: "", minRating: "" }))}
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Search name/phone
+              </label>
+              <input
+                type="text"
+                placeholder="Search by name or phone..."
+                value={filters.search || ""}
+                onChange={handleSearch}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+            
+            <div className="flex items-end">
+              <Button
+                label="Apply"
+                variant="primary"
+                onClick={() => {}} // Filters are applied automatically
+                className="w-full"
+              />
+            </div>
           </div>
         </div>
 
@@ -719,9 +721,71 @@ export default function DriversPage() {
           </div>
           
           <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+            {/* Bulk Actions */}
+            {data?.results && data.results.length > 0 && (
+              <div className="bg-gray-50 dark:bg-gray-800 px-6 py-3 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedDrivers.length === data.results.length}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedDrivers(data.results.map((driver: any) => driver.id));
+                          } else {
+                            setSelectedDrivers([]);
+                          }
+                        }}
+                        className="rounded border-gray-300 text-primary focus:ring-primary"
+                      />
+                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                        [Select All]
+                      </span>
+                    </label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-4">
+                    {selectedDrivers.length > 0 && (
+                      <Button
+                        label="[Suspend Selected]"
+                        variant="outlineDark"
+                        onClick={handleSuspendSelected}
+                        className="text-sm"
+                      />
+                    )}
+                    
+                    <Button
+                      label="[Export CSV]"
+                      variant="outlineDark"
+                      onClick={handleExportCsv}
+                      className="text-sm"
+                    />
+                    
+                    <div className="text-sm text-gray-700 dark:text-gray-300">
+                      Page 1/2
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <input
+                    type="checkbox"
+                    checked={selectedDrivers.length === data?.results?.length}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedDrivers(data?.results?.map((driver: any) => driver.id) || []);
+                      } else {
+                        setSelectedDrivers([]);
+                      }
+                    }}
+                    className="rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Name
                 </th>
@@ -774,7 +838,35 @@ export default function DriversPage() {
                 ))
               ) : (data?.results || []).length ? (
                 (data?.results || []).map((driver: any) => (
-                  <tr key={driver.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <tr 
+                    key={driver.id} 
+                    className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-150"
+                    onClick={(e) => {
+                      // Don't navigate if clicking on checkbox or action buttons
+                      const target = e.target as HTMLElement;
+                      const isCheckbox = (target as HTMLInputElement).type === 'checkbox' || target.closest('input[type="checkbox"]');
+                      const isButton = target.closest('button');
+                      
+                      if (!isCheckbox && !isButton) {
+                        handleViewDriver(driver.id);
+                      }
+                    }}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        checked={selectedDrivers.includes(driver.id)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          if (e.target.checked) {
+                            setSelectedDrivers([...selectedDrivers, driver.id]);
+                          } else {
+                            setSelectedDrivers(selectedDrivers.filter(id => id !== driver.id));
+                          }
+                        }}
+                        className="rounded border-gray-300 text-primary focus:ring-primary"
+                      />
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       {driver.name || driver.full_name || driver.username || `Driver #${driver.id}`}
                     </td>
@@ -807,21 +899,30 @@ export default function DriversPage() {
                           variant="outlineDark"
                           size="small"
                           icon={<Eye className="h-4 w-4" />}
-                          onClick={() => handleViewDriver(driver.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewDriver(driver.id);
+                          }}
                         />
                         <Button
                           label=""
                           variant="outlineDark"
                           size="small"
                           icon={<Edit className="h-4 w-4" />}
-                          onClick={() => handleEditDriver(driver.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditDriver(driver.id);
+                          }}
                         />
                         <Button
                           label=""
                           variant="outlineDark"
                           size="small"
                           icon={<Trash2 className="h-4 w-4" />}
-                          onClick={() => handleDeleteDriver(driver.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteDriver(driver.id);
+                          }}
                         />
                       </div>
                     </td>
@@ -829,7 +930,7 @@ export default function DriversPage() {
                 ))
               ) : (
                 <tr>
-                  <td className="px-6 py-10 text-center text-sm text-gray-500 dark:text-gray-400" colSpan={5}>
+                  <td className="px-6 py-10 text-center text-sm text-gray-500 dark:text-gray-400" colSpan={7}>
                     No drivers found
                   </td>
                 </tr>
