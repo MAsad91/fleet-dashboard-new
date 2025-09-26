@@ -1,0 +1,233 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin > Users > Add User                                            [👤]│
+├────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                │
+│ ADD USER                                                                       │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ Basic Information                                                         │ │
+│ ├────────────────────────────────────────────────────────────────────────────┤ │
+│ │                                                                            │ │
+│ │ Username*                                Email*                            │ │
+│ │ ┌─────────────────────────┐              ┌─────────────────────────────┐   │ │
+│ │ │                         │              │                             │   │ │
+│ │ └─────────────────────────┘              └─────────────────────────────┘   │ │
+│ │ Example: jsmith                           Example: john.smith@company.com   │ │
+│ │                                                                            │ │
+│ │ First Name*                              Last Name*                        │ │
+│ │ ┌─────────────────────────┐              ┌─────────────────────────────┐   │ │
+│ │ │                         │              │                             │   │ │
+│ │ └─────────────────────────┘              └─────────────────────────────┘   │ │
+│ │                                                                            │ │
+│ │ Phone Number                             Password*                         │ │
+│ │ ┌─────────────────────────┐              ┌─────────────────────────────┐   │ │
+│ │ │                         │              │ ••••••••••••••••            │   │ │
+│ │ └─────────────────────────┘              └─────────────────────────────┘   │ │
+│ │ Example: +91-9876543210                   [Generate Password] [Show/Hide]   │ │
+│ │                                                                            │ │
+│ │ Confirm Password*                                                         │ │
+│ │ ┌─────────────────────────────────────────────┐                           │ │
+│ │ │ ••••••••••••••••                          │                           │ │
+│ │ └─────────────────────────────────────────────┘                           │ │
+│ │                                                                            │ │
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ Role & Access                                                             │ │
+│ ├────────────────────────────────────────────────────────────────────────────┤ │
+│ │                                                                            │ │
+│ │ User Role*                                                                 │ │
+│ │ ┌─────────────────────────────────────────────┐                           │ │
+│ │ │ Select Role...                            ▾ │                           │ │
+│ │ └─────────────────────────────────────────────┘                           │ │
+│ │ Options: Admin, Fleet Admin, Manager, Driver                               │ │
+│ │                                                                            │ │
+│ │ Fleet Operator*                                                           │ │
+│ │ ┌─────────────────────────────────────────────┐                           │ │
+│ │ │ Select Fleet Operator...                  ▾ │                           │ │
+│ │ └─────────────────────────────────────────────┘                           │ │
+│ │ Note: Admin users can access all fleet operators                           │ │
+│ │                                                                            │ │
+│ │ Link to Driver Profile                                                    │ │
+│ │ ┌─────────────────────────────────────────────┐                           │ │
+│ │ │ Select Driver...                          ▾ │                           │ │
+│ │ └─────────────────────────────────────────────┘                           │ │
+│ │ Note: Only applicable for Driver role. Optional link to existing driver.   │ │
+│ │                                                                            │ │
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ Account Options                                                           │ │
+│ ├────────────────────────────────────────────────────────────────────────────┤ │
+│ │                                                                            │ │
+│ │ Status*                                    Require Password Change         │ │
+│ │ ┌─────────────────────────┐                [✓] User must change password   │ │
+│ │ │ Active                ▾ │                    at next login               │ │
+│ │ └─────────────────────────┘                                               │ │
+│ │ Options: Active, Inactive                                                  │ │
+│ │                                                                            │ │
+│ │ Two-Factor Authentication                   Email Notifications            │ │
+│ │ [ ] Enable 2FA for this user                [✓] Send welcome email         │ │
+│ │                                             [✓] Include temporary password │ │
+│ │                                                                            │ │
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ Permissions                                                                │ │
+│ ├────────────────────────────────────────────────────────────────────────────┤ │
+│ │                                                                            │ │
+│ │ Note: Permissions are defined by the selected role.                        │ │
+│ │ You can override specific permissions below if needed.                     │ │
+│ │                                                                            │ │
+│ │ Override Default Role Permissions                                          │ │
+│ │ [ ] Override permissions for this user                                     │ │
+│ │                                                                            │ │
+│ │ Permission Overrides (Only shown when override is checked)                 │ │
+│ │ [ ] Manage vehicles      [ ] Manage drivers     [ ] View analytics         │ │
+│ │ [ ] Manage trips         [ ] Manage OBD devices [ ] View reports           │ │
+│ │ [ ] View telemetry       [ ] Manage alerts      [ ] Manage settings        │ │
+│ │                                                                            │ │
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│                                         [Cancel]   [Create User]               │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### Basic Information
+
+- **Username*** (text):
+  - **Validation**: Must be unique, alphanumeric
+  - **Notes**: Will be the login username
+
+- **Email*** (text):
+  - **Validation**: Valid email format, must be unique
+  - **Notes**: Used for notifications and password resets
+
+- **First Name*** (text):
+  - **Notes**: User's first name
+
+- **Last Name*** (text):
+  - **Notes**: User's last name
+
+- **Phone Number** (text):
+  - **Validation**: Valid phone format (optional)
+  - **Notes**: Contact information
+
+- **Password*** (password):
+  - **Validation**: Meets complexity requirements
+  - **Features**: Show/Hide button, Generate Password button
+
+- **Confirm Password*** (password):
+  - **Validation**: Must match Password
+
+#### Role & Access
+
+- **User Role*** (dropdown):
+  - **API**: `GET /api/users/roles/`
+  - **Options**: Admin, Fleet Admin, Manager, Driver
+  - **Behavior**: When changed, updates available permissions
+
+- **Fleet Operator*** (dropdown):
+  - **API**: `GET /api/fleet/fleet-operators/`
+  - **Notes**: Admin users can access all fleet operators
+  - **Behavior**: Pre-selected for non-admin users
+
+- **Link to Driver Profile** (dropdown):
+  - **API**: `GET /api/fleet/drivers/?has_user=false`
+  - **Visibility**: Only shown when role is "Driver"
+  - **Purpose**: Link user account to existing driver record
+
+#### Account Options
+
+- **Status*** (dropdown):
+  - **Options**: Active, Inactive
+  - **Default**: Active
+
+- **Require Password Change** (checkbox):
+  - **Default**: Checked
+  - **Purpose**: Force user to change password at next login
+
+- **Two-Factor Authentication** (checkbox):
+  - **Default**: Unchecked
+  - **Purpose**: Enable 2FA for enhanced security
+
+- **Email Notifications** (checkboxes):
+  - Send welcome email
+  - Include temporary password
+
+#### Permissions
+
+- **Override Default Role Permissions** (checkbox):
+  - **Default**: Unchecked
+  - **Behavior**: When checked, shows permission overrides
+
+- **Permission Overrides** (checkboxes):
+  - **Visibility**: Only shown when override is checked
+  - **Options**: Various system permissions
+  - **Default**: Based on selected role
+
+### Form Submission
+
+- **API Endpoint**: `POST /api/users/`
+- **Request Body**:
+  ```json
+  {
+    "username": "jsmith",
+    "email": "john.smith@company.com",
+    "first_name": "John",
+    "last_name": "Smith",
+    "phone_number": "+91-9876543210",
+    "password": "securePassword123",
+    "role_id": 2,
+    "fleet_operator_id": 1,
+    "driver_id": null,
+    "status": "Active",
+    "require_password_change": true,
+    "enable_2fa": false,
+    "send_welcome_email": true,
+    "include_temp_password": true,
+    "override_permissions": false,
+    "permissions": []
+  }
+  ```
+
+### Edit Form Behavior
+
+When using the same form for editing:
+
+- **API Endpoint**: `PUT/PATCH /api/users/{id}/`
+- **Pre-population**: Fetch user details and populate all form fields
+- **Password Fields**: Hidden or empty during edit (require explicit change)
+- **Button Label**: Change to "Update User"
+- **Additional Fields**: May include "Last Login", "Created On", etc.
+
+### Validation Rules
+
+- **Required Fields**: All fields marked with * are required
+- **Username**: Must be unique, alphanumeric, no spaces
+- **Email**: Must be unique, valid email format
+- **Password**: 
+  - Must meet complexity requirements (length, special chars, etc.)
+  - Confirm password must match
+- **Role & Fleet**: Required selections
+
+### User Experience
+
+- **Form Layout**: Group related fields together in sections
+- **Field Order**: Arrange from most to least important
+- **Help Text**: Provide examples for complex fields
+- **Error Messages**: Display inline with fields
+- **Required Fields**: Visually indicate which fields are required
+- **Dependent Fields**: Show/hide fields based on other selections
+
+### After Submission
+
+- **Success**: Redirect to user detail page with success message
+- **Error**: Show validation errors inline with fields and summary at top
+- **Next Steps**: Provide guidance on what to do next (e.g., share credentials)

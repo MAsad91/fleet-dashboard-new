@@ -1,0 +1,147 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin > Firmware > Package Detail                                   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ FIRMWARE PACKAGE DETAIL                                         │
+│──────────────│                                                                 │
+│   Dashboard  │ [◀ Back]  TelemX OBD Firmware v1.3.0                           │
+│              │ Released: August 15, 2025   Component: OBD   Status: Available  │
+│   Vehicles   │                                                                 │
+│   Drivers    │              [Download] [Pause] [Resume] [Delete]               │
+│   Driver Docs│                                                                 │
+│   Trips      │ KPI CARDS                                                       │
+│   Telemetry  │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌──────────┐│
+│   Alerts     │ │ Target Devices │ │ Success        │ │ Failure        │ │File Size ││
+│   Alert Rules│ │                │ │                │ │                │ │        ││
+│   OBD Devices│ │      42        │ │      37        │ │       3        │ │ 24.6 MB ││
+│   SIM Cards  │ └────────────────┘ └────────────────┘ └────────────────┘ └──────────┘│
+│   Maintenance│                                                                 │
+│   Insurance  │ PACKAGE INFORMATION                                             │
+│   Dashcams   │ ┌─────────────────────────────────┐  ┌───────────────────────┐  │
+│ ▶ Firmware   │ │ Package Details                 │  │ Compatibility         │  │
+│   Analytics  │ │                                 │  │                       │  │
+│   Driver Logs│ │ • Version: v1.3.0              │  │ • Device Types:       │  │
+│   Performance│ │ • Release Date: 2025-08-15     │  │   - TelemX OBD T2     │  │
+│   Settings   │ │ • Component: OBD Firmware      │  │   - TelemX OBD T3     │  │
+│   Users      │ │ • File Size: 24.6 MB           │  │                       │  │
+│              │ │ • SHA-256: ad72f3b8e...        │  │ • Min Version: v1.0.0 │  │
+│              │ │ • Uploaded By: admin@acme.com  │  │ • Requires Reboot: Yes│  │
+│              │ │ • Uploaded On: 2025-08-15      │  │ • Est. Update Time: 5m│  │
+│              │ │ • Status: Available            │  │                       │  │
+│              │ │                                │  │ • Not Compatible With:│  │
+│              │ │ • File: telemx_obd_v1.3.0.bin  │  │   - TelemX OBD T1     │  │
+│              │ │   [Download]                   │  │   - Older hardware    │  │
+│              │ │                                │  │                       │  │
+│              │ └─────────────────────────────────┘  └───────────────────────┘  │
+│              │                                                                 │
+│              │ RELEASE NOTES                                                   │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ # TelemX OBD Firmware v1.3.0                              │  │
+│              │ │                                                            │  │
+│              │ │ ## New Features                                            │  │
+│              │ │ - Added support for extended vehicle diagnostics           │  │
+│              │ │ - Improved battery monitoring accuracy by 15%              │  │
+│              │ │ - Added low-power mode for parked vehicles                 │  │
+│              │ │                                                            │  │
+│              │ │ ## Bug Fixes                                               │  │
+│              │ │ - Fixed connectivity issues with certain vehicle models    │  │
+│              │ │ - Resolved data transmission errors during poor reception  │  │
+│              │ │ - Improved startup time by 30%                             │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ DEVICE UPDATE STATUS                                            │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ Device   │ Current│ Status    │ Last Attempt │ Progress    │  │
+│              │ │ ──────── │ ─────── │ ───────── │ ──────────── │ ────────── │  │
+│              │ │ OBD-001  │ v1.2.3 │ Pending   │ -           │ -          │  │
+│              │ │ OBD-002  │ v1.2.3 │ Success   │ 2025-09-24  │ 100%       │  │
+│              │ │ OBD-004  │ v1.2.3 │ In Progress│ 2025-09-25  │ 45%        │  │
+│              │ │ OBD-005  │ v1.2.3 │ Failed    │ 2025-09-25  │ Error      │  │
+│              │ │                                                            │  │
+│              │ │ [View All Devices] [Export Status Report]                  │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### Firmware Package Detail
+- **API Endpoint**: `GET /api/fleet/firmware-updates/{id}/`
+- **Fields Used**:
+  - `id` - Firmware update ID
+  - `component` - Device type (obd, dashcam, other)
+  - `version` - Firmware version
+  - `description` - Description/release notes
+  - `release_date` - Release date
+  - `file` - Firmware file
+  - `file_size` - Size in bytes
+  - `priority` - Priority level
+  - `status` - Current status (paused, rolling_out, completed)
+
+#### KPI Cards
+- **API Endpoint**: `GET /api/fleet/firmware-updates/{id}/summary/`
+- **Fields Used**:
+  - `target_count` - Number of target devices
+  - `success_count` - Number of successful updates
+  - `failure_count` - Number of failed updates
+  - `file_size` - Size of the firmware file
+
+#### Package Information
+- **Package Details**:
+  - Version, release date, component from main firmware fields
+  - File details including size, hash
+  - Upload information and status
+  
+- **Compatibility Information**:
+  - Compatible device types
+  - Minimum version requirements
+  - Installation requirements
+  - Incompatible devices
+
+#### Release Notes
+- **Source**: `description` field from firmware update
+- **Format**: Markdown formatted text with sections for:
+  - New features
+  - Bug fixes
+  - Known issues
+  - Installation instructions
+
+#### Device Update Status
+- **API Endpoint**: `GET /api/fleet/firmware-updates/{id}/` (includes `installs`)
+- **Fields Used**:
+  - `installs[]` array with each install containing:
+    - `vehicle` - Device/vehicle ID
+    - `status` - Update status (pending, in_progress, success, failed)
+    - `attempts` - Number of update attempts
+    - `last_attempt_date` - Date of last attempt
+    - `error_message` - Error message if failed
+
+### Action Buttons
+- **Download**:
+  - **Implementation**: Direct download of firmware file
+  
+- **Pause**:
+  - **API**: `POST /api/fleet/firmware-updates/{id}/pause/`
+  - **Documentation Reference**: Pause/Resume endpoint in firmware.md
+  - **Purpose**: Pause the firmware rollout
+  
+- **Resume**:
+  - **API**: `POST /api/fleet/firmware-updates/{id}/resume/`
+  - **Documentation Reference**: Pause/Resume endpoint in firmware.md
+  - **Purpose**: Resume the firmware rollout
+  
+- **Delete**:
+  - **API**: `DELETE /api/fleet/firmware-updates/{id}/`
+  - **Documentation Reference**: Delete endpoint in firmware.md
+  - **Purpose**: Remove the firmware package
+
+### API Alignment
+All endpoints and fields used in this design match the documentation in firmware.md:
+- `GET /api/fleet/firmware-updates/{id}/` - Get firmware update details
+- `POST /api/fleet/firmware-updates/{id}/pause/` - Pause update
+- `POST /api/fleet/firmware-updates/{id}/resume/` - Resume update
+- `GET /api/fleet/firmware-updates/{id}/summary/` - Get summary stats
+- `DELETE /api/fleet/firmware-updates/{id}/` - Delete update

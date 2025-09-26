@@ -1,6 +1,7 @@
 "use client";
 
 import { useDashboard } from "@/contexts/DashboardContext";
+import { useGetMaintenanceDashboardStatsQuery } from "@/store/api/fleetApi";
 import { cn } from "@/lib/utils";
 import { WrenchIcon } from "@/components/Layouts/sidebar/icons";
 
@@ -9,7 +10,10 @@ type PropsType = {
 };
 
 export function MaintenanceSchedule({ className }: PropsType) {
-  const { summary, loading } = useDashboard();
+  const { summary, loading: dashboardLoading } = useDashboard();
+  const { data: maintenanceStats, isLoading: maintenanceLoading, error: maintenanceError } = useGetMaintenanceDashboardStatsQuery();
+  
+  const loading = dashboardLoading || maintenanceLoading;
   
   if (loading) {
     return (
@@ -32,8 +36,8 @@ export function MaintenanceSchedule({ className }: PropsType) {
     );
   }
 
-  // Use mock maintenance data (API doesn't provide this data yet)
-  const maintenanceData = [
+  // Use real API data if available, fallback to mock data
+  const maintenanceData = maintenanceStats?.results || [
     {
       id: 1,
       vehicle: "EV-001",
@@ -80,6 +84,25 @@ export function MaintenanceSchedule({ className }: PropsType) {
       assignedTo: "Tom Brown"
     }
   ];
+
+  // Show error state if API fails
+  if (maintenanceError) {
+    return (
+      <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>
+        <div className="flex items-center gap-2 mb-4">
+          <WrenchIcon className="h-5 w-5 text-primary" />
+          <h3 className="text-title-sm font-semibold text-dark dark:text-white">
+            Maintenance Schedule
+          </h3>
+        </div>
+        <div className="text-center py-8">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Unable to load maintenance data
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -156,7 +179,7 @@ export function MaintenanceSchedule({ className }: PropsType) {
             </tr>
           </thead>
           <tbody>
-            {maintenanceData.map((item) => (
+            {maintenanceData.map((item: any) => (
               <tr
                 key={item.id}
                 className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50"
@@ -199,21 +222,21 @@ export function MaintenanceSchedule({ className }: PropsType) {
       <div className="mt-6 grid grid-cols-3 gap-4">
         <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-4">
           <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-            {maintenanceData.filter(item => item.status === "overdue").length}
+            {maintenanceData.filter((item: any) => item.status === "overdue").length}
           </div>
           <p className="text-sm text-red-600 dark:text-red-400">Overdue</p>
         </div>
         
         <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-4">
           <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-            {maintenanceData.filter(item => item.status === "scheduled").length}
+            {maintenanceData.filter((item: any) => item.status === "scheduled").length}
           </div>
           <p className="text-sm text-blue-600 dark:text-blue-400">Scheduled</p>
         </div>
         
         <div className="rounded-lg bg-green-50 dark:bg-green-900/20 p-4">
           <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-            {maintenanceData.filter(item => item.status === "completed").length}
+            {maintenanceData.filter((item: any) => item.status === "completed").length}
           </div>
           <p className="text-sm text-green-600 dark:text-green-400">Completed</p>
         </div>

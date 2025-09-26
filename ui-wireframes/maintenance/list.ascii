@@ -1,0 +1,148 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin                           [Today | 10d | 30d | 90d | 📅]   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ MAINTENANCE                                                     │
+│──────────────│                                                                 │
+│   Dashboard  │ Maintenance                                      [+ Schedule]   │
+│              │                                                                 │
+│   Vehicles   │ KPI CARDS                                                       │
+│   Drivers    │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐        │
+│   Driver Docs│ │ Total Records  │ │ Scheduled      │ │ Overdue        │        │
+│   Trips      │ │                │ │                │ │                │        │
+│   Telemetry  │ │     235        │ │      18        │ │      7         │        │
+│   Alerts     │ └────────────────┘ └────────────────┘ └────────────────┘        │
+│   Alert Rules│                                                                 │
+│   OBD Devices│ FILTERS                                                         │
+│   SIM Cards  │ ┌────────────────────────────────────────────────────────────┐  │
+│ ▶ Maintenance│ │ 🔍 [Search by record ID, vehicle ID, license plate...]       │  │
+│   Insurance  │ │ Status:    [All ▾]      Type:       [All ▾]               │  │
+│   Dashcams   │ │                     Technician: [Select ▾]   [Apply]  │  │
+│   Firmware   │ └────────────────────────────────────────────────────────────┘  │
+│   Analytics  │                                                                 │
+│   Driver Logs│ DATE SELECTOR                                                   │
+│   Performance│ ┌────────────────────────────────────────────────────────────┐  │
+│   Settings   │ │ September 2025           [◀][▶]     [Today] [Week] [Month] │  │
+│   Users      │ │ Mo Tu We Th Fr Sa Su                                       │  │
+│              │ │  2  3  4  5  6  7  8                                       │  │
+│              │ │  9 10 11 12 13 14 15                                       │  │
+│              │ │ 16 17 18 19 20 21 22                                       │  │
+│              │ │ 23 24 25 26 27 28 29                                       │  │
+│              │ │ 30                                                         │  │
+│              │ │                                                            │  │
+│              │ │ Selected: September 25, 2025                               │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ MAINTENANCE RECORDS                                 [▢ Select All]│
+│              │ ┌────┬──────────┬────────┬──────────────┬──────────┬───────┬───────┐ │
+│              │ │ ▢  │ Date     │ Vehicle│ Service Type │ Status   │ Tech. │ Cost  │ │
+│              │ ├────┼──────────┼────────┼──────────────┼──────────┼───────┼───────┤ │
+│              │ │ ▢  │ 09/25/25 │ EV-9812│ Brake Service│ Scheduled│ T. Lee│ ₹3,500│ │
+│              │ │ ▢  │ 09/25/25 │ EV-4523│ Full Inspect.│ In Prog. │ S. Ali│ ₹2,800│ │
+│              │ │ ▢  │ 09/25/25 │ EV-6721│ Tire Replace.│ Completed│ R. Das│ ₹9,200│ │
+│              │ │ ▢  │ 09/24/25 │ EV-1149│ Motor Check  │ Completed│ T. Lee│ ₹1,500│ │
+│              │ │ ▢  │ 09/24/25 │ EV-8810│ Battery Opt. │ Completed│ S. Ali│ ₹2,000│ │
+│              │ │ ▢  │ 09/23/25 │ EV-3387│ OBD Replace. │ Completed│ R. Das│ ₹4,500│ │
+│              │ │ ▢  │ 09/23/25 │ EV-5431│ Tire Rotation│ Overdue  │ T. Lee│ ₹1,200│ │
+│              │ │ ▢  │ 09/22/25 │ EV-2198│ Full Inspect.│ Completed│ S. Ali│ ₹2,800│ │
+│              │ └────┴──────────┴────────┴──────────────┴──────────┴───────┴───────┘ │
+│              │                                                                 │
+│              │ ACTIONS                                                         │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ [Bulk Actions ▾] [Export]                  Page 1/30 [◀][▶]│  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ UPCOMING MAINTENANCE                                            │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ • Tomorrow: 3 scheduled maintenance tasks                  │  │
+│              │ │ • Next week: 12 scheduled maintenance tasks                │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### KPI Cards Section
+- **API Endpoint**: `GET /api/fleet/maintenance-records/overview_metrics/`
+- **Fields Used**:
+  - Total Records count
+  - Scheduled maintenance count
+  - Overdue maintenance count
+
+#### Date Selector
+- **Client-side component** that shows a calendar view
+- Selected date used to filter records with `scheduled_date=YYYY-MM-DD` parameter
+- Shows dates with maintenance scheduled (possibly with different indicators for status)
+
+#### Filters
+- **Search Filter**:
+  - **Query Parameter**: `search=<term>`
+  - **Implementation**: Searches record IDs, vehicle IDs, license plates, etc.
+  - **Note**: This is the primary way to filter by vehicle information
+  - **Supported Formats**: Maintenance record ID, vehicle ID, license plate number
+  
+- **Status Filter**:
+  - **Query Parameter**: `status=scheduled|in_progress|completed|overdue|canceled`
+  - **Values from documentation**: Various status values
+  
+- **Type Filter**:
+  - **Query Parameter**: `maintenance_type=routine|repair|inspection|battery|software`
+  - **Values from documentation**: Static list as noted in documentation
+  
+- **Behind the Scenes**:
+  - **Vehicle Parameter**: `vehicle={id}` parameter is still supported by the API
+  - **Implementation**: Use search field instead of dropdown to filter by vehicle
+  
+- **Technician Filter**:
+  - **Query Parameter**: `technician={name}`
+  - **Implementation**: Filter by technician name/ID
+
+#### Maintenance Records Table
+- **API Endpoint**: `GET /api/fleet/maintenance-records/`
+- **Query Parameters**: All applied filters plus date from calendar
+- **Columns**:
+  - Checkbox for selection
+  - Date (scheduled_date)
+  - Vehicle
+  - Service Type (maintenance_type)
+  - Status
+  - Technician
+  - Cost
+  
+- **Row Actions**:
+  - Click row to navigate to maintenance detail view
+  - Select checkboxes for bulk actions
+
+#### Bulk Actions
+- **Complete Selected**:
+  - **API**: `POST /api/fleet/maintenance-records/{id}/complete/` (multiple calls)
+  - **Documentation Reference**: Complete action mentioned in API actions section
+  
+- **Reschedule Selected**:
+  - **API**: `POST /api/fleet/maintenance-records/{id}/schedule/`
+  - **Request Body**: `{ "scheduled_date": "YYYY-MM-DDTHH:MM:SSZ" }`
+  - **Documentation Reference**: Schedule/Reschedule action mentioned in API actions section
+  
+- **Cancel Selected**:
+  - **API**: `POST /api/fleet/maintenance-records/{id}/cancel/`
+  - **Documentation Reference**: Cancel action mentioned in API actions section
+  
+- **Export**:
+  - **Implementation**: Exports maintenance record data in selected format
+
+#### Upcoming Maintenance Section
+- **API Endpoint**: `GET /api/fleet/maintenance-records/upcoming/`
+- **Documentation Reference**: Upcoming endpoint mentioned in API actions section
+- **Purpose**: Shows summary of upcoming maintenance tasks
+
+### API Alignment
+All endpoints and fields used in this design match the documentation in maintenance.md:
+- `GET /api/fleet/maintenance-records/` - List all records
+- `GET /api/fleet/maintenance-records/overview_metrics/` - Get metrics
+- `GET /api/fleet/maintenance-records/upcoming/` - Get upcoming maintenance
+- `POST /api/fleet/maintenance-records/{id}/complete/` - Complete record
+- `POST /api/fleet/maintenance-records/{id}/schedule/` - Reschedule record
+- `POST /api/fleet/maintenance-records/{id}/cancel/` - Cancel record

@@ -1,0 +1,126 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin > Insurance > Policy Detail                                   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ INSURANCE POLICY DETAIL                                         │
+│──────────────│                                                                 │
+│   Dashboard  │ [◀ Back]  Policy: INS-001                                      │
+│              │ Vehicle: EV-9812   Type: Liability   Status: Active   Expiry: Jan 15, 2026│
+│   Vehicles   │                                                                 │
+│   Drivers    │              [Edit] [Renew] [Download] [Cancel]                 │
+│   Driver Docs│                                                                 │
+│   Trips      │ KPI CARDS                                                       │
+│   Telemetry  │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌──────────┐│
+│   Alerts     │ │ Provider       │ │ Premium        │ │ Coverage Value │ │Days Left││
+│   Alert Rules│ │                │ │                │ │                │ │        ││
+│   OBD Devices│ │   SafeCorp     │ │ ₹12,500 / year │ │   ₹12,000,000  │ │   112   ││
+│   SIM Cards  │ └────────────────┘ └────────────────┘ └────────────────┘ └──────────┘│
+│   Maintenance│                                                                 │
+│ ▶ Insurance  │ POLICY INFORMATION                                              │
+│   Dashcams   │ ┌─────────────────────────────┐  ┌───────────────────────────┐  │
+│   Firmware   │ │ Policy Details              │  │ Vehicle Information      │  │
+│   Analytics  │ │                             │  │                           │  │
+│   Driver Logs│ │ • Policy Number: INS-001    │  │ • Vehicle: EV-9812        │  │
+│   Performance│ │ • Policy Type: Liability    │  │ • Make/Model: Tesla Model 3│  │
+│   Settings   │ │ • Provider: SafeCorp        │  │ • Year: 2025              │  │
+│   Users      │ │ • Start Date: 2025-01-15    │  │ • VIN: WBA1234567890123   │  │
+│              │ │ • Expiry Date: 2026-01-15   │  │ • Fleet: Acme Logistics   │  │
+│              │ │ • Policy Status: Active     │  │ • [View Vehicle]          │  │
+│              │ │                             │  │                           │  │
+│              │ └─────────────────────────────┘  └───────────────────────────┘  │
+│              │                                                                 │
+│              │ COVERAGE & PAYMENT                                              │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ Coverage Details                                           │  │
+│              │ │                                                            │  │
+│              │ │ • Coverage Type: Liability                                 │  │
+│              │ │ • Coverage Value: ₹12,000,000                              │  │
+│              │ │ • Deductible: ₹25,000                                      │  │
+│              │ │ • Third Party: Covered                                     │  │
+│              │ │ • Own Damage: Not Covered                                  │  │
+│              │ │                                                            │  │
+│              │ │ Payment Information                                        │  │
+│              │ │                                                            │  │
+│              │ │ • Premium: ₹12,500 per year                                │  │
+│              │ │ • Payment Frequency: Annual                                │  │
+│              │ │ • Last Payment: 2025-01-10                                 │  │
+│              │ │ • Next Payment: 2026-01-10                                 │  │
+│              │ │ • Payment Method: Bank Transfer                            │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ ACTIONS                                                         │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ [Print Policy] [Email Policy] [View Vehicle]               │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### Insurance Policy Detail
+- **API Endpoint**: `GET /api/fleet/insurance-policies/{id}/`
+- **Fields Used**:
+  - `id` - Policy ID/number
+  - `vehicle` - Vehicle the policy is for
+  - `policy_number` - Insurance policy number
+  - `provider` - Insurance provider name
+  - `start_date` - Policy start date
+  - `end_date` - Policy expiration date
+  - `coverage_amount` - Coverage value
+  - `premium_amount` - Premium amount
+  - `is_active` - Active status (computed)
+  - `policy_type` - Type of insurance policy
+
+#### Vehicle Information
+- **API Endpoint**: `GET /api/fleet/vehicles/{id}/` (where id is from policy.vehicle)
+- **Fields Used**: Vehicle details like make, model, year, VIN, etc.
+
+#### KPI Cards
+- **Provider**: Insurance provider name
+- **Premium**: Premium amount per year
+- **Coverage Value**: Total coverage amount
+- **Days Left**: Days until policy expiration (computed)
+
+### Content Sections
+
+#### Policy Details
+- Basic policy information directly from the insurance policy endpoint
+- Fields: policy_number, policy_type, provider, start_date, end_date, status
+
+#### Vehicle Information
+- Vehicle details from the related vehicle endpoint
+- Fields: vehicle ID, make/model, year, VIN, fleet
+
+#### Coverage & Payment
+- Coverage details from the policy endpoint
+- Payment information calculated from premium_amount
+- Note: These are simplified from the available API data since there's no dedicated endpoints for detailed coverage or payment history
+
+### Actions
+- **Edit**:
+  - **API**: `PUT /api/fleet/insurance-policies/{id}/`
+  - **Implementation**: Opens edit form with current values
+
+- **Renew**:
+  - **Implementation**: Creates new policy with updated dates based on current
+
+- **Download**:
+  - **Implementation**: Downloads policy document
+
+- **Cancel**:
+  - **API**: `DELETE /api/fleet/insurance-policies/{id}/`
+  - **Implementation**: Cancels/deletes the policy
+
+- **Print/Email Policy**:
+  - **Implementation**: Utility functions for the policy document
+
+### API Alignment
+All APIs used in this design match the documentation in insurance.md:
+- `GET /api/fleet/insurance-policies/{id}/` - Get policy details
+- `PUT /api/fleet/insurance-policies/{id}/` - Update policy
+- `DELETE /api/fleet/insurance-policies/{id}/` - Delete policy
+- `GET /api/fleet/vehicles/{id}/` - Get vehicle details

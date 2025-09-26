@@ -1,0 +1,114 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin                           [Today | 10d | 30d | 90d | 📅]   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ INSURANCE                                                       │
+│──────────────│                                                                 │
+│   Dashboard  │ Insurance                                        [+ Add Policy] │
+│              │                                                                 │
+│   Vehicles   │ KPI CARDS                                                       │
+│   Drivers    │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐        │
+│   Driver Docs│ │ Total Policies │ │ Active         │ │ Expiring Soon  │        │
+│   Trips      │ │                │ │                │ │                │        │
+│   Telemetry  │ │     128        │ │     120        │ │      15        │        │
+│   Alerts     │ └────────────────┘ └────────────────┘ └────────────────┘        │
+│   Alert Rules│                                                                 │
+│   OBD Devices│ FILTERS                                                         │
+│   SIM Cards  │ ┌────────────────────────────────────────────────────────────┐  │
+│   Maintenance│ │ 🔍 [Search by policy number, vehicle ID, license plate...] │  │
+│ ▶ Insurance  │ │ Status:  [All ▾]    Type:      [All ▾]    Provider: [All ▾]│  │
+│   Dashcams   │ │                  Expiry:    [Any ▾]             [Apply] │  │
+│   Firmware   │ └────────────────────────────────────────────────────────────┘  │
+│   Analytics  │                                                                 │
+│   Driver Logs│ INSURANCE POLICIES                                 [▢ Select All]│
+│   Performance│ ┌────┬────────┬─────────┬───────────┬─────────┬─────────┬──────────┐ │
+│   Settings   │ │ ▢  │ Policy │ Vehicle │ Type      │ Provider│ Expiry  │ Premium  │ │
+│   Users      │ ├────┼────────┼─────────┼───────────┼─────────┼─────────┼──────────┤ │
+│              │ │ ▢  │ INS-001│ EV-9812 │ Liability │ SafeCorp│ 01/15/26│ ₹12,500  │ │
+│              │ │ ▢  │ INS-002│ EV-4523 │ Comprehen.│ TrustIns│ 03/22/26│ ₹18,750  │ │
+│              │ │ ▢  │ INS-003│ EV-6721 │ Liability │ SafeCorp│ 05/10/26│ ₹11,200  │ │
+│              │ │ ▢  │ INS-004│ EV-1149 │ Comprehen.│ SecureAl│ 11/30/25│ ₹16,800  │ │
+│              │ │ ▢  │ INS-005│ EV-8810 │ Liability │ TrustIns│ 12/15/25│ ₹10,900  │ │
+│              │ │ ▢  │ INS-006│ EV-3387 │ Comprehen.│ SafeCorp│ 02/28/26│ ₹17,500  │ │
+│              │ │ ▢  │ INS-007│ EV-5431 │ Liability │ SecureAl│ 10/05/25│ ₹11,800  │ │
+│              │ │ ▢  │ INS-008│ EV-2198 │ Comprehen.│ TrustIns│ 04/18/26│ ₹19,200  │ │
+│              │ └────┴────────┴─────────┴───────────┴─────────┴─────────┴──────────┘ │
+│              │                                                                 │
+│              │ ACTIONS                                                         │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ [Bulk Actions ▾] [Export]                  Page 1/16 [◀][▶]│  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### Insurance Policies List
+- **API Endpoint**: `GET /api/fleet/insurance-policies/`
+- **Fields Used**:
+  - `id` - Policy ID/number
+  - `vehicle` - Vehicle the policy is for
+  - `policy_number` - Insurance policy number
+  - `provider` - Insurance provider name
+  - `start_date` - Policy start date
+  - `end_date` - Policy expiration date
+  - `coverage_amount` - Coverage value
+  - `premium_amount` - Premium amount
+  - `is_active` - Active status (computed)
+  - `policy_type` - Type of insurance policy
+
+#### KPI Cards
+- **Total Policies**: Count of all policies
+- **Active**: Count of policies with `is_active = true`
+- **Expiring Soon**: Count of policies expiring in the next 30 days
+
+### Filters
+- **Search Filter**:
+  - **Query Parameter**: `search=<term>`
+  - **Implementation**: Server-side search across policy number, vehicle ID, license plate
+  - **Note**: This is the primary way to filter by vehicle information
+  - **Supported Formats**: Policy number, vehicle ID, license plate
+  
+- **Status Filter**:
+  - **Options**: All, Active, Expired, Expiring Soon
+  - **Implementation**: Filters based on is_active and expiry date
+  
+- **Type Filter**:
+  - **Options**: All, Liability, Comprehensive, Third Party, etc.
+  - **Implementation**: Filters based on policy type
+
+- **Provider Filter**:
+  - **Options**: All, plus list of providers
+  - **Implementation**: Filters by provider name
+
+- **Behind the Scenes**:
+  - **Vehicle Parameter**: `vehicle={id}` parameter is still supported by the API
+  - **Implementation**: Use search field instead of dropdown to filter by vehicle
+
+- **Expiry Filter**:
+  - **Options**: Any, Next 30 Days, Next 60 Days, Next 90 Days, Expired
+  - **Implementation**: Filters based on end_date relative to current date
+
+### Bulk Actions
+- **Renew Selected**:
+  - **Implementation**: Opens renewal form for selected policies
+  
+- **Download Selected**:
+  - **Implementation**: Downloads policy documents
+
+- **Cancel Selected**:
+  - **Implementation**: Cancels selected policies
+
+- **Export**:
+  - **Formats**: PDF, Excel, CSV
+  - **Implementation**: Exports policy data in selected format
+
+### API Alignment
+All APIs used in this design match the documentation in insurance.md:
+- `GET /api/fleet/insurance-policies/` - List all policies
+- `POST /api/fleet/insurance-policies/` - Create new policy
+- `GET /api/fleet/vehicles/` - For vehicle dropdown

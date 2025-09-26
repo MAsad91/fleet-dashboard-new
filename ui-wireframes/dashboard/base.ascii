@@ -1,0 +1,138 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│ [LOGO] Fleet Admin                           [🔍 Search...          ]      [🔔]  [💡|🌙]  [👤 ▾] │
+│                                                                                │
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ CONTENT AREA                                                    │
+│──────────────│                                                                 │
+│ ▸ Dashboard  │                                                                 │
+│              │                                                                 │
+│ ▸ Vehicles   │                                                                 │
+│   Vehicle Docs│                                                                │
+│ ▸ Drivers    │                                                                 │
+│   Driver Docs│                                                                 │
+│ ▸ Trips      │                                                                 │
+│ ▸ Telemetry  │                                                                 │
+│ ▸ Alerts     │                                                                 │
+│   Alert Rules│                                                                 │
+│ ▸ OBD Devices│                                                                 │
+│ ▸ SIM Cards  │                                                                 │
+│ ▸ Maintenance│                                                                 │
+│ ▸ Insurance  │                                                                 │
+│ ▸ Dashcams   │                                                                 │
+│ ▸ Firmware   │                                                                 │
+│ ▸ Analytics  │                                                                 │
+│ ▸ Driver Logs│                                                                 │
+│ ▸ Performance│                                                                 │
+│ ▸ Settings   │                                                                 │
+│ ▸ Users      │                                                                 │
+│   Groups &   │                                                                 │
+│   Permissions│                                                                 │
+│              │                                                                 │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Header Components
+
+#### Logo & Title
+- Display "Fleet Admin" as the application title in the top-left corner with logo
+- Company logo displayed beside the title
+
+#### Search Bar
+- Global search functionality across the application
+- Searches vehicles, drivers, trips, alerts, and other key resources
+- Supports advanced filtering through syntax (e.g., "vehicle:EV123")
+
+#### Utility Functions
+- **Notifications**: Bell icon with badge for new notifications
+- **Theme Toggle**: Switch between light and dark modes
+- **User Profile**: Access to profile, settings, and logout options
+
+### Side Navigation
+
+#### Structure
+- Main navigation items with expandable sub-items
+- Visual indicators for current section
+- Optional collapsible functionality for space optimization
+
+#### Navigation Items
+1. **Dashboard**: Home dashboard with KPIs and overview
+2. **Vehicles**: Vehicle management
+   - Sub-item: Vehicle Documents
+3. **Drivers**: Driver management
+   - Sub-item: Driver Documents
+4. **Trips**: Trip management
+5. **Telemetry**: OBD telemetry data explorer
+6. **Alerts**: Alert management
+   - Sub-item: Alert Rules
+7. **OBD Devices**: Device management
+8. **SIM Cards**: SIM card management
+9. **Maintenance**: Maintenance records & scheduling
+10. **Insurance**: Insurance policy management
+11. **Dashcams**: Dashcam device management & videos
+12. **Firmware**: Firmware updates management
+13. **Analytics**: Data analytics and reports
+14. **Driver Logs**: Driver activity logs
+15. **Performance**: Performance metrics
+16. **Settings**: Fleet settings
+17. **Users**: User management
+18. **Groups & Permissions**: Role-based access control and permissions management
+
+#### Behavior
+- Highlight active section
+- Expand/collapse sub-items when parent is clicked
+- Save expanded state in user preferences
+- Mobile: Collapsible with hamburger menu toggle
+
+### Dashboard API References
+
+#### Core Dashboard Endpoints
+- **Primary Dashboard API**: `GET /api/fleet/dashboard/summary/?date_range={today|10days|30days|90days}` or `start_date=YYYY-MM-DD&end_date=YYYY-MM-DD`
+- **Supplementary Stats APIs**:
+  - `GET /api/fleet/drivers/dashboard_stats/`
+  - `GET /api/fleet/trips/dashboard_stats/`
+  - `GET /api/fleet/alerts/dashboard_stats/`
+  - `GET /api/fleet/scheduled-maintenance/dashboard_stats/`
+  - `GET /api/fleet/dashcams/dashboard_stats/`
+  - `GET /api/fleet/vehicles/dashboard_stats/`
+
+#### Vehicle Selection APIs
+- **Vehicle Search**: `GET /api/fleet/vehicles/search/?q=&fleet_id=&vehicle_type=&status=`
+- **Recent Vehicles**: `GET /api/fleet/vehicles/recent/`
+- **Favorite Vehicles**: `GET /api/user/favorites/vehicles/`
+- **Vehicle Details**: `GET /api/fleet/vehicles/{id}/`
+- **Vehicle Telemetry**: `GET /api/fleet/vehicles/{id}/telemetry_data/`
+
+#### Data Table APIs
+- **Top Error Codes**: `GET /api/fleet/obd-telemetry/?top_errors=true&limit=10`
+- **Recent Alerts**: `GET /api/fleet/alerts/?status=active`
+- **Active Trips**: `GET /api/fleet/trips/?status=in_progress`
+- **Historical Trip Data**: `GET /api/fleet/trips/?status=completed&actual_end_time__date__gte=<30d>`
+
+### Authentication & Authorization
+
+- **Login API**: `/api/users/login_with_password/`
+- **Token Refresh**: `/api/users/refresh_token/`
+- **Authorization**: JWT token in Authorization header
+- **Permission Checks**: 
+  - Non-admin users see data scoped to their fleet operator
+  - Hide navigation items based on permissions
+  - Disable actions not permitted for current user role
+
+### Refresh Rates & Performance Considerations
+- KPI cards: On date range change or every 5 minutes
+- Vehicle map: Every 30-60 seconds
+- Live telemetry: Every 2-3 seconds (polling)
+- Data tables: Every 30 seconds
+
+### Global Functionality
+
+- Responsive design with breakpoints for desktop, tablet, and mobile
+- Consistent error handling and loading states
+- Toast notifications for actions and alerts
+- Keyboard navigation support
+- Support for theme preferences (light/dark mode)
+- Session timeout handling with auto-refresh or logout

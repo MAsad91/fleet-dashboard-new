@@ -1,6 +1,7 @@
 "use client";
 
 import { useDashboard } from "@/contexts/DashboardContext";
+import { useGetObdTelemetryQuery } from "@/store/api/fleetApi";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 import { Activity } from "lucide-react";
@@ -13,7 +14,12 @@ interface DistanceChartProps {
 }
 
 export function DistanceChart({ className }: DistanceChartProps) {
-  const { summary, loading } = useDashboard();
+  const { summary, loading: dashboardLoading } = useDashboard();
+  const { data: telemetryData, isLoading: telemetryLoading, error: telemetryError } = useGetObdTelemetryQuery({
+    date_range: '30days',
+  });
+
+  const loading = dashboardLoading || telemetryLoading;
 
   if (loading) {
     return (
@@ -26,24 +32,95 @@ export function DistanceChart({ className }: DistanceChartProps) {
     );
   }
 
-  // Mock data for last 30 days - in real implementation, this would come from trips/telemetry API
+  // Process real telemetry data if available, fallback to mock data
   const generateTimeSeriesData = () => {
-    const days = [];
-    const distanceData = [];
-    
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      days.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+    if (telemetryData?.results && telemetryData.results.length > 0) {
+      // Group telemetry data by date and calculate daily distances
+      const dailyData = new Map();
       
-      // Mock data - in reality this would come from API
-      distanceData.push(Math.floor(Math.random() * 500) + 200);
+      telemetryData.results.forEach((point: any) => {
+        const date = new Date(point.timestamp).toDateString();
+        if (!dailyData.has(date)) {
+          dailyData.set(date, { distance: 0, count: 0 });
+        }
+        dailyData.get(date).distance += point.distance_travelled_km || 0;
+        dailyData.get(date).count += 1;
+      });
+
+      const days = [];
+      const distanceData = [];
+      
+      // Generate last 30 days
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toDateString();
+        days.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+        
+        const dayData = dailyData.get(dateStr);
+        distanceData.push(dayData ? Math.round(dayData.distance / dayData.count) : 0);
+      }
+      
+      return { days, distanceData };
+    } else {
+      // Fallback to mock data
+      const days = [];
+      const distanceData = [];
+      
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        days.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+        distanceData.push(Math.floor(Math.random() * 500) + 200);
+      }
+      
+      return { days, distanceData };
     }
-    
-    return { days, distanceData };
   };
 
   const { days, distanceData } = generateTimeSeriesData();
+
+  // Show "No data" if no telemetry data is available
+  if (!telemetryData?.results || telemetryData.results.length === 0) {
+    return (
+      <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>
+        <div className="flex items-center gap-2 mb-4">
+          <Activity className="h-5 w-5 text-primary" />
+          <h3 className="text-title-sm font-semibold text-dark dark:text-white">
+            Distance Trends
+          </h3>
+        </div>
+        <div className="text-center py-12">
+          <div className="text-gray-400 mb-4">
+            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Data Available</h3>
+          <p className="text-gray-600 dark:text-gray-400">Distance data is not available</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if API fails
+  if (telemetryError) {
+    return (
+      <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>
+        <div className="flex items-center gap-2 mb-4">
+          <Activity className="h-5 w-5 text-primary" />
+          <h3 className="text-title-sm font-semibold text-dark dark:text-white">
+            Distance Trends
+          </h3>
+        </div>
+        <div className="text-center py-8">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Unable to load distance data
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const chartOptions = {
     chart: {
@@ -124,7 +201,7 @@ export function DistanceChart({ className }: DistanceChartProps) {
           Daily Distance Traveled
         </h4>
         <div className="text-sm font-semibold text-blue-600">
-          Total: {totalDistance.toLocaleString()} km
+          Total: {totalDistance?.toLocaleString() || '0'} km
         </div>
       </div>
       

@@ -2,6 +2,7 @@
 
 import { ApexOptions } from "apexcharts";
 import dynamic from "next/dynamic";
+import { useGetDriversDashboardStatsQuery } from "@/store/api/fleetApi";
 import { cn } from "@/lib/utils";
 import { DriverIcon } from "@/components/Layouts/sidebar/icons";
 
@@ -12,6 +13,48 @@ type PropsType = {
 };
 
 export function DriverPerformance({ className }: PropsType) {
+  const { data: driversStats, isLoading, error } = useGetDriversDashboardStatsQuery({
+    dateRange: 'today'
+  });
+
+  if (isLoading) {
+    return (
+      <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>
+        <div className="animate-pulse">
+          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-4"></div>
+          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>
+        <div className="flex items-center gap-2 mb-4">
+          <DriverIcon className="h-5 w-5 text-primary" />
+          <h3 className="text-title-sm font-semibold text-dark dark:text-white">
+            Driver Performance
+          </h3>
+        </div>
+        <div className="text-center py-8">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Unable to load driver performance data
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Use real API data if available, fallback to mock data
+  const driverData = driversStats?.top_performers || [
+    { name: "John Doe", score: 95, trips: 45, distance: 1200 },
+    { name: "Jane Smith", score: 88, trips: 38, distance: 980 },
+    { name: "Mike Johnson", score: 82, trips: 32, distance: 850 },
+    { name: "Sarah Wilson", score: 78, trips: 28, distance: 720 },
+    { name: "Tom Brown", score: 75, trips: 25, distance: 650 },
+  ];
+
   const chartOptions: ApexOptions = {
     chart: {
       type: "bar",
@@ -32,7 +75,7 @@ export function DriverPerformance({ className }: PropsType) {
       enabled: false,
     },
     xaxis: {
-      categories: ["John Doe", "Jane Smith", "Mike Johnson", "Sarah Wilson", "Tom Brown"],
+      categories: driverData.map((driver: any) => driver.name),
       axisBorder: {
         show: false,
       },
@@ -64,26 +107,26 @@ export function DriverPerformance({ className }: PropsType) {
   const series = [
     {
       name: "Safety Score",
-      data: [95, 88, 92, 85, 90],
+      data: driverData.map((driver: any) => driver.safety_score || driver.score),
     },
     {
       name: "Efficiency Score",
-      data: [87, 92, 89, 88, 91],
+      data: driverData.map((driver: any) => driver.efficiency_score || driver.score),
     },
     {
       name: "Fuel Economy",
-      data: [82, 90, 85, 87, 89],
+      data: driverData.map((driver: any) => driver.fuel_economy_score || driver.score),
     },
   ];
 
-  // Mock driver data
-  const drivers = [
-    { name: "John Doe", trips: 45, hours: 180, rating: 4.8, status: "excellent" },
-    { name: "Jane Smith", trips: 38, hours: 165, rating: 4.6, status: "good" },
-    { name: "Mike Johnson", trips: 42, hours: 175, rating: 4.7, status: "excellent" },
-    { name: "Sarah Wilson", trips: 35, hours: 150, rating: 4.4, status: "good" },
-    { name: "Tom Brown", trips: 40, hours: 170, rating: 4.5, status: "good" },
-  ];
+  // Use real API data for drivers list, fallback to mock data
+  const drivers = driversStats?.drivers || driverData.map((driver: any) => ({
+    name: driver.name,
+    trips: driver.trips || 0,
+    hours: driver.hours || 0,
+    rating: driver.rating || 4.5,
+    status: driver.status || "good"
+  }));
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -125,7 +168,7 @@ export function DriverPerformance({ className }: PropsType) {
         <h4 className="text-sm font-medium text-dark dark:text-white">
           Driver Summary
         </h4>
-        {drivers.map((driver, index) => (
+        {drivers.map((driver: any, index: number) => (
           <div
             key={index}
             className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-600 p-3"
@@ -133,7 +176,7 @@ export function DriverPerformance({ className }: PropsType) {
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                 <span className="text-sm font-medium text-dark dark:text-white">
-                  {driver.name.split(' ').map(n => n[0]).join('')}
+                  {driver.name.split(' ').map((n: string) => n[0]).join('')}
                 </span>
               </div>
               <div>

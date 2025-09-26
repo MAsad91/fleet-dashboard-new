@@ -52,7 +52,7 @@ export default function AlertsPage() {
   const { data: dashboardStats } = useGetAlertsDashboardStatsQuery();
   
   // Get trends data for distribution charts
-  const { data: trendsData } = useGetAlertsTrendsQuery();
+  const { data: trendsData } = useGetAlertsTrendsQuery({ dateRange: 'today' });
   
   // Get vehicles data for vehicle filter
   const { data: vehiclesData } = useListVehiclesQuery({ page: 1 });

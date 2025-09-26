@@ -1,0 +1,146 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin                           [Today | 10d | 30d | 90d | 📅]   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ DRIVERS                                                         │
+│──────────────│                                                                 │
+│   Dashboard  │                                             [+ Create] [Bulk ▾] │
+│              │                                                                 │
+│   Vehicles   │ KPI CARDS                                                       │
+│ ▶ Drivers    │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌──────┐│
+│   Driver Docs│ │ Total Drivers  │ │ Active Drivers │ │ Suspended      │ │ Avg  ││
+│   Trips      │ │                │ │                │ │                │ │Rating││
+│   Telemetry  │ │     185        │ │     170        │ │      15        │ │ 4.7  ││
+│   Alerts     │ └────────────────┘ └────────────────┘ └────────────────┘ └──────┘│
+│   Alert Rules│ ┌─────────────────────────────────────────────┐                  │
+│   OBD Devices│ │ Expiring Driver Documents (next 30 days)    │                  │
+│   SIM Cards  │ │                    7                        │                  │
+│   Maintenance│ └─────────────────────────────────────────────┘                  │
+│   Insurance  │                                                                 │
+│   Dashcams   │ FILTERS                                                         │
+│   Firmware   │ ┌────────────────────────────────────────────────────────────┐  │
+│   Analytics  │ │ 🔍 [Search by name, phone, license...]                     │  │
+│   Driver Logs│ │ Status: [All ▾]  Rating: [Min ▾]                          │  │
+│   Performance│ │                                                   [Apply]   │  │
+│   Settings   │ └────────────────────────────────────────────────────────────┘  │
+│   Users      │                                                                 │
+│   Groups &   │ DRIVERS TABLE                                   [▢ Select All]  │
+│   Permissions│ ┌────┬───────────────┬────────────┬────────┬─────┬──────┬──────┐│
+│              │ │ ▢  │ Name          │ Phone      │ License│ Exp │Rating│Status││
+│              │ ├────┼───────────────┼────────────┼────────┼─────┼──────┼──────┤│
+│              │ │ ▢  │ Jane Doe      │ +91-987... │ ABC123 │  6  │ 4.8  │active││
+│              │ │ ▢  │ John Smith    │ +91-981... │ XYZ987 │  3  │ 4.6  │susp. ││
+│              │ │ ▢  │ Amir Khan     │ +91-932... │ DEF456 │  8  │ 4.9  │active││
+│              │ │ ▢  │ Priya Sharma  │ +91-912... │ GHI789 │  5  │ 4.7  │active││
+│              │ │ ▢  │ Raj Patel     │ +91-996... │ JKL012 │  4  │ 4.5  │active││
+│              │ │ ▢  │ Sara Ahmed    │ +91-976... │ MNO345 │  7  │ 4.8  │active││
+│              │ │ ▢  │ David Lee     │ +91-945... │ PQR678 │  2  │ 4.3  │active││
+│              │ │ ▢  │ Meera Singh   │ +91-963... │ STU901 │  5  │ 4.7  │susp. ││
+│              │ └────┴───────────────┴────────────┴────────┴─────┴──────┴──────┘│
+│              │                                                                 │
+│              │ ACTIONS                                                         │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ [Suspend Selected] [Export CSV]              Page 1/24 [◀][▶]│ │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### KPI Cards Section
+- **API Endpoint**: `GET /api/fleet/drivers/dashboard_stats/`
+- **Fields Used**:
+  - `total` - Total number of drivers
+  - `active` - Number of active drivers
+  - `suspended` - Number of suspended drivers
+  - `avg_rating` - Average driver rating
+  - `expiring_driver_docs` - Number of driver documents expiring within 30 days
+
+#### Filters
+- **Status Filter**:
+  - **Implementation**: Client-side filtering based on `status` field
+  - **Values**: All, Active, Suspended
+  
+- **Rating Filter**:
+  - **Implementation**: Client-side filtering to show drivers with rating above minimum
+  - **Values**: Min rating thresholds (e.g., 3.0, 3.5, 4.0, 4.5)
+
+- **Search**:
+  - **Implementation**: Client-side search across name, phone, and license fields
+  - **Enhancement**: Added search icon and placeholder text for better usability
+
+#### Drivers Table
+- **API Endpoint**: `GET /api/fleet/drivers/`
+- **Note**: Server returns operator-scoped drivers; all filtering must be done client-side
+- **Columns**:
+  - Checkbox for selection
+  - Name (first_name + last_name)
+  - Phone number
+  - License number
+  - Experience (years)
+  - Rating
+  - Status
+  
+- **Row Actions**:
+  - Click on row to navigate to driver detail page
+  - Select checkboxes for bulk actions
+
+#### Bulk Actions
+- **Suspend Selected**:
+  - **API**: `POST /api/fleet/drivers/suspend_drivers/`
+  - **Request Body**: `{ "selected_drivers": [ids...] }`
+  
+- **Export CSV**:
+  - **API**: `GET /api/fleet/drivers/export_drivers_csv/?ids=1,2,3`
+  - **Implementation**: Export selected drivers or all filtered drivers
+
+### Interaction Flow
+
+1. **On Page Load**:
+   - Fetch dashboard stats from API
+   - Fetch driver list with default filters
+   - Apply visual indicators for status
+
+2. **Filter Application**:
+   - When user enters search text or selects filters and clicks Apply:
+     - Apply client-side filtering based on selected criteria
+     - Update driver table with filtered results
+     - Maintain selection state if any
+
+3. **Table Interactions**:
+   - Click on driver row to navigate to driver detail view
+   - Select checkboxes to enable bulk actions
+   - Sort columns by clicking on column headers
+
+4. **Bulk Actions**:
+   - Select multiple drivers via checkboxes
+   - Click "Suspend Selected" to suspend the selected drivers
+   - Click "Export CSV" to export the selected drivers
+   - Show confirmation dialog before executing bulk actions
+
+5. **Pagination**:
+   - Navigate between pages with prev/next buttons
+   - Client-side pagination implementation
+
+### Visual Indicators
+
+- **Status Indicators**:
+  - Active: Normal text
+  - Suspended: Highlighted text (subdued or different color)
+  
+- **Rating**:
+  - Color-coded based on rating value:
+    - ≥4.5: Green
+    - 4.0-4.4: Blue
+    - 3.5-3.9: Orange
+    - <3.5: Red
+
+### Create Button
+
+- Opens the Create Driver form
+- Supports both creating new user or linking to existing user
+- Form includes all required driver fields

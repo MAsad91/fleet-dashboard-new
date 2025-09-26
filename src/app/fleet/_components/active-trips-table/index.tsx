@@ -1,7 +1,7 @@
 "use client";
 
 import { useDashboard } from "@/contexts/DashboardContext";
-import { useGetTripsQuery } from "@/store/api/fleetApi";
+// import { useGetTripsQuery } from "@/store/api/fleetApi";
 import { cn } from "@/lib/utils";
 import { MapPin, Clock, Car, User, Play } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -13,10 +13,11 @@ interface ActiveTripsTableProps {
 export function ActiveTripsTable({ className }: ActiveTripsTableProps) {
   const router = useRouter();
   const { stats } = useDashboard();
-  const { data: tripsData, isLoading: tripsLoading, error: tripsError } = useGetTripsQuery({
-    status: 'in_progress',
-    limit: 10,
-  });
+  // Use dashboard context data instead of individual API calls
+  // const { data: tripsData, isLoading: tripsLoading, error: tripsError } = useGetTripsQuery({
+  //   status: 'active', // Try 'active' instead of 'in_progress'
+  //   limit: 10,
+  // });
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
@@ -56,22 +57,8 @@ export function ActiveTripsTable({ className }: ActiveTripsTableProps) {
     router.push(`/trips/${tripId}`);
   };
 
-  if (tripsLoading) {
-    return (
-      <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>
-        <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-4"></div>
-          <div className="space-y-3">
-            {[...Array(5)].map((_, index) => (
-              <div key={index} className="h-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
 
-  const trips = tripsData?.results || stats?.trips?.results || [];
+  const trips = stats?.trips?.results || [];
 
   return (
     <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>
@@ -88,14 +75,7 @@ export function ActiveTripsTable({ className }: ActiveTripsTableProps) {
       </div>
       
       <div className="min-h-[300px] flex items-center justify-center">
-        {tripsError ? (
-          <div className="text-center">
-            <MapPin className="h-8 w-8 text-red-500 mx-auto mb-2" />
-            <p className="text-sm text-red-600 dark:text-red-400">
-              Failed to load trips
-            </p>
-          </div>
-        ) : trips.length === 0 ? (
+        {trips.length === 0 ? (
           <div className="text-center">
             <MapPin className="h-8 w-8 text-gray-400 mx-auto mb-2" />
             <p className="text-sm text-gray-500 dark:text-gray-400">

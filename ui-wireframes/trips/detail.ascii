@@ -1,0 +1,505 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin > Trips > Trip Detail                                         [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ TRIP DETAIL                                                     │
+│──────────────│                                                                 │
+│   Dashboard  │ [◀ Back]  Trip: T-2025-98                                      │
+│              │ Vehicle: EV-9012   Driver: Jane Doe   Status: In Progress       │
+│   Vehicles   │                                                                 │
+│   Drivers    │                     [Start] [End] [Cancel] [Send Command]       │
+│   Driver Docs│                                                                 │
+▶ Trips      │ KPI CARDS                                                       │
+│   Telemetry  │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌──────┐│
+│   Alerts     │ │ Distance       │ │ Duration       │ │ Est. Cost      │ │ Speed││
+│   Alert Rules│ │                │ │                │ │                │ │      ││
+│   OBD Devices│ │    42.5 km     │ │   1h 15m       │ │    ₹525        │ │ 54kph││
+│   SIM Cards  │ └────────────────┘ └────────────────┘ └────────────────┘ └──────┘│
+│   Maintenance│                                                                 │
+│   Insurance  │ TABBED INTERFACE                                                │
+│   Dashcams   │ ┌────────────────────────────────────────────────────────────┐  │
+│   Firmware   │ │ [Overview] [Vehicle] [Driver] [OBD Device] [Telemetry]     │  │
+│   Analytics  │ ├────────────────────────────────────────────────────────────┤  │
+│   Driver Logs│ │                                                            │  │
+│   Performance│ │ OVERVIEW TAB                                               │  │
+│   Settings   │ │ ┌─────────────────────────────┐  ┌───────────────────────┐ │  │
+│   Users      │ │ │ Trip Information            │  │ Live Status           │ │  │
+│              │ │ │                             │  │                       │ │  │
+│              │ │ │ • Trip ID: T-2025-98        │  │ • Status: In Progress │ │  │
+│              │ │ │ • Vehicle: EV-9012 (Tesla Y)│  │ • Started: 2025-09-20 10:15│ │  │
+│              │ │ │   [View Vehicle]            │  │ • Est. End: 2025-09-20 12:45│ │  │
+│              │ │ │ • Driver: Jane Doe          │  │ • Current Speed: 54 km/h   │ │  │
+│              │ │ │   [View Driver]             │  │ • Current Location:        │ │  │
+│              │ │ │ • Fleet: Acme Logistics     │  │   17.4129° N, 78.2698° E   │ │  │
+│              │ │ │ • Scheduled Start:          │  │ • Distance Traveled: 42.5 km│ │  │
+│              │ │ │   2025-09-20 10:00          │  │ • Time Elapsed: 1h 15m     │ │  │
+│              │ │ │ • Actual Start:             │  │ • OBD Device: Online       │ │  │
+│              │ │ │   2025-09-20 10:15          │  │   [View OBD Device]        │ │  │
+│              │ │ │ • Scheduled End:            │  │ • Battery Level: 78%       │ │  │
+│              │ │ │   2025-09-20 12:30          │  │ • Est. Range: 312 km       │ │  │
+│              │ │ │ • Start Coordinates:        │  │ • Last Update: Just now    │ │  │
+│              │ │ │   17.3850° N, 78.4867° E    │  │                       │ │  │
+│              │ │ │ • End Coordinates:          │  │                       │ │  │
+│              │ │ │   17.4436° N, 78.3772° E    │  │                       │ │  │
+│              │ │ │ • Distance (planned): 45 km │  │                       │ │  │
+│              │ │ │ • Estimated Cost: ₹525      │  │                       │ │  │
+│              │ │ └─────────────────────────────┘  └───────────────────────┘ │  │
+│              │ │                                                            │  │
+│              │ │ TRIP MAP                                                   │  │
+│              │ │ ┌────────────────────────────────────────────────────────┐ │  │
+│              │ │ │                                                        │ │  │
+│              │ │ │    START •───────────•──────────•──────• CURRENT       │ │  │
+│              │ │ │                                                        │ │  │
+│              │ │ │                                    • END               │ │  │
+│              │ │ │                                                        │ │  │
+│              │ │ │ [Toggle Path History]                [Zoom] [Reset]    │ │  │
+│              │ │ │                                                        │ │  │
+│              │ │ └────────────────────────────────────────────────────────┘ │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ VEHICLE TAB (hidden by default)                                 │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │                                                            │  │
+│              │ │ VEHICLE SUMMARY                     [View Vehicle Details →] │  │
+│              │ │ • Vehicle ID: EV-9012                                     │  │
+│              │ │ • Make & Model: Tesla Model Y (2023)                      │  │
+│              │ │ • Status: in_service                                      │  │
+│              │ │ • Health: Good                                            │  │
+│              │ │ • Current Speed: 54 km/h                                  │  │
+│              │ │ • Battery Level: 78%                                      │  │
+│              │ │ • Last Known Location: Gachibowli Main Road               │  │
+│              │ │ • Plate Number: TS-09-EV-9812                             │  │
+│              │ │ • Owner: Acme Logistics                                   │  │
+│              │ │ • VIN: 5YJ3E1EA8JF006892                                  │  │
+│              │ │                                                            │  │
+│              │ │ [View Full Vehicle Information]                            │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ DRIVER TAB (hidden by default)                                  │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │                                                            │  │
+│              │ │ DRIVER SUMMARY                      [View Driver Details →] │  │
+│              │ │ • Name: Jane Doe                                          │  │
+│              │ │ • ID: DRV-1234                                           │  │
+│              │ │ • Phone: +91 9876543210                                   │  │
+│              │ │ • License: DL-987654321                                   │  │
+│              │ │ • Experience: 4 years                                     │  │
+│              │ │ • Rating: 4.8/5.0                                         │  │
+│              │ │ • Status: On Duty                                         │  │
+│              │ │ • Trips Completed: 342                                    │  │
+│              │ │ • Languages: English, Hindi, Telugu                        │  │
+│              │ │                                                            │  │
+│              │ │ [View Full Driver Information]                             │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ OBD DEVICE TAB (hidden by default)                              │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │                                                            │  │
+│              │ │ OBD DEVICE SUMMARY                [View OBD Device Details →]│  │
+│              │ │ • Device ID: OBD-T2-001                                   │  │
+│              │ │ • Model: TelemX T2                                        │  │
+│              │ │ • Status: Active                                          │  │
+│              │ │ • Signal Strength: Excellent                              │  │
+│              │ │ • Firmware Version: v1.2.3                                │  │
+│              │ │ • Last Communication: Just now                             │  │
+│              │ │ • SIM Card: SIM-34521 (Active)                            │  │
+│              │ │ • Report Interval: 60 sec                                  │  │
+│              │ │ • Installed At: 2023-05-12                                │  │
+│              │ │                                                            │  │
+│              │ │ [View Full OBD Device Information]                         │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ TELEMETRY TAB (hidden by default)                               │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │                                                            │  │
+│              │ │ REAL-TIME TELEMETRY                    [View Full Telemetry →]│  │
+│              │ │ ┌────────────────────────────────────────────────────────┐ │  │
+│              │ │ │ ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐ │  │
+│              │ │ │ │ Speed (kph)     │ │ Battery Level   │ │ Est. Range      │ │  │
+│              │ │ │ │                 │ │                 │ │                 │ │  │
+│              │ │ │ │     54          │ │      78%        │ │     312 km      │ │  │
+│              │ │ │ │                 │ │                 │ │                 │ │  │
+│              │ │ │ └─────────────────┘ └─────────────────┘ └─────────────────┘ │  │
+│              │ │ │                                                          │ │  │
+│              │ │ │ ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐ │  │
+│              │ │ │ │ Motor Temp      │ │ Tire Pressure   │ │ Health Status   │ │  │
+│              │ │ │ │                 │ │                 │ │                 │ │  │
+│              │ │ │ │     76°C        │ │     225 kPa     │ │      Good       │ │  │
+│              │ │ │ │                 │ │                 │ │                 │ │  │
+│              │ │ │ └─────────────────┘ └─────────────────┘ └─────────────────┘ │  │
+│              │ │ └────────────────────────────────────────────────────────────┘ │  │
+│              │ │                                                            │  │
+│              │ │ TELEMETRY OPTIONS                                          │  │
+│              │ │ [Overview] [Live Telemetry] [Historical] [Error Codes]     │  │
+│              │ │                                                            │  │
+│              │ │ [Export Telemetry Data]                                    │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Tab System Implementation
+
+1. **Tab Navigation**:
+   - Single-page application approach with tab switching
+   - Active tab is highlighted (e.g., "Overview" by default)
+   - All other tab content is hidden initially (marked as "hidden by default")
+   - Each tab content loads when selected (lazy loading)
+   - URL parameter to deep link to specific tab: ?tab=overview|vehicle|driver|obd|telemetry
+
+2. **Data Loading Strategy**:
+   - Load overview data on initial page load
+   - Other tab data loads only when tab is selected
+   - Implement caching for tab data to avoid repeated API calls
+   - Show loading indicators during data fetching
+   
+### Trip Action Modals and Commands Guide
+
+1. **Start Trip Modal**:
+   - **Trigger**: User clicks [Start] button in header
+   - **Display**: Shows trip info, optional fields for start coordinates
+   - **API Endpoint**: `POST /api/fleet/trips/{id}/start/`
+   - **Request Body**: 
+     ```json
+     {
+       "start_latitude": <float>,
+       "start_longitude": <float>
+     }
+     ```
+   - **Data Notes**:
+     - Both coordinates are optional; if omitted, backend may use default values
+     - Send coordinates as decimal numbers, not as GeoJSON in this endpoint
+   - **Features**: 
+     - Use current GPS location button
+     - Pick on map button
+     - Status change to "In Progress" on success
+   - **Interaction Flow**:
+     1. User clicks "Start Trip" button on trip detail page
+     2. Modal opens showing trip information
+     3. User optionally enters start coordinates or uses helper buttons
+     4. User clicks "Start Trip" button
+     5. API request is sent
+     6. On success: Trip status updates to "In Progress" and UI updates
+
+2. **End Trip Modal**:
+   - **Trigger**: User clicks [End] button in header
+   - **Display**: Shows trip info, fields for end coordinates and distance
+   - **API Endpoint**: `POST /api/fleet/trips/{id}/end/`
+   - **Request Body**: 
+     ```json
+     {
+       "end_latitude": <float>,
+       "end_longitude": <float>,
+       "distance_travelled_km": <float>
+     }
+     ```
+   - **Data Notes**:
+     - All fields are optional; if omitted, backend may use data from OBD device
+     - Distance travelled can be entered manually if tracking is imprecise
+   - **Features**: 
+     - Use current GPS location button
+     - Pick on map button
+     - Status change to "Completed" on success
+   - **Interaction Flow**:
+     1. User clicks "End Trip" button on trip detail page
+     2. Modal opens showing trip information and calculated duration
+     3. User optionally enters end coordinates or distance
+     4. User clicks "End Trip" button
+     5. API request is sent
+     6. On success: Trip status updates to "Completed" and UI updates
+
+3. **Cancel Trip Modal**:
+   - **Trigger**: User clicks [Cancel] button in header
+   - **Display**: Shows trip info, field for cancellation reason
+   - **API Endpoint**: `POST /api/fleet/trips/{id}/cancel/`
+   - **Request Body**: 
+     ```json
+     {
+       "reason": "string"
+     }
+     ```
+   - **Data Notes**:
+     - Reason is optional but recommended for record keeping
+     - Applies to both scheduled and in-progress trips
+   - **Features**: 
+     - Optional reason entry
+     - Warning about irreversible action
+     - Status change to "Cancelled" on success
+   - **Interaction Flow**:
+     1. User clicks "Cancel Trip" button on trip detail page
+     2. Modal opens showing trip information
+     3. User optionally enters cancellation reason
+     4. User clicks "Cancel Trip" button
+     5. API request is sent
+     6. On success: Trip status updates to "Cancelled" and UI updates
+
+4. **Vehicle Command Modal**:
+   - **Trigger**: User clicks [Send Command] button in header
+   - **Display**: Vehicle info, command dropdown, optional parameters
+   - **API Endpoint**: `POST /api/fleet/trips/{id}/command/`
+   - **Request Body**: 
+     ```json
+     {
+       "command": "lock|unlock|start_engine|stop_engine",
+       ...extra
+     }
+     ```
+   - **Data Notes**:
+     - The `command` field is required
+     - Any additional parameters provided are passed as extra fields in the request
+     - Command execution depends on vehicle connectivity status
+   - **Command-Specific Behavior**:
+     - `lock`: Locks vehicle doors, no additional parameters
+     - `unlock`: Unlocks vehicle doors, may support `duration` for temporary unlock
+     - `start_engine`: Remotely starts engine, may support `idle_duration` in minutes
+     - `stop_engine`: Remotely stops engine, higher security confirmation required
+   - **Features**: 
+     - Additional parameter key-value pairs for command customization
+     - Success/error confirmation modals with detailed status information
+     - Command execution status tracking and retry options
+   - **Response Handling**:
+     - Success: Show confirmation modal with command ID and timestamp
+     - Error: Show error modal with specific error reason and retry option
+   - **Interaction Flow**:
+     1. User clicks "Send Command" button on trip detail page
+     2. Modal opens showing vehicle information
+     3. User selects a command and adds any needed parameters
+     4. User clicks "Send Command" button
+     5. API request is sent
+     6. Confirmation/error modal shown based on response
+
+### API Integration and Data Details
+
+1. **Overview Tab**:
+   - **Primary API**: `GET /api/fleet/trips/{id}/` (comprehensive trip information)
+   - **Response Fields**:
+     - Core trip data: `id`, `trip_id`, `status`, `created_at`
+     - Time data: `scheduled_start_time`, `scheduled_end_time`, `actual_start_time`, `actual_end_time`
+     - Location data: `start_coordinate`, `end_coordinate`, `live_driver_coordinate`, `live_obd_coordinate`
+     - Related entities: `driver`, `vehicle`, `assignment`
+     - Metrics: `distance_travelled_km`, `driver_distance_km`, `obd_distance_km`
+     - Financial: `estimated_cost`, `actual_cost`
+   - **Map Data**: Use `start_coordinate` and `end_coordinate` (GeoJSON format)
+   - **Live Updates**: Poll `live_driver_coordinate` and `live_obd_coordinate` for real-time position
+   
+2. **Vehicle Tab**:
+   - **Primary API**: `GET /api/fleet/vehicles/{vehicle_id}/` (detailed vehicle information)
+   - **Telemetry API**: `GET /api/fleet/vehicles/{vehicle_id}/latest_obd/` (current telemetry)
+   - **Response Fields**:
+     - Vehicle info: `id`, `plate_number`, `vin`, `make`, `model`, `year`, `status`
+     - Location: `last_known_location` (GeoJSON)
+     - Telemetry: `battery_level`, `range_km`, `speed_kph`, `health_status`
+     - Ownership: `fleet_operator`, `registration_details`
+   - **Update Interval**: Poll latest data every 30-60 seconds while tab is active
+   
+3. **Driver Tab**:
+   - **Primary API**: `GET /api/fleet/drivers/{driver_id}/` (detailed driver information)
+   - **Stats API**: `GET /api/fleet/drivers/{driver_id}/stats/` (driver statistics)
+   - **Response Fields**:
+     - Personal info: `id`, `full_name`, `phone_number`, `license_number`, `license_expiry`
+     - Employment: `fleet_operator`, `experience_years`, `joining_date`
+     - Stats: `trips_completed`, `total_distance_km`, `rating`, `languages`
+     - Status: `status`, `availability`, `current_trip` (if any)
+   - **Optional Fields**: Support partial field selection to optimize data loading
+   
+4. **OBD Device Tab**:
+   - **Primary API**: `GET /api/fleet/obd-devices/{device_id}/` (detailed device information)
+   - **History API**: `GET /api/fleet/obd-devices/{device_id}/communication-history/` (communications)
+   - **Response Fields**:
+     - Device info: `id`, `device_id`, `model`, `serial_number`, `firmware_version`
+     - Connection: `status`, `signal_strength`, `last_communication_at`, `report_interval`
+     - Association: `vehicle`, `sim_card`, `installation_date`
+     - Communication history: Array of connection events with status and timestamp
+   - **Pagination**: History data supports pagination with `limit` and `offset` parameters
+   
+5. **Telemetry Tab**:
+   - **Latest API**: `GET /api/fleet/obd-telemetry/?trip={id}&limit=6` (most recent data points)
+   - **Aggregated API**: `GET /api/fleet/obd-telemetry/?trip={id}&aggregated=true` (summary stats)
+   - **Error API**: `GET /api/fleet/obd-telemetry/?trip={id}&top_errors=true&limit=10` (error codes)
+   - **Historical API**: `GET /api/fleet/obd-telemetry/?trip={id}&start_time={iso}&end_time={iso}` (time range)
+   - **Response Fields**:
+     - Core data: `id`, `trip`, `vehicle`, `timestamp`, `location` (GeoJSON)
+     - Vehicle metrics: `speed_kph`, `battery_level`, `range_km`, `motor_temp_c`, `tire_pressure_kpa`
+     - Diagnostic: `health_status`, `error_codes`, `warning_indicators`
+     - Environment: `ambient_temp_c`, `cabin_temp_c`, `humidity`
+   - **Data Formats**:
+     - Timestamps in ISO 8601 format (`YYYY-MM-DDThh:mm:ssZ`)
+     - GeoJSON for locations (`{"type":"Point","coordinates":[lng,lat]}`)
+     - Error codes as vehicle-specific alphanumeric codes
+
+### Interaction Flow
+
+1. **On Page Load**:
+   - Show Overview tab by default
+   - Initialize tab navigation system
+   - Load trip overview data
+   - Set up event handlers for tab switching
+
+2. **Tab Switching**:
+   - When user clicks a tab:
+     - Hide all tab content
+     - Show selected tab content
+     - Update URL parameter ?tab=selected_tab
+     - Load data for the tab if not already loaded
+
+3. **Action Buttons**:
+   - Action buttons in header are always visible
+   - "View [Entity] Details →" buttons navigate to respective detail pages
+   - All tabs provide quick access to related full information views
+
+### Visual Design Notes
+
+1. **Tab Styling**:
+   - Active tab has visual indicator (background or underline)
+   - Consistent layout across all tabs
+   - Clear section headers within each tab
+
+2. **Button Placement**:
+   - Primary action buttons in header (Start, End, Cancel, Send Command)
+   - Secondary actions within each tab (View Details, Export, etc.)
+
+3. **Responsive Design**:
+   - On mobile: Stack sections vertically
+   - On tablet: Maintain tab navigation at top, adapt content layouts
+   - On desktop: Show as designed
+
+## Modal Wireframes
+
+### Start Trip Modal
+```
+┌────────────────────────────────────────────────────────────────┐
+│ START TRIP                                              [✕]   │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│ Trip Information                                               │
+│ • Trip ID: T-2025-0098                                         │
+│ • Vehicle: EV-9012 (Tesla Model Y)                             │
+│ • Driver: Jane Doe                                             │
+│ • Scheduled Start: 2025-09-20 09:30:00                         │
+│                                                                │
+│ Current Location (Optional)                                    │
+│ ┌────────────────────────────────────────────────────────────┐ │
+│ │                                                            │ │
+│ │ Start Latitude               Start Longitude               │ │
+│ │ ┌────────────────────┐      ┌────────────────────┐        │ │
+│ │ │                    │      │                    │        │ │
+│ │ └────────────────────┘      └────────────────────┘        │ │
+│ │                                                            │ │
+│ │ [📍 Use Current GPS Location]   [📍 Pick on Map]           │ │
+│ │                                                            │ │
+│ └────────────────────────────────────────────────────────────┘ │
+│                                                                │
+│ Note: Starting this trip will mark it as "In Progress"         │
+│                                                                │
+│                              [Cancel]  [Start Trip]            │
+└────────────────────────────────────────────────────────────────┘
+```
+
+### End Trip Modal
+```
+┌────────────────────────────────────────────────────────────────┐
+│ END TRIP                                                [✕]   │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│ Trip Information                                               │
+│ • Trip ID: T-2025-0098                                         │
+│ • Vehicle: EV-9012 (Tesla Model Y)                             │
+│ • Driver: Jane Doe                                             │
+│ • Started At: 2025-09-20 10:15:12                              │
+│ • Duration: 1 hour 15 minutes                                  │
+│                                                                │
+│ End Trip Details                                               │
+│ ┌────────────────────────────────────────────────────────────┐ │
+│ │                                                            │ │
+│ │ End Latitude                 End Longitude                 │ │
+│ │ ┌────────────────────┐      ┌────────────────────┐        │ │
+│ │ │                    │      │                    │        │ │
+│ │ └────────────────────┘      └────────────────────┘        │ │
+│ │                                                            │ │
+│ │ Distance Travelled (km)                                    │ │
+│ │ ┌────────────────────┐                                    │ │
+│ │ │                    │                                    │ │
+│ │ └────────────────────┘                                    │ │
+│ │                                                            │ │
+│ │ [📍 Use Current GPS Location]   [📍 Pick on Map]           │ │
+│ │                                                            │ │
+│ └────────────────────────────────────────────────────────────┘ │
+│                                                                │
+│ Note: Ending this trip will mark it as "Completed"             │
+│                                                                │
+│                              [Cancel]  [End Trip]              │
+└────────────────────────────────────────────────────────────────┘
+```
+
+### Cancel Trip Modal
+```
+┌────────────────────────────────────────────────────────────────┐
+│ CANCEL TRIP                                             [✕]   │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│ Trip Information                                               │
+│ • Trip ID: T-2025-0098                                         │
+│ • Vehicle: EV-9012 (Tesla Model Y)                             │
+│ • Driver: Jane Doe                                             │
+│ • Status: In Progress                                          │
+│                                                                │
+│ Cancellation Reason (Optional)                                 │
+│ ┌────────────────────────────────────────────────────────────┐ │
+│ │                                                            │ │
+│ │                                                            │ │
+│ │                                                            │ │
+│ │                                                            │ │
+│ └────────────────────────────────────────────────────────────┘ │
+│                                                                │
+│ Warning: This action cannot be undone                          │
+│                                                                │
+│                              [Back]  [Cancel Trip]             │
+└────────────────────────────────────────────────────────────────┘
+```
+
+### Vehicle Command Modal
+```
+┌────────────────────────────────────────────────────────────────┐
+│ SEND VEHICLE COMMAND                                     [✕]   │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│ Vehicle Information                                            │
+│ • Vehicle: EV-9012 (Tesla Model Y)                             │
+│ • Status: Online                                               │
+│ • Current Trip: T-2025-0098                                    │
+│ • Driver: Jane Doe                                             │
+│                                                                │
+│ Command                                                        │
+│ ┌────────────────────────────────────────────────────────────┐ │
+│ │                                                            │ │
+│ │ Select Command*                                            │ │
+│ │ ┌────────────────────────────────────┐                    │ │
+│ │ │ [Select ▾]                         │                    │ │
+│ │ │  ┌─────────────────────────────┐   │                    │ │
+│ │ │  │ lock                        │   │                    │ │
+│ │ │  │ unlock                      │   │                    │ │
+│ │ │  │ start_engine                │   │                    │ │
+│ │ │  │ stop_engine                 │   │                    │ │
+│ │ │  └─────────────────────────────┘   │                    │ │
+│ │ └────────────────────────────────────┘                    │ │
+│ │                                                            │ │
+│ │ Additional Parameters (Optional)                           │ │
+│ │ ┌────────────────────────────────────────────────────────┐ │ │
+│ │ │ Key                      │ Value                       │ │ │
+│ │ │ ┌──────────────────────┐ │ ┌──────────────────────┐    │ │ │
+│ │ │ │                      │ │ │                      │    │ │ │
+│ │ │ └──────────────────────┘ │ └──────────────────────┘    │ │ │
+│ │ │                          │                             │ │ │
+│ │ │ [+ Add Parameter]                                      │ │ │
+│ │ └────────────────────────────────────────────────────────┘ │ │
+│ │                                                            │ │
+│ └────────────────────────────────────────────────────────────┘ │
+│                                                                │
+│ Note: Commands are sent directly to the vehicle's OBD system.  │
+│ Execution depends on vehicle connectivity and permissions.     │
+│                                                                │
+│                              [Cancel]  [Send Command]          │
+└────────────────────────────────────────────────────────────────┘
+```

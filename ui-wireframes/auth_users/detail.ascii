@@ -1,0 +1,147 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin > Users > User Detail                                         [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ USER DETAIL                                                     │
+│──────────────│                                                                 │
+│   Dashboard  │ [◀ Back]  User: sjohnson                                       │
+│              │ Sarah Johnson (Fleet Admin)   Status: Active   Last Login: 1h ago│
+│   Vehicles   │                                                                 │
+│   Drivers    │              [Edit] [Reset Password] [Deactivate] [Delete]      │
+│   Driver Docs│                                                                 │
+│   Trips      │ KPI CARDS                                                       │
+│   Telemetry  │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌──────────────┐│
+│   Alerts     │ │ Active         │ │ Email Verified │ │ Phone Verified │ │Last Login    ││
+│   Alert Rules│ │                │ │                │ │                │ │              ││
+│   OBD Devices│ │      ✅        │ │      ✅        │ │      ✅        │ │  1h ago      ││
+│   SIM Cards  │ └────────────────┘ └────────────────┘ └────────────────┘ └──────────────┘│
+│   Maintenance│ ┌────────────────────────┐ ┌────────────────────┐ ┌────────────────────┐│
+│   Insurance  │ │ Direct Permissions     │ │ Group Permissions  │ │ Effective Perms    ││
+│   Dashcams   │ │                        │ │                    │ │                    ││
+│   Firmware   │ │          3             │ │         25         │ │        28          ││
+│   Analytics  │ └────────────────────────┘ └────────────────────┘ └────────────────────┘│
+│   Driver Logs│                                                                 │
+│   Performance│ TWO COLUMNS                                                     │
+│   Settings   │ ┌─────────────────────────────┐  ┌───────────────────────────┐  │
+│ ▶ Users      │ │ User Information           │  │ Access & Permissions      │  │
+│              │ │                             │  │                           │  │
+│              │ │ • Username: sjohnson        │  │ • Groups:                 │  │
+│   Groups &   │ │ • First Name: Sarah         │  │   - Fleet Administrators  │  │
+│   Permissions│ │ • Last Name: Johnson        │  │     [Remove]              │  │
+│              │ │ • Email: sarah@acme.com     │  │   - Account Managers      │  │
+│              │ │ • Phone: +91-9876543210     │  │     [Remove]              │  │
+│              │ │ • Role: Fleet Admin         │  │   [+ Add to Group]        │  │
+│              │ │ • Fleet: Acme Logistics     │  │                           │  │
+│              │ │   [View Fleet]              │  │ • Direct Permissions:     │  │
+│              │ │ • City: Hyderabad           │  │   - Can view dashboard    │  │
+│              │ │ • State: TS                 │  │   - Can change user       │  │
+│              │ │ • PIN: 500001               │  │   - Can view reports      │  │
+│              │ │                             │  │   [Manage Direct Perms]   │  │
+│              │ │ • Status: Active            │  │                           │  │
+│              │ │ • Created: 2023-06-15       │  │ • Effective Permissions:  │  │
+│              │ │ • Last Password Change:      │  │   28 total permissions   │  │
+│              │ │   2025-07-20               │  │   [View All Permissions]  │  │
+│              │ │                             │  │                           │  │
+│              │ │ • Contact Verification:     │  │ • Security:               │  │
+│              │ │   - Email: Verified         │  │   [Reset Password]        │  │
+│              │ │     [Update Email]          │  │   [Toggle Two-Factor]     │  │
+│              │ │   - Phone: Verified         │  │   [Deactivate Account]    │  │
+│              │ │     [Update Phone]          │  │                           │  │
+│              │ └─────────────────────────────┘  └───────────────────────────┘  │
+│              │                                                                 │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### User Detail
+- **API Endpoint**: `GET /api/users/users/{id}/`
+- **Fields Used**: Full UserSerializer including:
+  - Basic: id, username, email, first_name, last_name, is_active, last_login
+  - Profile: UserProfileSerializer fields (phone_number, city, state, pin, address, role, etc.)
+  - Status: is_active, is_staff, is_superuser
+
+#### Permissions Information
+- **API Endpoint**: `GET /api/users/users/{id}/permissions/`
+- **Fields Used**:
+  - `direct_permissions`: Permissions directly assigned to the user
+  - `group_permissions`: Permissions inherited from groups
+  - `all_permissions`: Combined effective permissions
+
+#### KPI Cards
+- **Active Status**: From user.is_active
+- **Email Verified**: From user.profile.is_email_verified
+- **Phone Verified**: From user.profile.is_phone_verified
+- **Last Login**: From user.last_login
+- **Permissions Counts**: 
+  - Direct: Count of direct_permissions array
+  - Group: Count of group_permissions array
+  - Effective: Count of all_permissions array
+
+### Two-Column Layout
+The user detail page follows the exact layout described in auth_users.md with two columns:
+
+#### Left Column: User Information
+- Basic user details
+- Contact information
+- Account status 
+- Contact verification status
+
+#### Right Column: Access & Permissions
+- Groups membership with add/remove options
+- Direct permissions with management option
+- Effective permissions summary with view option
+- Security actions
+
+### Key Actions & API Integration
+
+#### Groups Management
+- **Add to Group**:
+  - **API**: `POST /api/users/groups/{group_id}/users/`
+  - **Request Body**: `{"users":[user_id], "action":"add"}`
+  - **UI**: Click [+ Add to Group], select from available groups
+
+- **Remove from Group**:
+  - **API**: `POST /api/users/groups/{group_id}/users/`
+  - **Request Body**: `{"users":[user_id], "action":"remove"}`
+  - **UI**: Click [Remove] next to group name
+
+#### Permissions Management
+- **Manage Direct Permissions**:
+  - **API**: `GET/POST /api/users/users/{id}/permissions/`
+  - **UI**: Click [Manage Direct Perms] to open modal for adding/removing permissions
+  
+- **View All Permissions**:
+  - **UI**: Click [View All Permissions] to see complete list of effective permissions
+  - **Data**: Uses all_permissions array from permissions response
+
+#### Security Actions
+- **Reset Password**: `POST /api/users/forgot_password/` or `POST /api/users/set_password/`
+- **Toggle Two-Factor Auth**: Admin action to enable/disable 2FA
+- **Deactivate Account**: `PUT /api/users/users/{id}/` with `{"is_active": false}`
+
+### Modals & Drawers
+
+#### Add to Group Modal
+- Select from available groups (from `GET /api/users/groups/`)
+- Submit selection to add user to selected group(s)
+
+#### Manage Direct Permissions Drawer
+- Search/filter available permissions
+- Multi-select permissions to assign to user
+- Submit to update user's direct permissions
+
+#### View All Permissions Modal
+- Display complete list of effective permissions
+- Group by application and model
+- No edit functionality (view only)
+
+### API Alignment
+All endpoints referenced match the documentation in auth_users.md:
+- User details: `GET /api/users/users/{id}/`
+- User permissions: `GET /api/users/users/{id}/permissions/`
+- Update permissions: `POST /api/users/users/{id}/permissions/`
+- Group operations: `POST /api/users/groups/{group_id}/users/`

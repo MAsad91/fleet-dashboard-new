@@ -72,7 +72,7 @@ export function MostActiveVehicle({ className }: MostActiveVehicleProps) {
           
           <div className="mt-3">
             <div className="text-2xl font-bold text-primary mb-1">
-              {mostActiveVehicle.total_distance_km.toLocaleString()} km
+              {mostActiveVehicle?.total_distance_km?.toLocaleString() || '0'} km
             </div>
             <div className="text-sm text-body-color dark:text-body-color-dark">
               Distance (last 7d)

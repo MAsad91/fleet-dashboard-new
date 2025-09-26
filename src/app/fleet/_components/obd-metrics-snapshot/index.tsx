@@ -29,14 +29,27 @@ export function OBDMetricsSnapshot({ className }: OBDMetricsSnapshotProps) {
     );
   }
 
-  const obdMetrics = summary?.obd_metrics || {
-    average_speed_kph: 54.2,
-    average_motor_temp_c: 76.8,
-    average_estimated_range_km: 312,
-    average_battery_voltage: 48.7,
-    average_tire_pressure_kpa: 225,
-    vehicles_reporting_errors: 7,
-  };
+  const obdMetrics = summary?.obd_metrics;
+  
+  // Show "No data" if no real data is available
+  if (!obdMetrics) {
+    return (
+      <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>
+        <h3 className="text-title-sm font-semibold text-dark dark:text-white mb-4">
+          OBD Metrics Snapshot
+        </h3>
+        <div className="text-center py-12">
+          <div className="text-gray-400 mb-4">
+            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Data Available</h3>
+          <p className="text-gray-600 dark:text-gray-400">OBD metrics data is not available</p>
+        </div>
+      </div>
+    );
+  }
 
   // Ensure all values are numbers, not null/undefined
   const safeObdMetrics = {

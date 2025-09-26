@@ -1,0 +1,211 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin > Trips > Create Trip                                         [👤]│
+├────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                │
+│ CREATE TRIP                                                                    │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ Trip Information                                                          │ │
+│ ├────────────────────────────────────────────────────────────────────────────┤ │
+│ │                                                                            │ │
+│ │ Trip ID                                                                    │ │
+│ │ ┌─────────────────────────────────────────────┐                           │ │
+│ │ │ T-2025-                                     │ [             ]           │ │
+│ │ └─────────────────────────────────────────────┘                           │ │
+│ │                                                                            │ │
+│ │ Fleet Operator*                                                           │ │
+│ │ ┌─────────────────────────────────────────────┐                           │ │
+│ │ │ Acme Logistics                            ▾ │                           │ │
+│ │ └─────────────────────────────────────────────┘                           │ │
+│ │                                                                            │ │
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ Assignment                                                                 │ │
+│ ├────────────────────────────────────────────────────────────────────────────┤ │
+│ │                                                                            │ │
+│ │ Vehicle*                                       Driver*                     │ │
+│ │ ┌─────────────────────────────────┐           ┌─────────────────────────┐ │ │
+│ │ │ Select Vehicle...             ▾ │           │ Select Driver...      ▾ │ │ │
+│ │ └─────────────────────────────────┘           └─────────────────────────┘ │ │
+│ │                                                                            │ │
+│ │ Notes: Only available vehicles and drivers will be shown in the dropdowns. │ │
+│ │                                                                            │ │
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ Schedule                                                                   │ │
+│ ├────────────────────────────────────────────────────────────────────────────┤ │
+│ │                                                                            │ │
+│ │ Scheduled Start Date/Time*                    Scheduled End Date/Time*     │ │
+│ │ ┌─────────────────────────────────┐           ┌─────────────────────────┐ │ │
+│ │ │ YYYY-MM-DD HH:MM                │           │ YYYY-MM-DD HH:MM        │ │ │
+│ │ └─────────────────────────────────┘           └─────────────────────────┘ │ │
+│ │                                                                            │ │
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ Location                                                                  │ │
+│ ├────────────────────────────────────────────────────────────────────────────┤ │
+│ │                                                                            │ │
+│ │ Start Coordinates*                                                         │ │
+│ │ ┌──────────────────┐  ┌──────────────────┐  [📍 Pick on Map] [Get Current] │ │
+│ │ │ Latitude         │  │ Longitude        │                                │ │
+│ │ └──────────────────┘  └──────────────────┘                                │ │
+│ │                                                                            │ │
+│ │ End Coordinates*                                                           │ │
+│ │ ┌──────────────────┐  ┌──────────────────┐  [📍 Pick on Map]              │ │
+│ │ │ Latitude         │  │ Longitude        │                                │ │
+│ │ └──────────────────┘  └──────────────────┘                                │ │
+│ │                                                                            │ │
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ Cost                                                                      │ │
+│ ├────────────────────────────────────────────────────────────────────────────┤ │
+│ │                                                                            │ │
+│ │ Estimated Cost                                                             │ │
+│ │ ┌─────────────────────────────────────────────┐                           │ │
+│ │ │                                           ₹ │ [Calculate]               │ │
+│ │ └─────────────────────────────────────────────┘                           │ │
+│ │                                                                            │ │
+│ │ Note: Cost is automatically calculated based on distance and vehicle type. │ │
+│ │                                                                            │ │
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│                                                                                │
+│                                         [Cancel]   [Create Trip]               │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### Trip Information
+
+- **Trip ID** (text):
+  - **Auto-generate Option**: Creates ID with format "T-{YEAR}-{SEQUENCE}"
+  - **Validation**: Must be unique
+  - **Note**: Prefix may be configurable based on organization
+
+- **Fleet Operator*** (dropdown):
+  - **API**: `GET /api/fleet/fleet-operators/`
+  - **Pre-selection**: Current user's fleet operator
+  - **Behavior**: Non-admin users have this pre-selected and disabled
+
+#### Assignment
+
+- **Vehicle*** (searchable dropdown):
+  - **API**: `GET /api/fleet/vehicles/?status=available&fleet={fleet_operator_id}`
+  - **Display**: License plate, make, model
+  - **Notes**: Only shows available vehicles that are not currently assigned to other trips
+
+- **Driver*** (searchable dropdown):
+  - **API**: `GET /api/fleet/drivers/?status=active&fleet={fleet_operator_id}`
+  - **Display**: Driver name, phone
+  - **Notes**: Only shows active drivers that are not currently assigned to other trips
+
+#### Schedule
+
+- **Scheduled Start Date/Time*** (datetime picker):
+  - **Format**: YYYY-MM-DD HH:MM
+  - **Validation**: Must be in the future
+  - **Default**: Current time + 1 hour (rounded to nearest 15 minutes)
+
+- **Scheduled End Date/Time*** (datetime picker):
+  - **Format**: YYYY-MM-DD HH:MM
+  - **Validation**: Must be after start time
+  - **Default**: Start time + 2 hours
+
+#### Location
+
+- **Start Coordinates*** (numeric):
+  - **Format**: Latitude and longitude as decimal numbers
+  - **Features**:
+    - Pick on Map: Opens a map interface to select location
+    - Get Current: Gets current location from browser (requires permission)
+
+- **End Coordinates*** (numeric):
+  - **Format**: Latitude and longitude as decimal numbers
+  - **Feature**: Pick on Map opens a map interface to select location
+
+#### Cost
+
+- **Estimated Cost** (currency):
+  - **Calculation**: Based on distance between coordinates and vehicle rates
+  - **Button**: Calculate triggers manual recalculation
+  - **Auto-calculation**: Also happens when coordinates or vehicle changes
+
+### Form Submission
+
+- **API Endpoint**: `POST /api/fleet/trips/`
+- **Request Body**:
+  ```json
+  {
+    "trip_id": "T-2025-0098",
+    "fleet_operator": 1,
+    "vehicle": 5,
+    "driver": 3,
+    "scheduled_start_time": "2025-09-25T14:30:00Z",
+    "scheduled_end_time": "2025-09-25T16:30:00Z",
+    "start_coordinate": {"type": "Point", "coordinates": [78.4867, 17.3850]},
+    "end_coordinate": {"type": "Point", "coordinates": [78.3772, 17.4436]},
+    "estimated_cost": 525
+  }
+  ```
+
+- **Notes**:
+  - `start_coordinate` and `end_coordinate` need to be formatted as GeoJSON points
+  - Times should be in ISO format with timezone
+
+### Edit Form Behavior
+
+When using the same form for editing:
+
+- **API Endpoint**: `PUT/PATCH /api/fleet/trips/{id}/`
+- **Pre-population**: Fetch trip details and populate all form fields
+- **Restrictions**: 
+  - Trip ID cannot be changed
+  - Completed or cancelled trips cannot be edited
+  - If trip is in progress, some fields may be read-only
+- **Button Label**: Change to "Update Trip"
+
+### Map Picker Component
+
+- **Feature**: "Pick on Map" button opens a map interface
+- **Behavior**: 
+  - User can click on the map to select a location
+  - Selected coordinates are automatically filled into latitude/longitude fields
+  - User confirms location by clicking "Confirm" in the map picker
+- **Implementation**:
+  - Uses map library (like Google Maps, Leaflet, etc.)
+  - Shows current selection as a marker
+  - Allows search for addresses/locations
+
+### Validation Rules
+
+- **Required Fields**: All fields marked with * are required
+- **Trip ID**: Must be unique if manually entered
+- **Schedule**: End time must be after start time
+- **Coordinates**: Valid latitude (-90 to 90) and longitude (-180 to 180)
+- **Vehicle/Driver**: Validate availability for the scheduled time
+- **Estimated Cost**: Must be a valid positive number
+
+### User Experience
+
+- **Form Layout**: Grouped into logical sections
+- **Error Messages**: Display inline with fields
+- **Help Text**: Show hints for complex fields
+- **Auto-calculation**: Recalculate distance and cost when locations change
+- **Calendar Picker**: Use for date/time selection
+- **Map Picker**: Provide visual selection of locations
+- **Vehicle/Driver Dropdown**: Show key information in dropdown options
+
+### After Submission
+
+- **Success**: Redirect to trip detail page with success message
+- **Error**: Show validation errors inline with fields and summary at top
+- **Next Steps**: From detail view, user can start trip if it's scheduled

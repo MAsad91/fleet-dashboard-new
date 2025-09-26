@@ -251,6 +251,7 @@ class ApiClient {
       
       url += `?${params.toString()}`;
       console.log('🔍 API Client: Dashboard summary URL:', url);
+      console.log('🔍 API Client: Making request to:', this.baseURL + url);
       const response = await this.client.get(url);
       console.log('🔍 API Client: Dashboard summary response:', response.data);
       console.log('🔍 API Client: Online vehicles in response:', response.data?.online_vehicles);
@@ -274,7 +275,9 @@ class ApiClient {
     }
     
     url += `?${params.toString()}`;
+    console.log('🔍 API Client: Vehicles stats URL:', url);
     const response = await this.client.get(url);
+    console.log('🔍 API Client: Vehicles stats response:', response.data);
     return response.data;
   }
 

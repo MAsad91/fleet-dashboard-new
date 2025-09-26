@@ -1,0 +1,145 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin                           [Today | 10d | 30d | 90d | 📅]   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ DRIVER DOCUMENTS                                                │
+│──────────────│                                                                 │
+│   Dashboard  │ Driver Documents                             [+ Create] [Bulk ▾]│
+│              │                                                                 │
+│   Vehicles   │ KPI CARDS                                                       │
+│   Vehicle Docs│ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐        │
+│   Drivers    │ │ Total Documents│ │ Active Docs    │ │ Expiring ≤30d  │        │
+│ ▶ Driver Docs│ │                │ │                │ │                │        │
+│   Trips      │ │     105        │ │     102        │ │      12        │        │
+│   Telemetry  │ └────────────────┘ └────────────────┘ └────────────────┘        │
+│   Alerts     │                                                                 │
+│   Alert Rules│ FILTERS                                                         │
+│   OBD Devices│ ┌────────────────────────────────────────────────────────────┐  │
+│   SIM Cards  │ │ 🔍 [Search by driver name, document number, document type...] │  │
+│   Maintenance│ │ Doc Type:   [All ▾]      Status:  [All ▾]       [Apply]   │  │
+│   Insurance  │ │                                                            │  │
+│   Dashcams   │ └────────────────────────────────────────────────────────────┘  │
+│   Firmware   │                                                                 │
+│   Analytics  │ DOCUMENTS TABLE                                                 │
+│   Driver Logs│ ┌────┬────────────┬───────────┬────────┬──────────┬──────────┬────┐ │
+│   Performance│ │ ▢  │ Driver     │ Type      │ Number │ Issue    │ Expiry   │ Act│ │
+│   Settings   │ ├────┼────────────┼───────────┼────────┼──────────┼──────────┼────┤ │
+│   Users      │ │ ▢  │ Jane Doe   │ License   │ LIC-998│ 2020-06-15│ 2025-06-14│ ✅ │ │
+│   Groups &   │ │ ▢  │ John Smith │ ID Card   │ ID-456 │ 2021-03-22│ 2031-03-21│ ✅ │ │
+│   Permissions│ │ ▢  │ Amir Khan  │ Insurance │ INS-789│ 2023-01-10│ 2024-01-09│ ✅ │ │
+│              │ │ ▢  │ Priya Sharma│ License  │ LIC-101│ 2022-11-05│ 2027-11-04│ ✅ │ │
+│              │ │ ▢  │ Raj Patel  │ Medical   │ MED-202│ 2023-04-10│ 2024-04-09│ ✅ │ │
+│              │ │ ▢  │ Sara Ahmed │ Training  │ TRN-303│ 2023-07-15│ 2025-07-14│ ✅ │ │
+│              │ │ ▢  │ David Lee  │ Background│ BG-404 │ 2022-09-22│ N/A      │ ✅ │ │
+│              │ │ ▢  │ Meera Singh│ License   │ LIC-505│ 2021-08-18│ 2023-08-17│ ❌ │ │
+│              │ └────┴────────────┴───────────┴────────┴──────────┴──────────┴────┘ │
+│              │                                                                 │
+│              │ ACTIONS                                                         │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ [Select All] [Delete Selected]               Page 1/14 [◀][▶]│ │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### KPI Cards Section
+- **API Endpoint**: Client-side computation from `GET /api/fleet/driver-documents/`
+- **Fields Used**:
+  - `total` - Total number of driver documents
+  - `active_count` - Number of documents with is_active=true
+  - `expiring_30d_count` - Documents expiring within 30 days
+
+#### Filters
+- **Search Field**:
+  - **Query Parameter**: `search=<term>`
+  - **Implementation**: Client-side search across driver names, document numbers, and document types
+  - **Note**: This is the primary way to filter by driver information
+  
+- **Doc Type Filter**:
+  - **Implementation**: Client-side filtering based on `doc_type` field
+  - **Values**: All, License, Insurance, Medical, Training, Background, ID Card, Other
+  
+- **Status Filter**:
+  - **Implementation**: Client-side filtering based on `is_active` field
+  - **Values**: All, Active, Inactive
+  
+- **Behind the Scenes**:
+  - The driver field filtering is now handled through the search functionality
+  - Driver information can still be filtered using the search box
+
+#### Documents Table
+- **API Endpoint**: `GET /api/fleet/driver-documents/`
+- **Note**: Server does not support filtering via query parameters - all filtering must be done client-side
+- **Columns**:
+  - Checkbox for selection
+  - Driver name
+  - Document Type
+  - Document Number
+  - Issue Date
+  - Expiry Date
+  - Active Status
+  
+- **Row Actions**:
+  - Click on row to navigate to document detail page
+  - Select checkboxes for bulk actions
+  
+- **Expiry Highlighting**:
+  - Documents expiring within 30 days should have their entire row or expiry date highlighted in red
+  - Expired documents should be highlighted in a more intense red
+
+#### Bulk Actions
+- **Delete Selected**:
+  - **API**: `DELETE /api/fleet/driver-documents/{id}/` (executed for each selected document)
+  - **Permissions**: Admin users only
+
+### Interaction Flow
+
+1. **On Page Load**:
+   - Fetch all driver documents
+   - Apply client-side filtering based on default or saved filters
+   - Calculate KPIs from the filtered data
+   - Highlight expiring documents directly in the table
+
+2. **Filter Application**:
+   - When user enters search text or selects filters and clicks Apply:
+     - Apply client-side filtering based on selected criteria
+     - Update document table with filtered results
+     - Recalculate KPIs based on filtered data
+     - Maintain highlighting for expiring documents
+
+3. **Table Interactions**:
+   - Click on document row to navigate to document detail view
+   - Select checkboxes to enable bulk actions
+   - Sort columns by clicking on column headers
+
+4. **Bulk Actions**:
+   - Select multiple documents via checkboxes
+   - Click Delete Selected to delete the selected documents
+   - Show confirmation dialog before executing bulk actions
+
+5. **Pagination**:
+   - Navigate between pages with prev/next buttons
+   - Client-side pagination implementation
+
+### Visual Indicators
+
+- **Active Status**:
+  - Active: Green checkmark (✅)
+  - Inactive: Red X (❌)
+  
+- **Expiring Documents**:
+  - Color-coded based on time remaining directly in the main table:
+    - Expired: Bright red with strikethrough
+    - <30 days: Red
+    - <90 days: Orange
+    - ≥90 days: Normal text color
+
+### Create Button
+
+- Opens the Create Driver Document form
+- Form details are in the create-form.ascii wireframe

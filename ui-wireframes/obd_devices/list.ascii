@@ -1,0 +1,123 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin                           [Today | 10d | 30d | 90d | 📅]   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ OBD DEVICES                                                     │
+│──────────────│                                                                 │
+│   Dashboard  │ OBD Devices                                       [+ Create]    │
+│              │                                                                 │
+│   Vehicles   │ KPI CARDS                                                       │
+│   Drivers    │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐        │
+│   Driver Docs│ │ Total Devices  │ │ Active Devices │ │ Online (≤5m)   │        │
+│   Trips      │ │                │ │                │ │                │        │
+│   Telemetry  │ │     142        │ │     138        │ │     124        │        │
+│   Alerts     │ └────────────────┘ └────────────────┘ └────────────────┘        │
+│   Alert Rules│                                                                 │
+│ ▶ OBD Devices│ FILTERS                                                         │
+│   SIM Cards  │ ┌────────────────────────────────────────────────────────────┐  │
+│   Maintenance│ │ 🔍 [Search by device ID, vehicle, fleet, model, firmware...] │  │
+│   Insurance  │ │                                                            │  │
+│   Dashcams   │ │ Status:   [All ▾]      Online:    [All ▾]       [Apply]   │  │
+│   Firmware   │ │                                                            │  │
+│   Analytics  │ └────────────────────────────────────────────────────────────┘  │
+│   Driver Logs│                                                                 │
+│   Performance│ OBD DEVICES TABLE                                 [▢ Select All]│
+│   Settings   │ ┌────┬─────────────┬──────────┬────────┬──────────┬───────────┬────┐ │
+│   Users      │ │ ▢  │ Device ID   │ Vehicle  │ Model  │ Firmware │Last Comm  │ O/A│ │
+│   Groups &   │ ├────┼─────────────┼──────────┼────────┼──────────┼───────────┼────┤ │
+│   Permissions│ │ ▢  │ OBD-T2-001  │ EV-9812  │ TelemX │ v1.2.3   │ Just now  │ ✅✅│ │
+│              │ │ ▢  │ OBD-T2-002  │ EV-4523  │ TelemX │ v1.2.3   │ 1m ago    │ ✅✅│ │
+│              │ │ ▢  │ OBD-T2-003  │ EV-6721  │ TelemX │ v1.1.5   │ 2m ago    │ ✅✅│ │
+│              │ │ ▢  │ OBD-T3-001  │ EV-1149  │ TelemX │ v1.2.3   │ 3m ago    │ ✅✅│ │
+│              │ │ ▢  │ OBD-T3-002  │ EV-8810  │ TelemX │ v1.2.3   │ 4m ago    │ ✅✅│ │
+│              │ │ ▢  │ OBD-T2-004  │ EV-3387  │ TelemX │ v1.1.5   │ 6m ago    │ ❌✅│ │
+│              │ │ ▢  │ OBD-X1-001  │ EV-5431  │ XTrack │ v2.0.1   │ 15m ago   │ ❌✅│ │
+│              │ │ ▢  │ OBD-X1-002  │ EV-2198  │ XTrack │ v2.0.1   │ 1h ago    │ ❌✅│ │
+│              │ └────┴─────────────┴──────────┴────────┴──────────┴───────────┴────┘ │
+│              │                                                                 │
+│              │ ACTIONS                                                         │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ [Bulk Update] [Export List]                  Page 1/18 [◀][▶]│ │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### KPI Cards Section
+- **API Endpoint**: `GET /api/fleet/obd-devices/statistics/`
+- **Fields Used**:
+  - `total_count` - Total number of OBD devices
+  - `active_count` - Number of active devices
+  - `online_count` - Number of devices that have communicated in the last 5 minutes
+
+#### Filters
+- **Search Field**:
+  - **Query Parameter**: `search=<term>`
+  - **Implementation**: Server-side search across all relevant fields
+  - **Searchable Fields**: Device ID, vehicle information, fleet, model, firmware version
+  - **Note**: This is the primary way to filter by device ID, vehicle, fleet, model, and firmware
+
+- **Status Filter**:
+  - **Options**: All, Active, Inactive
+  - **Filter Parameter**: `is_active={true|false}`
+  - **UI**: Simple dropdown with predefined options
+  
+- **Online Filter**:
+  - **Options**: All, Online, Offline
+  - **Filter Parameter**: `online_status={online|offline}`
+  - **UI**: Simple dropdown with predefined options
+
+- **Behind the Scenes**:
+  The following query parameters are still supported by the API but should be used through the search box in the UI:
+  - `fleet_operator={id}` - Filter by specific fleet
+  - `vehicle={id}` - Filter by specific vehicle
+  - `model={model}` - Filter by device model
+  - `firmware_version={version}` - Filter by firmware version
+
+#### OBD Devices Table
+- **API Endpoint**: `GET /api/fleet/obd-devices/`
+- **Columns**:
+  - Checkbox for selection
+  - Device ID
+  - Associated Vehicle
+  - Model
+  - Firmware Version
+  - Last Communication Time
+  - Online/Active Status
+  
+- **Status Indicators**:
+  - Online: Green checkmark (✅) (First icon)
+  - Offline: Red X (❌) (First icon)
+  - Active: Green checkmark (✅) (Second icon)
+  - Inactive: Red X (❌) (Second icon)
+
+- **Row Actions**:
+  - Click on row to navigate to device detail page
+  - Select checkboxes for bulk actions
+
+### Interaction Flow
+
+1. **On Page Load**:
+   - Fetch device statistics
+   - Fetch OBD devices with default filters
+   - Apply status indicators
+
+2. **Filter Application**:
+   - When user selects filters and clicks Apply:
+     - Update OBD devices list with filtered results
+     - Update KPI cards based on filtered data
+
+3. **Table Interactions**:
+   - Click on device row to navigate to device detail
+   - Select checkboxes to enable bulk actions
+   - Sort columns by clicking on column headers
+
+4. **Bulk Actions**:
+   - Select multiple devices via checkboxes
+   - Apply bulk update to selected devices
+   - Export selected devices data

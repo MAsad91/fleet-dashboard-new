@@ -1,0 +1,227 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin                           [Today | 10d | 30d | 90d | 📅]   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ ANALYTICS DASHBOARD                                             │
+│──────────────│                                                                 │
+│   Dashboard  │ Analytics Dashboard                                [+ Export]   │
+│              │                                                                 │
+│   Vehicles   │ KPI CARDS                                                       │
+│   Drivers    │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐        │
+│   Driver Docs│ │ Fleet Avail.   │ │ Avg Downtime   │ │ Accident Rate  │        │
+│   Trips      │ │                │ │                │ │                │        │
+│   Telemetry  │ │     82.5%      │ │     6.8h       │ │    0.0031      │        │
+│   Alerts     │ └────────────────┘ └────────────────┘ └────────────────┘        │
+│   Alert Rules│                                                                 │
+│   OBD Devices│ FILTERS                                                         │
+│   SIM Cards  │ ┌────────────────────────────────────────────────────────────┐  │
+│   Maintenance│ │ 🔍 [Search metrics...]                                     │  │
+│   Insurance  │ │ Date Range: [Today | 7d | 30d | 90d | Custom ▾]            │  │
+│   Dashcams   │ │ Metrics: [Select Multiple ▾]                      [Apply]│  │
+│   Firmware   │ │                                                            │  │
+│ ▶ Analytics  │ └────────────────────────────────────────────────────────────┘  │
+│   Driver Logs│                                                                 │
+│   Performance│ FLEET OVERVIEW                                                  │
+│   Settings   │ ┌────────────────────────────────────────────────────────────┐  │
+│   Users      │ │                      Fleet Performance                     │  │
+│              │ │                                                            │  │
+│              │ │  Total Distance: 142,876 km   |   Energy Used: 23,476 kWh  │  │
+│              │ │  Avg Efficiency: 6.1 km/kWh   |   CO₂ Saved: 12.6 tons     │  │
+│              │ │                                                            │  │
+│              │ │  ┌────────────────────────────────────────────────────┐    │  │
+│              │ │  │                                                    │    │  │
+│              │ │  │    ▄▄                                              │    │  │
+│              │ │  │   █████    ▄▄▄▄                                    │    │  │
+│              │ │  │  ██████▄▄▄█████                                    │    │  │
+│              │ │  │ ██████████████████▄▄▄   ▄▄▄▄                       │    │  │
+│              │ │  │██████████████████████▄▄▄█████▄▄▄▄▄▄▄▄▄▄▄           │    │  │
+│              │ │  │                                                    │    │  │
+│              │ │  └────────────────────────────────────────────────────┘    │  │
+│              │ │   Daily Distance (km)                       [View Report]   │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ VEHICLE METRICS                                                 │
+│              │ ┌───────────────────────────┐  ┌──────────────────────────────┐ │
+│              │ │ Vehicle Utilization       │  │ Vehicle Status               │ │
+│              │ │                           │  │                              │ │
+│              │ │  ┌─────────────────────┐  │  │  ┌──────────────────────┐   │ │
+│              │ │  │  █  █  █  █  █  █   │  │  │  │ ██ Available (62)    │   │ │
+│              │ │  │  █  █  █  █  █  █   │  │  │  │ ██ In Service (48)   │   │ │
+│              │ │  │  █  █  █  █  █  █   │  │  │  │ ██ Maintenance (18)  │   │ │
+│              │ │  │  █  █  █  █  █  █   │  │  │  └──────────────────────┘   │ │
+│              │ │  └─────────────────────┘  │  │                              │ │
+│              │ │   Avg: 68% utilized       │  │  ▶ View status changes       │ │
+│              │ │                           │  │                              │ │
+│              │ │  [View Detailed Usage]    │  │  [View Status Report]        │ │
+│              │ └───────────────────────────┘  └──────────────────────────────┘ │
+│              │ ┌───────────────────────────┐  ┌──────────────────────────────┐ │
+│              │ │ Energy Consumption        │  │ Battery Health               │ │
+│              │ │                           │  │                              │ │
+│              │ │  ┌─────────────────────┐  │  │  ┌──────────────────────┐   │ │
+│              │ │  │  ▁▂▅▇█▇▅▂▁         │  │  │  │ ██ 90-100% (64)      │   │ │
+│              │ │  │                     │  │  │  │ ██ 80-90% (42)       │   │ │
+│              │ │  └─────────────────────┘  │  │  │ ██ 70-80% (18)       │   │ │
+│              │ │   Peak: 09:00 - 11:00     │  │  │ ██ <70% (4)          │   │ │
+│              │ │   Avg: 4.8 kWh/vehicle/day│  │  └──────────────────────┘   │ │
+│              │ │                           │  │                              │ │
+│              │ │  [View Energy Report]     │  │  [View Battery Report]       │ │
+│              │ └───────────────────────────┘  └──────────────────────────────┘ │
+│              │                                                                 │
+│              │ DRIVER & TRIP ANALYTICS                                         │
+│              │ ┌───────────────────────────┐  ┌──────────────────────────────┐ │
+│              │ │ Driver Performance        │  │ Trip Analysis                │ │
+│              │ │                           │  │                              │ │
+│              │ │  ┌─────────────────────┐  │  │  ┌──────────────────────┐   │ │
+│              │ │  │  ⭐⭐⭐⭐⭐ (42%)     │  │  │  │ Completed: 312        │   │ │
+│              │ │  │  ⭐⭐⭐⭐  (38%)     │  │  │  │ In Progress: 27       │   │ │
+│              │ │  │  ⭐⭐⭐   (15%)     │  │  │  │ Cancelled: 17         │   │ │
+│              │ │  │  ⭐⭐    (5%)      │  │  │  │                      │   │ │
+│              │ │  └─────────────────────┘  │  │  │ Avg Duration: 1h 45m  │   │ │
+│              │ │                           │  │  │ Avg Distance: 45 km    │   │ │
+│              │ │   Top: Jane Doe (4.9)     │  │  └──────────────────────┘   │ │
+│              │ │   Avg: 4.7                │  │                              │ │
+│              │ │                           │  │  [View Trip Metrics]         │ │
+│              │ │  [View Driver Report]     │  │                              │ │
+│              │ └───────────────────────────┘  └──────────────────────────────┘ │
+│              │                                                                 │
+│              │ MAINTENANCE & RELIABILITY                                       │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ Fleet Reliability                                          │  │
+│              │ │                                                            │  │
+│              │ │  ┌────────────────────────────────────────────────────┐    │  │
+│              │ │  │                                                    │    │  │
+│              │ │  │  ▁     ▂                  ▂                        │    │  │
+│              │ │  │  █▄    █▄   ▄▄   ▄▄       █▄                       │    │  │
+│              │ │  │  ██    ██▄  ██   ██▄      ██▄    ▄                 │    │  │
+│              │ │  │  ██▄   ███▄ ██▄  ███▄  ▄  ███▄   █▄                │    │  │
+│              │ │  │                                                    │    │  │
+│              │ │  └────────────────────────────────────────────────────┘    │  │
+│              │ │   Maintenance Events (30 days)                              │  │
+│              │ │                                                            │  │
+│              │ │   • Maintenance Costs: ₹245,800                            │  │
+│              │ │   • Avg Downtime: 2.3 days                                 │  │
+│              │ │   • Most Common: Brake Service (24%)                        │  │
+│              │ │                                                            │  │
+│              │ │  [View Maintenance Analytics]                              │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ REPORT SHORTCUTS                                                │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ [Fleet Summary] [Cost Analysis] [Vehicle Comparison]       │  │
+│              │ │ [Efficiency Report] [Driver Ranking] [Maintenance Forecast]│  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### Fleet Overview Section
+- **API Endpoint**: `GET /api/fleet/analytics/`
+- **Query Parameters**: 
+  - `date_range`: `today|10days|30days|90days` or
+  - `start_date`, `end_date`: `YYYY-MM-DD`
+  - `metrics`: comma‑separated list of metrics
+- **Fields Used**:
+  - `fleet_availability` - Fleet availability percentage
+  - `average_downtime` - Average maintenance downtime in hours
+  - `accident_rate` - Accident rate per km
+  - `average_eco_score` - Average eco score
+  - `total_maintenance_cost` - Total maintenance cost
+  - `active_alerts` - Count of active alerts
+  - `geofence_breaches` - Count of geofence breaches
+  - `total_distance` - Total distance traveled
+  - `average_speed` - Average speed
+
+#### Vehicle Metrics Section
+- **API Endpoint**: `GET /api/fleet/analytics/`
+- **Additional Filters**:
+  - `group_by=vehicle_type` (for availability breakdown)
+  
+#### Driver & Trip Analytics Section
+- **API Endpoint**: `GET /api/fleet/driver-performance/` (for driver metrics)
+- **API Endpoint**: `GET /api/fleet/trips/?status=completed` (for trip metrics)
+
+#### Maintenance & Reliability Section
+- **API Endpoint**: `GET /api/fleet/maintenance-records/?status=completed`
+
+### Date Range Selector
+- **Options**: Today, Last 7 days, Last 30 days, Last 90 days, Custom
+- **Custom Range**: Date picker to select start and end dates
+- **Parameter Mapping**: Maps to API parameters `date_range` or `start_date`/`end_date`
+
+### Filters
+- **Search Field**:
+  - **Implementation**: Search across metrics names and descriptions
+  - **UI**: Search input with magnifying glass icon
+  - **Note**: Helps users find specific metrics quickly
+
+- **Date Range Filter**:
+  - **Options**: Today, Last 7 days, Last 30 days, Last 90 days, Custom
+  - **Custom Range**: Date picker to select start and end dates
+  - **Parameter Mapping**: Maps to API parameters `date_range` or `start_date`/`end_date`
+  
+- **Metrics Filter**:
+  - **Options**: All available metrics from analytics.md
+  - **Filter Parameter**: `metrics={comma_separated_metrics}`
+  - **UI**: Multi-select dropdown to choose which metrics to display
+  
+- **Behind the Scenes**:
+  - Vehicle-specific filtering (`vehicle_type={id}`, `vehicle_id={id}`) available in vehicle details view
+  - Driver-specific filtering (`driver_id={id}`) available in driver performance views
+  - Fleet-level dashboard intentionally shows aggregate metrics only
+
+### Report Shortcuts Section
+- **API Endpoint**: None directly - these are navigation links
+- **Navigation Behavior**:
+  - Links redirect to the reports page (`/analytics/reports`) with pre-selected parameters
+  - Current date range and filter context is preserved when navigating
+  
+- **Shortcut to Report Type Mapping**:
+  - **Fleet Summary**: `GET /api/fleet/analytics/?report_type=fleet_summary&date_range={current_range}`
+  - **Cost Analysis**: `GET /api/fleet/analytics/?report_type=cost_analysis&date_range={current_range}`
+  - **Vehicle Comparison**: `GET /api/fleet/analytics/?report_type=vehicle_comparison&date_range={current_range}`
+  - **Efficiency Report**: `GET /api/fleet/analytics/?report_type=efficiency_report&date_range={current_range}`
+  - **Driver Ranking**: `GET /api/fleet/analytics/?report_type=driver_ranking&date_range={current_range}`
+  - **Maintenance Forecast**: `GET /api/fleet/analytics/?report_type=maintenance_forecast&date_range={current_range}`
+  
+- **Implementation Details**:
+  - When clicked, the application captures current filter state (date range, etc.)
+  - Parameters are encoded in URL when redirecting to reports page
+  - Reports page parses URL parameters to pre-select appropriate options
+  - Report is automatically generated on page load with these parameters
+
+### Export Options
+- **Formats**: PDF Report, Excel, CSV
+- **API**: `GET /api/fleet/analytics/export/?format=pdf|excel|csv`
+
+### Interaction Flow
+
+1. **On Page Load**:
+   - Load analytics with default date range (Today)
+   - Display KPI cards and charts
+   - Initialize filters with default values
+
+2. **Filter Application**:
+   - When filters are changed and Apply is clicked:
+     - Construct query with all selected filters
+     - Reload analytics data with new parameters
+     - Update all visualizations
+
+3. **Section Interactions**:
+   - Each section has links to detailed reports
+   - Charts have hover interactions for details
+
+4. **Export Actions**:
+   - When Export is clicked:
+     - Generate export with current filters and date range
+     - Download file in selected format
+
+### Notes
+
+- All visualizations use data from the analytics API
+- Date range is applied globally to all sections
+- Report shortcuts provide quick access to detailed reports
+- Filter section follows the OBD devices list page pattern

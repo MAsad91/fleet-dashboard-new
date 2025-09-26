@@ -1,0 +1,151 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin > Maintenance > Record Detail                                 [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ MAINTENANCE RECORD DETAIL                                       │
+│──────────────│                                                                 │
+│   Dashboard  │ [◀ Back]  Maintenance: #M-2025-0123                            │
+│              │ Vehicle: EV-9812   Type: Brake Service   Status: Scheduled   Date: Sep 25, 2025│
+│   Vehicles   │                                                                 │
+│   Drivers    │              [Edit] [Complete] [Reschedule] [Cancel] [Delete]   │
+│   Driver Docs│                                                                 │
+│   Trips      │ KPI CARDS                                                       │
+│   Telemetry  │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌──────────┐│
+│   Alerts     │ │ Priority       │ │ Duration       │ │ Cost           │ │Technician││
+│   Alert Rules│ │                │ │                │ │                │ │        ││
+│   OBD Devices│ │     High       │ │   2 hours      │ │    ₹3,500      │ │ T. Lee  ││
+│   SIM Cards  │ └────────────────┘ └────────────────┘ └────────────────┘ └──────────┘│
+│ ▶ Maintenance│                                                                 │
+│   Insurance  │ MAINTENANCE INFORMATION                                         │
+│   Dashcams   │ ┌─────────────────────────────┐  ┌───────────────────────────┐  │
+│   Firmware   │ │ Service Details            │  │ Vehicle Information       │  │
+│   Analytics  │ │                             │  │                           │  │
+│   Driver Logs│ │ • Record ID: M-2025-0123    │  │ • Vehicle: EV-9812        │  │
+│   Performance│ │ • Service Type: Brake Service│  │   Tesla Model Y (2023)    │  │
+│   Settings   │ │ • Description:               │  │   [View Vehicle]          │  │
+│   Users      │ │   Complete brake pad replace-│  │                           │  │
+│              │ │   ment and brake fluid flush │  │ • VIN: 5YJ3E1EA4JF123456  │  │
+│              │ │   for all wheels.           │  │ • Mileage: 28,540 km      │  │
+│              │ │ • Priority: High            │  │ • Status: Maintenance     │  │
+│              │ │ • Status: Scheduled         │  │                           │  │
+│              │ │ • Scheduled Date:            │  │ • Fleet Operator:         │  │
+│              │ │   2025-09-25                │  │   Acme Logistics          │  │
+│              │ │ • Scheduled Time:            │  │                           │  │
+│              │ │   14:00 - 16:00             │  │ • Service Location:        │  │
+│              │ │ • Duration: 2 hours         │  │   Central Service Center  │  │
+│              │ │ • Created At:                │  │   [View Location]         │  │
+│              │ │   2025-09-20                │  │                           │  │
+│              │ │ • Created By:                │  │                           │  │
+│              │ │   Sarah Admin               │  │                           │  │
+│              │ └─────────────────────────────┘  └───────────────────────────┘  │
+│              │                                                                 │
+│              │ COSTS & PARTS                                                   │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ Item                │ Quantity │ Unit Cost │ Total Cost     │  │
+│              │ │ ──────────────────── │ ───────── │ ───────── │ ───────────── │  │
+│              │ │ Brake Pads (Front)  │ 2         │ ₹800      │ ₹1,600        │  │
+│              │ │ Brake Pads (Rear)   │ 2         │ ₹700      │ ₹1,400        │  │
+│              │ │ Brake Fluid         │ 1         │ ₹500      │ ₹500          │  │
+│              │ │ Labor (2 hours)     │ 1         │ N/A       │ N/A           │  │
+│              │ │ ──────────────────── │ ───────── │ ───────── │ ───────────── │  │
+│              │ │ Total                                       │ ₹3,500        │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ MAINTENANCE HISTORY                                             │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ Date       │ Service Type     │ Status    │ Cost          │  │
+│              │ │ ─────────── │ ─────────────── │ ───────── │ ───────────── │  │
+│              │ │ 2025-06-15 │ Full Inspection  │ Completed │ ₹2,800        │  │
+│              │ │ 2025-03-22 │ Tire Rotation    │ Completed │ ₹1,200        │  │
+│              │ │ 2025-01-10 │ Battery Check    │ Completed │ ₹800          │  │
+│              │ │                                                            │  │
+│              │ │ [View Full History]                                        │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ WORK ORDER                                                      │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ Work Order #: WO-2025-0123                                 │  │
+│              │ │                                                            │  │
+│              │ │ [Preview Work Order] [Download PDF] [Print] [Email]        │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### Maintenance Record Detail
+- **API Endpoint**: `GET /api/fleet/maintenance-records/{id}/`
+- **Fields Used**:
+  - `id` - Record ID/number
+  - `vehicle` - Vehicle the maintenance is for
+  - `maintenance_type` - Type of maintenance service
+  - `status` - Current status of the maintenance
+  - `scheduled_date` - When the maintenance is scheduled
+  - `description` - Maintenance description
+  - `priority` - Priority level
+  - `estimated_duration_hours` - Expected duration
+  - `work_order_number` - Reference number
+  - `location` - Service location
+  - `technician` - Assigned technician
+  - `cost` - Total cost
+
+#### Vehicle Information
+- **API Endpoint**: Same record endpoint or `GET /api/fleet/vehicles/{id}/`
+- **Fields Used**: Vehicle details via relation from maintenance record
+
+#### KPI Cards
+- **Fields Used**:
+  - `priority` - Priority level (High/Medium/Low)
+  - `estimated_duration_hours` - Expected duration
+  - `cost` - Total cost
+  - `technician` - Assigned technician
+
+#### Maintenance History
+- **API Endpoint**: `GET /api/fleet/maintenance-records/history/?vehicle={vehicle_id}&start={start_date}&end={end_date}`
+- **Documentation Reference**: History endpoint mentioned in API actions section
+- **Purpose**: Shows previous maintenance for this vehicle
+
+#### Work Order
+- **API Endpoint**: `GET /api/fleet/maintenance-records/{id}/work_order_pdf/`
+- **Documentation Reference**: Work order HTML endpoint mentioned in API actions section
+- **Purpose**: Provides access to work order document
+
+### Action Buttons
+All buttons match actions documented in the maintenance.md file:
+
+- **Edit**:
+  - **API**: `PUT/PATCH /api/fleet/maintenance-records/{id}/`
+  - **Documentation Reference**: Update endpoint in base endpoints section
+
+- **Complete**:
+  - **API**: `POST /api/fleet/maintenance-records/{id}/complete/`
+  - **Request Body (Optional)**: `{ "cost": <decimal> }`
+  - **Documentation Reference**: Complete action in actions section
+
+- **Reschedule**:
+  - **API**: `POST /api/fleet/maintenance-records/{id}/schedule/`
+  - **Request Body**: `{ "scheduled_date": "YYYY-MM-DDTHH:MM:SSZ" }`
+  - **Documentation Reference**: Schedule/Reschedule action in actions section
+
+- **Cancel**:
+  - **API**: `POST /api/fleet/maintenance-records/{id}/cancel/`
+  - **Documentation Reference**: Cancel action in actions section
+
+- **Delete**:
+  - **API**: `DELETE /api/fleet/maintenance-records/{id}/`
+  - **Documentation Reference**: Delete endpoint in base endpoints section
+
+### API Alignment
+All endpoints and fields used in this design match the documentation in maintenance.md:
+- `GET /api/fleet/maintenance-records/{id}/` - Get record details
+- `PUT/PATCH /api/fleet/maintenance-records/{id}/` - Update record
+- `DELETE /api/fleet/maintenance-records/{id}/` - Delete record
+- `POST /api/fleet/maintenance-records/{id}/complete/` - Complete record
+- `POST /api/fleet/maintenance-records/{id}/schedule/` - Reschedule record
+- `POST /api/fleet/maintenance-records/{id}/cancel/` - Cancel record
+- `GET /api/fleet/maintenance-records/{id}/work_order_pdf/` - Get work order
+- `GET /api/fleet/maintenance-records/history/` - Get maintenance history

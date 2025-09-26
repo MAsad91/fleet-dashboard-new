@@ -79,7 +79,7 @@ export default function VehiclesPage() {
   const [retireVehicles] = useRetireVehiclesMutation();
 
   // Get dashboard stats with same filters as vehicles list
-  const { data: dashboardStats } = useGetVehiclesDashboardStatsQuery();
+  const { data: dashboardStats } = useGetVehiclesDashboardStatsQuery({ dateRange: 'today' });
 
   // Enable real-time updates for vehicles
   useRealtimeEntityUpdates('vehicles', refetchVehicles);

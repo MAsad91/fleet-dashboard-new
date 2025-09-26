@@ -1,0 +1,185 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin                           [Today | 10d | 30d | 90d | 📅]   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ ALERTS                                                          │
+│──────────────│                                                                 │
+│   Dashboard  │ Alerts                                             [Bulk ▾]     │
+│              │                                                                 │
+│   Vehicles   │ KPI CARDS                                                       │
+│   Drivers    │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌──────┐│
+│   Driver Docs│ │ Total Alerts   │ │ Critical       │ │ High           │ │ Medium││
+│   Trips      │ │                │ │                │ │                │ │      ││
+▶ Alerts     │ │      78        │ │       3        │ │      12        │ │  24  ││
+│   Alert Rules│ └────────────────┘ └────────────────┘ └────────────────┘ └──────┘│
+│   OBD Devices│ ┌────────────────┐ ┌────────────────────────────────────────┐   │
+│   SIM Cards  │ │ Low            │ │ New/Unread                             │   │
+│   Maintenance│ │                │ │                                        │   │
+│   Insurance  │ │      39        │ │                 31                     │   │
+│   Dashcams   │ └────────────────┘ └────────────────────────────────────────┘   │
+│   Firmware   │                                                                 │
+│   Analytics  │ FILTERS                                                         │
+│   Driver Logs│ ┌────────────────────────────────────────────────────────────┐  │
+│   Performance│ │ 🔍 [Search by title, message, vehicle, driver...]          │  │
+│   Settings   │ │ Severity: [All ▾]    System:   [All ▾]    Status: [All ▾]  │  │
+│   Users      │ │                                                [Apply]  │  │
+│   Groups &   │ └────────────────────────────────────────────────────────────┘  │
+│   Permissions│                                                                 │
+│              │ DISTRIBUTION CHARTS                                             │
+│              │ ┌────────────────────────────┐  ┌────────────────────────────┐  │
+│              │ │ Severity Distribution      │  │ Alert Type Distribution    │  │
+│              │ │                            │  │                            │  │
+│              │ │ Critical  ▓▓               │  │ OBD Error    ▓▓▓▓▓▓       │  │
+│              │ │ High      ▓▓▓▓             │  │ Battery      ▓▓▓           │  │
+│              │ │ Medium    ▓▓▓▓▓▓▓▓         │  │ Speed        ▓▓            │  │
+│              │ │ Low       ▓▓▓▓▓▓▓▓▓▓▓▓▓    │  │ Maintenance  ▓▓▓▓          │  │
+│              │ │                            │  │ System       ▓▓▓▓▓         │  │
+│              │ │                            │  │ Other        ▓▓            │  │
+│              │ └────────────────────────────┘  └────────────────────────────┘  │
+│              │                                                                 │
+│              │ ALERTS TABLE                                    [▢ Select All]  │
+│              │ ┌────┬────────┬───────────────┬──────────┬──────────┬─────────┐ │
+│              │ │ ▢  │ Sev.   │ Title         │ Vehicle  │ Time     │ Status  │ │
+│              │ ├────┼────────┼───────────────┼──────────┼──────────┼─────────┤ │
+│              │ │ ▢  │ 🔴 Crit.│ Motor Overheat│ EV-9812  │ 1h ago   │ New     │ │
+│              │ │ ▢  │ 🟠 High │ Low Tire Press│ EV-5431  │ 3h ago   │ New     │ │
+│              │ │ ▢  │ 🟠 High │ Battery Drain │ EV-6721  │ 5h ago   │ Read    │ │
+│              │ │ ▢  │ 🟡 Med. │ OBD Error     │ EV-2198  │ 10h ago  │ Ignored │ │
+│              │ │ ▢  │ 🟡 Med. │ Brake Wear    │ EV-3387  │ 12h ago  │ Read    │ │
+│              │ │ ▢  │ 🟢 Low  │ Oil Check Due │ EV-8810  │ 1d ago   │ Resolved│ │
+│              │ │ ▢  │ 🟢 Low  │ Firmware Avail│ EV-4523  │ 2d ago   │ Ignored │ │
+│              │ │ ▢  │ 🟢 Low  │ Route Deviation│ EV-1149 │ 3d ago   │ Resolved│ │
+│              │ └────┴────────┴───────────────┴──────────┴──────────┴─────────┘ │
+│              │                                                                 │
+│              │ ACTIONS                                                         │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ [Mark Read] [Ignore] [Resolve] [Export]   Page 1/10 [◀][▶] │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### KPI Cards Section
+- **API Endpoint**: `GET /api/fleet/alerts/dashboard_stats/`
+- **Query Parameters**: Apply the same filters as used in the alerts list
+- **Fields Used**:
+  - `total_alerts` - Total number of alerts
+  - `critical_alerts` - Number of critical severity alerts
+  - `high_alerts` - Number of high severity alerts
+  - `medium_alerts` - Number of medium severity alerts
+  - `low_alerts` - Number of low severity alerts
+  - `new_unread_alerts` - Number of alerts that are new/unread
+
+#### Distribution Charts
+- **API Endpoint**: `GET /api/fleet/alerts/trends/`
+- **Data Visualization**:
+  - **Severity Distribution**: Horizontal bar chart showing count by severity
+  - **Alert Type Distribution**: Horizontal bar chart showing count by system/type
+
+#### Filters
+- **Severity Filter**:
+  - **Query Parameter**: `severity=low|medium|high|critical`
+  - **Options**: All, Critical, High, Medium, Low
+  
+- **System Filter**:
+  - **Query Parameter**: `system=<string>`
+  - **Options**: All alert system categories
+  
+- **Status Filter**:
+  - **Query Parameter**: `status=acknowledged|ignored|resolved|active`
+  - **Options**: All, Active, Acknowledged, Ignored, Resolved
+  
+- **Behind the Scenes**:
+  - **Vehicle Filtering**: `vehicle=<id>` parameter still supported by API but accessed through search
+  - **Driver Filtering**: `driver=<id>` parameter still supported by API but accessed through search
+  - **Search Implementation**: Server-side search includes vehicle identifiers and driver names
+
+- **Search**:
+  - **Implementation**: Search across alert titles, messages, vehicle identifiers, and driver names
+  - **UI**: Search box with magnifying glass icon
+  - **Note**: This is the primary way to filter by vehicle and driver information
+
+#### Alerts Table
+- **API Endpoint**: `GET /api/fleet/alerts/`
+- **Query Parameters**: All filters applied
+- **Columns**:
+  - Checkbox for selection
+  - Severity (with color indicator)
+  - Title
+  - Vehicle (license plate)
+  - Time (relative to now)
+  - Status (new, acknowledged, ignored, resolved)
+  
+- **Row Actions**:
+  - Click on row to navigate to alert detail page
+  - Checkbox to select for bulk actions
+  - Sort columns by clicking on column headers
+
+#### Bulk Actions
+- **Mark Read**:
+  - **API**: `POST /api/fleet/alerts/mark_read/`
+  - **Request Body**: `{ "selected_records": [ids...] }`
+  
+- **Ignore**:
+  - **API**: `PATCH /api/fleet/alerts/{id}/ignore/` (applied to each ID)
+  - **Alternate Bulk API**: Handle on client side with multiple requests
+  
+- **Resolve**:
+  - **API**: `POST /api/fleet/alerts/resolve_alert/`
+  - **Request Body**: `{ "selected_records": [ids...] }`
+  
+- **Export**:
+  - **Format**: CSV or Excel file with alert details
+  - **Data**: Selected alerts or current filtered view
+
+### Interaction Flow
+
+1. **On Page Load**:
+   - Fetch dashboard stats with default/saved filters
+   - Fetch alerts list with default/saved filters
+   - Initialize distribution charts
+   - Apply visual indicators for severity and status
+
+2. **Filter Application**:
+   - When user selects filters and clicks Apply:
+     - Construct query with selected parameters
+     - Reload both the dashboard stats and alerts list with new filters
+     - Update distribution charts
+     - Update URL parameters for shareable filtered views
+
+3. **Table Interactions**:
+   - Click on alert row to navigate to alert detail view
+   - Select checkboxes to enable bulk actions
+   - Sort columns by clicking on column headers
+
+4. **Bulk Actions**:
+   - Select multiple alerts via checkboxes
+   - Click desired bulk action button:
+     - Mark Read: Change status to "read" (POST /api/fleet/alerts/mark_read/)
+     - Ignore: Change status to "ignored" (individual PATCH requests)
+     - Resolve: Change status to "resolved" (POST /api/fleet/alerts/resolve_alert/)
+     - Export: Download CSV/Excel with selected alerts data
+   - Show confirmation dialog before executing bulk actions
+
+5. **Pagination**:
+   - Navigate between pages with prev/next buttons
+   - Server-side pagination with page size selector
+
+### Visual Indicators
+
+- **Severity Colors**:
+  - Critical: Red (🔴)
+  - High: Orange (🟠)
+  - Medium: Yellow (🟡)
+  - Low: Green (🟢)
+  
+- **Status Indicators**:
+  - New: Bold text
+  - Acknowledged: Normal text
+  - Ignored: Gray/italicized text
+  - Resolved: Gray text with checkmark

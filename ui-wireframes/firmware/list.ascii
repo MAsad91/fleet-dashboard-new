@@ -1,0 +1,139 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin                           [Today | 10d | 30d | 90d | 📅]   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ FIRMWARE                                                        │
+│──────────────│                                                                 │
+│   Dashboard  │ Firmware                                      [+ Upload New]    │
+│              │                                                                 │
+│   Vehicles   │ KPI CARDS                                                       │
+│   Drivers    │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐        │
+│   Driver Docs│ │ Available      │ │ Outdated       │ │ Updating       │        │
+│   Trips      │ │ Firmware       │ │ Devices        │ │ Now            │        │
+│   Telemetry  │ │                │ │                │ │                │        │
+│   Alerts     │ │      15        │ │      42        │ │       8        │        │
+│   Alert Rules│ └────────────────┘ └────────────────┘ └────────────────┘        │
+│   OBD Devices│                                                                 │
+│   SIM Cards  │ FILTERS                                                         │
+│   Maintenance│ ┌────────────────────────────────────────────────────────────┐  │
+│   Insurance  │ │ 🔍 [Search by version, device type...]                     │  │
+│   Dashcams   │ │ Component: [All ▾]    Status:     [All ▾]                  │  │
+│ ▶ Firmware   │ │ Version:   [        ] Release Date: [Any ▾]       [Apply]  │  │
+│   Analytics  │ └────────────────────────────────────────────────────────────┘  │
+│   Driver Logs│                                                                 │
+│   Performance│ FIRMWARE PACKAGES                                   [▢ Select All]│
+│   Settings   │ ┌────┬──────────┬──────────────┬────────┬─────────┬──────────┬─────┐ │
+│   Users      │ │ ▢  │ Version  │ Device Type  │ Release│ Size    │ Status   │ View │ │
+│              │ ├────┼──────────┼──────────────┼────────┼─────────┼──────────┼─────┤ │
+│              │ │ ▢  │ v1.3.0   │ TelemX OBD   │ Aug 15 │ 24.6 MB │ Available│[View]│ │
+│              │ │ ▢  │ v1.2.3   │ TelemX OBD   │ May 20 │ 22.5 MB │ Available│[View]│ │
+│              │ │ ▢  │ v2.5.3   │ DashPro X    │ Jul 05 │ 128 MB  │ Available│[View]│ │
+│              │ │ ▢  │ v2.3.1   │ DashMax S    │ Apr 12 │ 96 MB   │ Available│[View]│ │
+│              │ │ ▢  │ v3.2.0   │ Vehicle ECU  │ Sep 01 │ 48.2 MB │ Available│[View]│ │
+│              │ └────┴──────────┴──────────────┴────────┴─────────┴──────────┴─────┘ │
+│              │                                                                 │
+│              │ ACTIONS                                                         │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ [Bulk Actions ▾] [Export]                  Page 1/3 [◀][▶] │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ DEVICE UPDATE STATUS                                            │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ Device   │ Current│ Available │ Status │ Progress   │ Actions│  │
+│              │ │ ──────── │ ─────── │ ───────── │ ────── │ ────────── │ ─────── │  │
+│              │ │ OBD-001  │ v1.2.3 │ v1.3.0   │ Ready  │ -          │[Update]│  │
+│              │ │ OBD-004  │ v1.2.3 │ v1.3.0   │Updating│ 45% ▓▓▓▓▓░░│[Cancel]│  │
+│              │ │ OBD-005  │ v1.2.3 │ v1.3.0   │ Failed  │ Error     │[Retry] │  │
+│              │ │                                                            │  │
+│              │ │ [View All Devices]                                         │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ UPDATE HISTORY                                                  │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ • Last 24 hours: 12 successful updates, 3 failed           │  │
+│              │ │ • Last 7 days: 37 successful updates, 5 failed             │  │
+│              │ │                                                            │  │
+│              │ │ [View Full History]                                        │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### KPI Cards Section
+- **API Endpoint**: `GET /api/fleet/firmware-updates/summary/`
+- **Fields Used**:
+  - `available_firmware_count` - Total number of available firmware packages
+  - `outdated_devices_count` - Devices with updates available
+  - `updating_now_count` - Devices currently updating
+
+#### Filters
+- **Search Filter**:
+  - **Implementation**: Searches version, component, description, etc.
+  
+- **Component Filter**:
+  - **Query Parameter**: `component=obd|dashcam|other`
+  - **Values**: All, OBD, Dashcam, Vehicle ECU, Other
+  - **Documentation Reference**: `component` field in firmware.md
+  
+- **Status Filter**:
+  - **Query Parameter**: `status=paused|rolling_out|completed`
+  - **Values**: All, Paused, Rolling Out, Completed
+  - **Documentation Reference**: `status` field in firmware.md
+  
+- **Version Filter**:
+  - **Query Parameter**: `version=<value>`
+  - **Implementation**: Search by version string
+
+- **Release Date Filter**:
+  - **Query Parameter**: `release_date_after=<date>&release_date_before=<date>`
+  - **Values**: Any, Last 30 days, Last 90 days, Custom Range
+  - **Documentation Reference**: `release_date` field in firmware.md
+
+#### Firmware Packages Table
+- **API Endpoint**: `GET /api/fleet/firmware-updates/`
+- **Query Parameters**: All filters applied
+- **Columns**:
+  - Checkbox for selection
+  - Version
+  - Device Type (component)
+  - Release Date
+  - Size (file_size)
+  - Status
+  - View Action
+  
+- **Row Actions**:
+  - View: Navigate to firmware package detail page
+
+#### Bulk Actions Dropdown
+- **Delete Selected**:
+  - **API**: Multiple calls to `DELETE /api/fleet/firmware-updates/{id}/`
+  - **Documentation Reference**: Base endpoints section in firmware.md
+  
+- **Pause Selected**:
+  - **API**: Multiple calls to `POST /api/fleet/firmware-updates/{id}/pause/`
+  - **Documentation Reference**: Pause/Resume section in firmware.md
+  
+- **Resume Selected**:
+  - **API**: Multiple calls to `POST /api/fleet/firmware-updates/{id}/resume/`
+  - **Documentation Reference**: Pause/Resume section in firmware.md
+
+#### Device Update Status
+- **API Endpoint**: `GET /api/fleet/firmware-updates/installs/`
+- **Purpose**: Shows a summary of devices being updated
+- **Documentation Reference**: `installs[]` field in firmware.md detail section
+
+#### Update History
+- **API Endpoint**: `GET /api/fleet/firmware-updates/history/`
+- **Purpose**: Shows a summary of recent update activities
+
+### API Alignment
+All endpoints and fields used in this design match the documentation in firmware.md:
+- `GET /api/fleet/firmware-updates/` - List firmware updates
+- `GET /api/fleet/firmware-updates/summary/` - Get summary stats
+- `POST /api/fleet/firmware-updates/{id}/pause/` - Pause update
+- `POST /api/fleet/firmware-updates/{id}/resume/` - Resume update
+- `DELETE /api/fleet/firmware-updates/{id}/` - Delete update

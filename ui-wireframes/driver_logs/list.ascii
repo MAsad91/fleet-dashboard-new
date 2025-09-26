@@ -1,0 +1,141 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin                           [Today | 10d | 30d | 90d | 📅]   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ DRIVER LOGS                                                     │
+│──────────────│                                                                 │
+│   Dashboard  │ Driver Activity Logs                           [Export Data ▾]  │
+│              │                                                                 │
+│   Vehicles   │ LOG STATISTICS                                                  │
+│   Drivers    │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌──────┐│
+│   Driver Docs│ │ Total Logs     │ │ Drivers Active │ │ Avg. Speed     │ │Events││
+│   Trips      │ │                │ │                │ │                │ │      ││
+│   Telemetry  │ │    12,854      │ │      87        │ │    48 km/h     │ │  438 ││
+│   Alerts     │ └────────────────┘ └────────────────┘ └────────────────┘ └──────┘│
+│   Alert Rules│                                                                 │
+│   OBD Devices│ FILTERS                                                         │
+│   SIM Cards  │ ┌────────────────────────────────────────────────────────────┐  │
+│   Maintenance│ │ 🔍 [Search by driver name, trip ID...]                     │  │
+│   Insurance  │ │ Driver:  [Select ▾] Trip:  [Select ▾] Event: [All ▾]      │  │
+│   Dashcams   │ │ Date:    [Today ▾]  Time:  [00:00 - 23:59]      [Apply]   │  │
+│   Firmware   │ └────────────────────────────────────────────────────────────┘  │
+│   Analytics  │                                                                 │
+│ ▶ Driver Logs│ MAP VIEW                                                        │
+│   Performance│ ┌────────────────────────────────────────────────────────────┐  │
+│   Settings   │ │                                                            │  │
+│   Users      │ │                                                            │  │
+│   Groups &   │ │             •                                              │  │
+│   Permissions│ │                       •                                    │  │
+│              │ │          •      •          •                               │  │
+│              │ │                                  •                         │  │
+│              │ │       •            •                •                      │  │
+│              │ │                •         •                                 │  │
+│              │ │                                                            │  │
+│              │ │ [Show Path] [Show Heatmap] [Center] [Zoom In] [Zoom Out]  │  │
+│              │ │                                                            │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ DRIVER LOGS                                                     │
+│              │ ┌────┬──────────────┬───────┬───────────┬──────┬─────────┬─────────┐ │
+│              │ │ ▢  │ Timestamp    │ Driver │ Trip      │ Speed│ Location │ Event   │ │
+│              │ ├────┼──────────────┼───────┼───────────┼──────┼─────────┼─────────┤ │
+│              │ │ ▢  │ 13:45:22     │ J. Doe│ T-2025-98 │ 54   │ Gachibowli│ -      │ │
+│              │ │ ▢  │ 12:30:15     │ J. Doe│ T-2025-98 │ 47   │ Hitech City│ -      │ │
+│              │ │ ▢  │ 12:15:00     │ J. Doe│ T-2025-98 │ 35   │ Madhapur  │ Start  │ │
+│              │ │ ▢  │ 09:45:38     │ J. Doe│ T-2025-87 │ 0    │ Jubilee Hills│ End  │ │
+│              │ │ ▢  │ 09:15:22     │ J. Doe│ T-2025-87 │ 52   │ Banjara Hills│ -    │ │
+│              │ │ ▢  │ 08:45:10     │ A. Khan│ T-2025-65 │ 49   │ Gachibowli│ -      │ │
+│              │ │ ▢  │ 08:30:05     │ A. Khan│ T-2025-65 │ 42   │ Kothaguda │ Start  │ │
+│              │ │ ▢  │ 08:15:28     │ S. Ahmed│ T-2025-42 │ 0    │ Hitech City│ End   │ │
+│              │ └────┴──────────────┴───────┴───────────┴──────┴─────────┴─────────┘ │
+│              │                                                                 │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ [Select All] [View Selected]                Page 1/50 [◀][▶]│ │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### Log Statistics Section
+- **API Endpoint**: `GET /api/fleet/driver-logs/statistics/`
+- **Fields Used**:
+  - `total_logs_count` - Total number of driver logs
+  - `active_drivers_count` - Number of drivers with logs in the selected time period
+  - `average_speed_kph` - Average speed across all logs
+  - `event_count` - Count of logs with defined events
+
+#### Filters
+- **Driver Filter**:
+  - **API for Dropdown**: `GET /api/fleet/drivers/`
+  - **Filter Parameter**: `driver={id}`
+  
+- **Trip Filter**:
+  - **API for Dropdown**: `GET /api/fleet/trips/`
+  - **Filter Parameter**: `trip={id}`
+  
+- **Event Filter**:
+  - **Options**: All, Start, End, Harsh Braking, Speeding, Acceleration, etc.
+  - **Filter Parameter**: `event_type={event_type}`
+  
+- **Date/Time Filters**:
+  - **Options**: Today, Yesterday, Last 7 Days, Custom Range
+  - **Filter Parameters**: `date_from={date_from}&date_to={date_to}&time_from={time_from}&time_to={time_to}`
+  
+- **Search**:
+  - Client-side search across driver names and trip IDs
+
+#### Map View
+- **API Endpoint**: `GET /api/fleet/driver-logs/map-data/`
+- **Query Parameters**: Same as filters
+- **Data Points**: GPS coordinates from driver logs with timestamps
+- **Features**:
+  - Path view: Connect points chronologically
+  - Heatmap: Show concentrations of activity
+  - Controls: Center, zoom, view modes
+
+#### Driver Logs Table
+- **API Endpoint**: `GET /api/fleet/driver-logs/`
+- **Query Parameters**: All filter parameters combined
+- **Columns**:
+  - Timestamp (sortable)
+  - Driver name
+  - Trip ID (linkable)
+  - Speed (km/h)
+  - Location
+  - Event type
+  
+- **Actions**:
+  - Click on row to view log details
+  - Select logs via checkboxes for bulk actions
+
+### Interaction Flow
+
+1. **On Page Load**:
+   - Fetch log statistics for the default period (Today)
+   - Load map data for the default period
+   - Load log entries for the first page
+
+2. **Filter Application**:
+   - When user selects filters and clicks Apply:
+     - Update log statistics based on filter criteria
+     - Reload map with filtered data points
+     - Update log entries table with filtered results
+
+3. **Map Interactions**:
+   - View path connects chronological points
+   - Heatmap shows concentration of logs by location
+   - Standard map controls (zoom, center)
+
+4. **Table Interactions**:
+   - Sortable columns (particularly timestamp)
+   - Pagination for large datasets
+   - Selection for viewing multiple logs in detail
+
+5. **Export Functionality**:
+   - Export filtered logs as CSV/Excel
+   - Include all visible columns plus additional detailed data

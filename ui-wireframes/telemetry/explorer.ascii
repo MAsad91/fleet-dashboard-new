@@ -1,0 +1,162 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin                           [Today | 10d | 30d | 90d | 📅]   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ TELEMETRY EXPLORER                                              │
+│──────────────│                                                                 │
+│   Dashboard  │ Telemetry Explorer                          [Insights ▾]        │
+│              │                                                                 │
+│   Vehicles   │ KPI CARDS                                                       │
+│   Drivers    │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌──────┐│
+│   Driver Docs│ │ Records        │ │ Vehicles       │ │ Error Records  │ │ Avg  ││
+│   Trips      │ │                │ │                │ │                │ │Speed ││
+│ ▶ Telemetry  │ │    12,458      │ │      87        │ │     312        │ │ 53kph││
+│   Alerts     │ └────────────────┘ └────────────────┘ └────────────────┘ └──────┘│
+│   Alert Rules│ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐        │
+│   OBD Devices│ │ Avg Battery    │ │ Avg Motor Temp │ │ Avg Range      │        │
+│   SIM Cards  │ │                │ │                │ │                │        │
+│   Maintenance│ │     76%        │ │     72°C       │ │    287 km      │        │
+│   Insurance  │ └────────────────┘ └────────────────┘ └────────────────┘        │
+│   Dashcams   │                                                                 │
+│   Firmware   │ FILTERS                                                         │
+│   Analytics  │ ┌────────────────────────────────────────────────────────────┐  │
+│   Driver Logs│ │ 🔍 [Search by vehicle, trip ID...]                         │  │
+│   Performance│ │ Time: [After ▾] [Before ▾]   Has Error Codes: [All ▾]    │  │
+│   Settings   │ │                                                   [Apply]  │  │
+│   Users      │ └────────────────────────────────────────────────────────────┘  │
+│   Groups &   │                                                                 │
+│   Permissions│ TELEMETRY TABLE                                  [▢ Select All] │
+│              │ ┌────┬────────────┬───────────┬──────┬────────┬──────┬────────┬────┐ │
+│              │ │ ▢  │ Time       │ Vehicle   │ Speed│ Battery│ Temp │ Range  │ Err│ │
+│              │ ├────┼────────────┼───────────┼──────┼────────┼──────┼────────┼────┤ │
+│              │ │ ▢  │ 13:08:15   │ EV-9812   │ 54   │ 78%    │ 72°C  │ 312km  │    │ │
+│              │ │ ▢  │ 13:08:14   │ EV-1149   │ 62   │ 64%    │ 68°C  │ 245km  │    │ │
+│              │ │ ▢  │ 13:08:14   │ EV-4523   │ 0    │ 82%    │ 45°C  │ 350km  │    │ │
+│              │ │ ▢  │ 13:08:13   │ EV-6721   │ 48   │ 55%    │ 74°C  │ 192km  │    │ │
+│              │ │ ▢  │ 13:08:12   │ EV-3387   │ 37   │ 91%    │ 65°C  │ 378km  │    │ │
+│              │ │ ▢  │ 13:08:12   │ EV-8810   │ 75   │ 71%    │ 79°C  │ 282km  │    │ │
+│              │ │ ▢  │ 13:08:11   │ EV-5431   │ 0    │ 67%    │ 41°C  │ 243km  │ P0A│ │
+│              │ └────┴────────────┴───────────┴──────┴────────┴──────┴────────┴────┘ │
+│              │                                                                 │
+│              │ ACTIONS                                                         │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ [View Selected] [Vehicle Snapshot] [Export Data] Page 1/50 [◀][▶]│ │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ INSIGHTS PANEL (Toggle)                                         │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ TOP ERROR CODES                                            │  │
+│              │ │ ┌──────┬───────────────────────┬─────────────────────────┐ │  │
+│              │ │ │ Code │ Description           │ Count                   │ │  │
+│              │ │ ├──────┼───────────────────────┼─────────────────────────┤ │  │
+│              │ │ │ P0A80│ Battery voltage low   │ 57                      │ │  │
+│              │ │ │ P0A1F│ Cell balancing error  │ 42                      │ │  │
+│              │ │ │ U0121│ Communication lost    │ 38                      │ │  │
+│              │ │ │ P0234│ Engine overboost      │ 29                      │ │  │
+│              │ │ │ P0562│ System voltage low    │ 24                      │ │  │
+│              │ │ └──────┴───────────────────────┴─────────────────────────┘ │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### KPI Cards Section
+- **API Endpoint**: `GET /api/fleet/obd-telemetry/?aggregated=true`
+- **Fields Used**:
+  - `record_count` - Total number of telemetry records
+  - `vehicle_count` - Number of vehicles with telemetry data
+  - `error_record_count` - Number of records with error codes
+  - `averages.speed_kph` - Average speed across all records
+  - `averages.battery_percent` - Average battery level
+  - `averages.motor_temp_c` - Average motor temperature
+  - `averages.range_km` - Average estimated range
+
+#### Filters
+- **Search Field**:
+  - **Query Parameter**: `search=<term>`
+  - **Implementation**: Server-side search across vehicle identifiers and trip IDs
+  - **Note**: This is the primary way to filter by vehicle or trip
+  - **Supported Formats**: License plate, VIN, vehicle make/model, trip ID
+
+- **Time Filters**:
+  - **Fields**: `timestamp_after`, `timestamp_before`
+  - **Format**: ISO datetime strings
+  
+- **Error Codes Filter**:
+  - **Options**: All, With Errors, No Errors
+  - **Query Parameter**: `has_error_codes=true` (when "With Errors" selected)
+
+- **Behind the Scenes**:
+  The following query parameters are still supported by the API but should be used through the search box in the UI:
+  - `vehicle={id}` or `vehicle_vin={vin}` - Filter by specific vehicle
+  - `trip={id}` or `trip_id={trip_id}` - Filter by specific trip
+
+#### Telemetry Table
+- **API Endpoint**: `GET /api/fleet/obd-telemetry/` with all selected filters applied
+- **Columns**:
+  - Checkbox for selection
+  - Timestamp
+  - Vehicle
+  - Speed (kph)
+  - Battery level (%)
+  - Motor temperature (°C)
+  - Estimated range (km)
+  - Error codes (if any)
+
+#### Insights Panel
+- **API Endpoint**: `GET /api/fleet/obd-telemetry/?top_errors=true&limit=10` (with same filters)
+- **Display**: Top error codes by frequency, with descriptions
+
+#### Vehicle Snapshot
+- **API Endpoint**: `GET /api/fleet/vehicles/{vehicle_id}/telemetry_data/`
+- **Description**: Shows recent 20-point charts for the selected vehicle
+- **Activation**: Enabled when a vehicle is selected in filters
+- **Display**: Modal or in-page visualization of recent vehicle telemetry
+
+### Interaction Flow
+
+1. **On Page Load**:
+   - Fetch aggregated telemetry data for KPI cards
+   - Fetch telemetry records with default filters (e.g., last 24 hours)
+   - Initialize insights panel data (collapsed by default)
+
+2. **Filter Application**:
+   - When user types in search box:
+     - Search for vehicles or trips matching the term
+     - Results update as user types
+   - When user sets time range or error code filters and clicks Apply:
+     - Update URL with query parameters
+     - Reload KPI cards with new filter criteria
+     - Reload telemetry table with filtered results
+     - Update insights panel data with same filters
+
+3. **Table Interactions**:
+   - Click on row to navigate to telemetry detail view
+   - Select checkboxes for bulk view/export
+   - Sort columns by clicking headers
+
+4. **Insights Toggle**:
+   - Show/hide insights panel with error code statistics
+   - Panel data uses the same filters as the main table
+
+5. **Vehicle Focus**:
+   - When arriving via vehicle detail page (`?vehicle={id}`):
+     - Auto-populate search field with vehicle information
+     - Show vehicle snapshot button
+     - Focus KPIs and insights on that vehicle only
+     - Backend still uses vehicle={id} parameter
+
+6. **Data Management**:
+   - Implement virtualized table for performance
+   - Use pagination for large result sets
+   - Provide export functionality for filtered data
+
+7. **Live Data Updates**:
+   - Implement polling mechanism for live data updates
+   - Update KPI cards and table with fresh data
+   - Respect user's current view and filters during updates

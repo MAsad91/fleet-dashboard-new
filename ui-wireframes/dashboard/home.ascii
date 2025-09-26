@@ -1,0 +1,263 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│ [LOGO] Fleet Admin                           [🔍 Search...          ]      [🔔]  [💡|🌙]  [👤 ▾] │
+│                                                                                │
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ DASHBOARD                                                       │
+│──────────────│                                                                 │
+│ ▶ Dashboard  │ KPI CARDS                                                       │
+│              │ Date Range: [Today | 10d | 30d | 90d | 📅 Custom]                │
+│              │ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐│
+│   Vehicles   │ │ Total       │ │ Online      │ │ Active      │ │ Critical    │ │ Open        ││
+│   Vehicle Docs│ │ Vehicles    │ │ Vehicles    │ │ Trips       │ │ Alerts      │ │ Maintenance ││
+│   Drivers    │ │    128      │ │    114      │ │     27      │ │      3      │ │      6      ││
+│   Driver Docs│ └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘│
+│   Trips      │ ┌─────────────┐ ┌──────────────────────────┐                                   │
+│   Telemetry  │ │ Avg Battery │ │ Total Distance (km)      │                                   │
+│   Alerts     │ │     78%     │ │      154,230             │                                   │
+│   Alert Rules│ └─────────────┘ └──────────────────────────┘                                   │
+│   OBD Devices│                                                                                │
+│   SIM Cards  │ STATUS & ENERGY                                                                │
+│   Maintenance│ ┌────────────────────────────────┐    ┌────────────────────────────────────┐   │
+│   Insurance  │ │ Vehicle Status                 │    │ Energy Metrics                     │   │
+│   Dashcams   │ │                                │    │                                    │   │
+│   Firmware   │ │    ┌─────┐                     │    │ • Total Energy (kWh): 6,240        │   │
+│   Analytics  │ │    │█████│                     │    │ • Avg Efficiency: 6.3 km/kWh       │   │
+│   Driver Logs│ │    └─────┘                     │    │                                    │   │
+│   Performance│ │                                │    │ ┌────────────┐   ┌────────────┐    │   │
+│   Settings   │ │ • Available: 62               │    │ │██████████│   │████████  │    │   │
+│   Users      │ │ • In Use: 48                  │    │ └────────────┘   └────────────┘    │   │
+│   Groups &   │ │ • Maintenance: 18             │    │   Total          Efficiency       │   │
+│   Permissions│ └────────────────────────────────┘    └────────────────────────────────────┘   │
+│              │                                                                                │
+│              │ OBD METRICS                                                                    │
+│              │ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌───────────┐│
+│              │ │ Avg      │ │ Avg      │ │ Avg      │ │ Avg      │ │ Avg Tire │ │ Vehicles  ││
+│              │ │ Speed    │ │ Temp     │ │ Range    │ │ Voltage  │ │ Pressure │ │ w/Errors  ││
+│              │ │          │ │          │ │          │ │          │ │          │ │           ││
+│              │ │ 54.2 kph │ │ 76.8 °C  │ │ 312 km   │ │ 48.7 V   │ │ 225 kPa  │ │     7     ││
+│              │ └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘ └───────────┘│
+│              │                                                                                │
+│              │ DIAGNOSTICS                                                                    │
+│              │ ┌───────────────────────┐ ┌───────────────────────┐ ┌───────────────────────┐  │
+│              │ │ Device Health         │ │ SIM Card Usage        │ │ Battery Health        │  │
+│              │ │                       │ │                       │ │                       │  │
+│              │ │   ┌─────┐             │ │   ┌─────┐             │ │ Low level warning:    │  │
+│              │ │   │█████│             │ │   │█████│             │ │                       │  │
+│              │ │   └─────┘             │ │   └─────┘             │ │ 11 vehicles < 20%     │  │
+│              │ │                       │ │                       │ │                       │  │
+│              │ │ • Critical: 2         │ │ • High Usage: 9       │ │                       │  │
+│              │ │ • Warning: 5          │ │ • Inactive: 3         │ │                       │  │
+│              │ │ • Normal: 121         │ │ • Normal: 116         │ │                       │  │
+│              │ └───────────────────────┘ └───────────────────────┘ └───────────────────────┘  │
+│              │                                                                                │
+│              │ MOST ACTIVE VEHICLE                                                            │
+│              │ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│              │ │ EV-9832                                              [View Vehicle Details] │ │
+│              │ │ Distance: 1,284 km (last 7 days)                                           │ │
+│              │ └────────────────────────────────────────────────────────────────────────────┘ │
+│              │                                                                                │
+│              │ VEHICLE MAP                                                                    │
+│              │ ┌────────────────────────────────────────────────────────────┐                │
+│              │ │                                                            │                │
+│              │ │      •                         •                           │                │
+│              │ │            •       ◎                                       │                │
+│              │ │                        •                                   │                │
+│              │ │                                •                           │                │
+│              │ │               •                                            │                │
+│              │ │         ◎                •               ◎                 │                │
+│              │ │                                                            │                │
+│              │ │   [Toggle Heat Map]  [Toggle Clusters]        [Zoom] [Reset] │                │
+│              │ │                                                            │                │
+│              │ └────────────────────────────────────────────────────────────┘                │
+│              │                                                                                │
+│              │ FLEET TELEMETRY INSIGHTS                                                      │
+│              │ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│              │ │ Fleet Metrics Dashboard    [Speed | Battery | Temperature | Range]        │ │
+│              │ │                                                                           │ │
+│              │ │ ┌────────────────────────────────────────────────────────────────────┐    │ │
+│              │ │ │                        SPEED METRICS                              │    │ │
+│              │ │ │                                                                    │    │ │
+│              │ │ │ ┌───────────────────────────────┐  ┌───────────────────────────────┐│    │ │
+│              │ │ │ │ Fleet Aggregate Statistics    │  │ Top 5 Vehicle Samples         ││    │ │
+│              │ │ │ │                               │  │                               ││    │ │
+│              │ │ │ │ Current Fleet Average:        │  │ 60                            ││    │ │
+│              │ │ │ │      28.7 kph                 │  │  │                            ││    │ │
+│              │ │ │ │                               │  │ 40 ┌───┐┌───┐     ┌───┐       ││    │ │
+│              │ │ │ │ Min Speed: 0 kph              │  │    │   ││   │     │   │       ││    │ │
+│              │ │ │ │ Max Speed: 87 kph             │  │ 20 │   ││   │┌───┐│   │┌───┐  ││    │ │
+│              │ │ │ │                               │  │    │   ││   ││   ││   ││   │  ││    │ │
+│              │ │ │ │ Vehicles reporting: 114       │  │  0 └───┘└───┘└───┘└───┘└───┘  ││    │ │
+│              │ │ │ │ Error records: 78             │  │    EV-1  EV-2  EV-3  EV-4  EV-5      ││    │ │
+│              │ │ │ └───────────────────────────────┘  └───────────────────────────────┘│    │ │
+│              │ │ │                                                                    │    │ │
+│              │ │ │ ┌────────────────────────────────────────────────────────────────┐│    │ │
+│              │ │ │ │ Vehicle Status Overview                                       ││    │ │
+│              │ │ │ │                                                                ││    │ │
+│              │ │ │ │ Available: 62    In Use: 48    Maintenance: 18                 ││    │ │
+│              │ │ │ │                                                                ││    │ │
+│              │ │ │ │ Online: 114      Offline: 14                                   ││    │ │
+│              │ │ │ └────────────────────────────────────────────────────────────────┘│    │ │
+│              │ │ └────────────────────────────────────────────────────────────────────┘    │ │
+│              │ │ * Data refreshed every 2 minutes                                         │ │
+│              │ └────────────────────────────────────────────────────────────────────────────┘ │
+│              │                                                                                │
+│              │ DATA TABLES                                                                    │
+│              │ ┌────────────────────┐ ┌─────────────────────────────────────┐ ┌─────────────┐ │
+│              │ │ Top Error Codes    │ │ Recent Alerts                       │ │ Active Trips│ │
+│              │ │                    │ │                                     │ │             │ │
+│              │ │ ▇▇▅▆▃             │ │ Sev  Title         Vehicle    Time  │ │ ID   Vehicl │ │
+│              │ │ ▃▆█▅▂             │ │ ──── ───────────── ───────    ───── │ │ ──── ────── │ │
+│              │ │ ▂▃▅▇▆             │ │ H    Overheat      EV-981     2h    │ │ #875 EV-113 │ │
+│              │ │                    │ │ M    Brake pressure EV-402     5h    │ │ #876 EV-221 │ │
+│              │ │ [View All]         │ │ [View All Alerts]                   │ │ [View All]  │ │
+│              │ └────────────────────┘ └─────────────────────────────────────┘ └─────────────┘ │
+│              │                                                                                │
+│              │ Last updated: Just now                                                         │
+└──────────────┴────────────────────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### KPI Cards Section
+- **API Endpoint**: `GET /api/fleet/dashboard/summary/`
+- **Query Parameters**: `date_range=today|10days|30days|90days` or `start_date=YYYY-MM-DD&end_date=YYYY-MM-DD`
+- **Fields Used**:
+  - `total_vehicles`
+  - `online_vehicles`
+  - `total_active_trips`
+  - `critical_alerts`
+  - `open_maintenance`
+  - `average_battery_level`
+  - `total_distance_travelled_km`
+
+#### Status & Energy Section
+- **API Endpoint**: Same dashboard summary endpoint
+- **Fields Used**:
+  - `vehicle_status_breakdown.available`
+  - `vehicle_status_breakdown.in_use`
+  - `vehicle_status_breakdown.maintenance`
+  - `energy_metrics.total_energy_consumed_kwh`
+  - `energy_metrics.average_efficiency_km_per_kwh`
+- **Visualization**: 
+  - Left panel: Pie chart showing vehicle status distribution
+  - Right panel: Energy metrics with gauge charts
+
+#### OBD Metrics Section
+- **API Endpoint**: Same dashboard summary endpoint
+- **Fields Used**:
+  - `obd_metrics.average_speed_kph`
+  - `obd_metrics.average_motor_temp_c`
+  - `obd_metrics.average_estimated_range_km`
+  - `obd_metrics.average_battery_voltage`
+  - `obd_metrics.average_tire_pressure_kpa`
+  - `obd_metrics.vehicles_reporting_errors`
+
+#### Diagnostics Section
+- **API Endpoint**: Same dashboard summary endpoint
+- **Fields Used**:
+  - `diagnostics.device_health.critical`
+  - `diagnostics.device_health.warning`
+  - `diagnostics.device_health.normal`
+  - `diagnostics.sim_cards.high_usage`
+  - `diagnostics.sim_cards.inactive`
+  - `diagnostics.sim_cards.normal`
+  - `diagnostics.battery_low_count`
+  - `diagnostics.battery_low_threshold` (percentage value)
+- **Visualization**:
+  - Donut charts for device health and SIM usage
+  - Badge/alert for battery health warnings
+
+#### Most Active Vehicle
+- **API Endpoint**: Same dashboard summary endpoint
+- **Fields Used**:
+  - `most_active_vehicle.id`
+  - `most_active_vehicle.license_plate`
+  - `most_active_vehicle.total_distance_km`
+- **Action**: "View Vehicle Details" button links to the vehicle detail page
+
+#### Vehicle Map
+- **Primary API**: `GET /api/fleet/vehicles/` with location fields
+- **Fields Used**:
+  - `last_known_location` (GeoJSON) or `latitude`/`longitude`
+- **Interactions**:
+  - Clickable pins show vehicle details in tooltip/popup
+  - Toggle heat map for better visualization of dense vehicle distributions
+  - Toggle clusters for grouping nearby vehicles
+  - Zoom/Reset controls for map navigation
+
+#### Fleet Telemetry Insights Section
+- **Primary APIs**:
+  - `GET /api/fleet/obd-telemetry/?aggregated=true` for fleet-wide statistics
+  - `GET /api/fleet/dashboard/summary/` for vehicle status overview
+  - `GET /api/fleet/vehicles/{id}/telemetry_data/` for top vehicle samples
+- **Fields Used**:
+  - Fleet Statistics: `averages.speed_kph`, `averages.battery_percent`, `vehicle_count`, etc.
+  - Vehicle Samples: `speed_data` and timestamps for 5 most active vehicles
+  - Status Overview: `vehicle_status_breakdown`, `online_vehicles`, `total_vehicles`
+- **Tab Interface**:
+  - Each tab (Speed, Battery, Temperature, Range) calls the same APIs but displays different metrics
+  - Speed tab shows speed metrics, battery tab shows battery metrics, etc.
+- **Charts**:
+  - Bar charts for top vehicle samples
+  - Text-based statistics for fleet-wide metrics
+  - Status overview for fleet health at a glance
+
+#### Data Tables
+- **Top Error Codes**:
+  - **API**: `GET /api/fleet/obd-telemetry/?top_errors=true&limit=10`
+  - Bar chart visualization of most frequent error codes
+  
+- **Recent Alerts Table**:
+  - **API**: `GET /api/fleet/alerts/?status=active`
+  - Columns: severity, title, vehicle, time
+  - Clickable rows to navigate to alert detail page
+  
+- **Active Trips Table**:
+  - **API**: `GET /api/fleet/trips/?status=in_progress`
+  - Columns: trip ID, vehicle, driver
+  - Clickable rows to navigate to trip detail page
+
+### Interaction Flow
+
+1. **On Page Load**:
+   - Fetch dashboard summary data with default date range (today)
+   - Load vehicle map with last known locations
+   - Fetch OBD telemetry aggregated statistics
+   - Fetch telemetry data for top 5 most active vehicles
+   - Fetch active alerts and trips for tables
+
+2. **Date Range Selection**:
+   - When user changes date range, refresh all data components
+   - Update all statistics with new date range data
+
+3. **Fleet Telemetry Tab Selection**:
+   - When a different telemetry metric tab is clicked:
+     - Display the corresponding metric from the already fetched data
+     - Update vehicle samples chart to show the selected metric
+     - Update statistics to highlight the selected metric
+
+4. **Map Interactions**:
+   - Click on vehicle pin to see vehicle info popup
+   - Toggle Heat Map to switch between individual pins and heat map view
+   - Toggle Clusters to group nearby vehicles for cleaner visualization
+   - Zoom/Reset controls for map navigation
+
+5. **Table Interactions**:
+   - Click on row in Recent Alerts table to navigate to alert details
+   - Click on row in Active Trips table to navigate to trip details
+   - "View All" buttons link to full listing pages
+
+### Refresh Rates
+- KPI cards: On date range change or every 5 minutes
+- Vehicle map: Every 30-60 seconds
+- Fleet telemetry insights: Every 2 minutes
+- Data tables: Every 30 seconds
+
+### Responsive Design
+- **Desktop**: Show all sections as displayed
+- **Tablet**: Stack sections vertically, maintain 2-column layout for cards
+- **Mobile**: Single column layout, collapsible sections

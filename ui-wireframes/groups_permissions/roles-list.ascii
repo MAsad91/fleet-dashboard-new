@@ -1,0 +1,99 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin                           [Today | 10d | 30d | 90d | 📅]   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ GROUPS                                                          │
+│──────────────│                                                                 │
+│   Dashboard  │ Groups                                      [+ New Group]       │
+│              │                                                                 │
+│   Vehicles   │ KPI CARDS                                                       │
+│   Drivers    │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐        │
+│   Driver Docs│ │ Total Groups   │ │ Total Users    │ │ Total Perms    │        │
+│   Trips      │ │                │ │                │ │                │        │
+│   Telemetry  │ │      12        │ │      54        │ │      187       │        │
+│   Alerts     │ └────────────────┘ └────────────────┘ └────────────────┘        │
+│   Alert Rules│                                                                 │
+│   OBD Devices│ FILTERS                                                         │
+│   SIM Cards  │ ┌────────────────────────────────────────────────────────────┐  │
+│   Maintenance│ │ 🔍 [Search by group name, description...]                    │  │
+│   Insurance  │ │                                                            │  │
+│   Dashcams   │ └────────────────────────────────────────────────────────────┘  │
+│   Firmware   │                                                                 │
+│   Analytics  │ GROUPS TABLE                                     [Open Permissions]│
+│   Driver Logs│ ┌────┬───────────────┬───────┬───────┬───────────────────────┐  │
+│   Performance│ │ ID │ Name          │ Users │ Perms │ Actions               │  │
+│   Settings   │ ├────┼───────────────┼───────┼───────┼───────────────────────┤  │
+│   Users      │ │ 1  │ Admins        │ 5     │ 87    │ [View] [Delete]       │  │
+│ ▶ Groups &   │ │ 2  │ Fleet Ops     │ 8     │ 23    │ [View] [Delete]       │  │
+│   Permissions│ │ 3  │ Support       │ 3     │ 11    │ [View] [Delete]       │  │
+│              │ │ 4  │ Technicians   │ 12    │ 15    │ [View] [Delete]       │  │
+│              │ │ 5  │ Drivers       │ 28    │ 5     │ [View] [Delete]       │  │
+│              │ │ 6  │ Managers      │ 6     │ 32    │ [View] [Delete]       │  │
+│              │ │ 7  │ Dispatchers   │ 4     │ 18    │ [View] [Delete]       │  │
+│              │ │ 8  │ Maintenance   │ 7     │ 21    │ [View] [Delete]       │  │
+│              │ └────┴───────────────┴───────┴───────┴───────────────────────┘  │
+│              │                                                                 │
+│              │ PAGINATION                                                      │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ Showing 1-12 of 12 groups                 Page 1/1 [◀][▶]  │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### KPI Cards Section
+- **API Endpoint**: `GET /api/users/groups/?page_size=1` (for count)
+- **API Endpoint**: `GET /api/users/users/?page_size=1` (for count)
+- **API Endpoint**: `GET /api/users/permissions/?page_size=1` (for count)
+- **Fields Used**:
+  - `count` - Total number of groups
+  - `count` - Total number of users
+  - `count` - Total number of permissions
+
+#### Filters
+- **Search Filter**:
+  - **API Parameter**: `search=<term>`
+  - **Implementation**: Searches group name and description
+  - **Note**: This is the only filtering mechanism needed for groups
+  - **User Interface**: Simple search box with magnifying glass icon
+
+#### Groups Table
+- **API Endpoint**: `GET /api/users/groups/`
+- **Query Parameters**: All applied filters
+- **Columns**:
+  - ID
+  - Name
+  - Users - Count from `GET /api/users/groups/{id}/users/`
+  - Perms - Count from `GET /api/users/groups/{id}/permissions/`
+  - Actions - View and Delete buttons
+  
+- **Row Actions**:
+  - View: Navigate to group detail page
+  - Delete: Delete the group
+
+### Actions
+- **Open Permissions**:
+  - **Navigation**: Takes user to permissions matrix page
+  - **Implementation**: Navigate to `/groups_permissions/permission-matrix.ascii`
+  
+- **New Group**:
+  - **API**: `POST /api/users/groups/`
+  - **Request Body**: `{"name": "Group Name"}`
+  - **Implementation**: Open modal for creating new group
+
+- **Delete Group**:
+  - **API**: `DELETE /api/users/groups/{id}/`
+  - **Implementation**: Confirm and delete group
+
+### API Alignment
+All endpoints used in this design match the auth_users.md documentation:
+- `GET /api/users/groups/` - List groups
+- `POST /api/users/groups/` - Create new group
+- `DELETE /api/users/groups/{id}/` - Delete group
+- `GET /api/users/groups/{id}/users/` - Get users in group
+- `GET /api/users/groups/{id}/permissions/` - Get group permissions

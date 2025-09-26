@@ -50,7 +50,7 @@ export default function DashcamsPage() {
     dashcam: videoSegmentFilters.dashcam,
   });
 
-  const { data: dashboardStatsData } = useGetDashcamsDashboardStatsQuery();
+  const { data: dashboardStatsData } = useGetDashcamsDashboardStatsQuery({ dateRange: 'today' });
   const { data: vehiclesData } = useListVehiclesQuery({ page: 1 });
 
   const [refreshApiKey] = useRefreshDashcamApiKeyMutation();

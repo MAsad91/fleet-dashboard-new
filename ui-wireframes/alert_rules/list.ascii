@@ -1,0 +1,113 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin                           [Today | 10d | 30d | 90d | 📅]   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ ALERT RULES                                                     │
+│──────────────│                                                                 │
+│   Dashboard  │ Alert Rules                                      [+ Create]     │
+│              │                                                                 │
+│   Vehicles   │ KPI CARDS                                                       │
+│   Drivers    │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌──────┐│
+│   Alerts     │ │ Total Rules    │ │ Active Rules   │ │ Inactive Rules │ │ Auto  ││
+▶ Alert Rules│ │                │ │                │ │                │ │Resolve││
+│   OBD Devices│ │      42        │ │      35        │ │       7        │ │  28   ││
+│   SIM Cards  │ └────────────────┘ └────────────────┘ └────────────────┘ └──────┘│
+│   Maintenance│                                                                 │
+│   Insurance  │ FILTERS                                                         │
+│   Dashcams   │ ┌────────────────────────────────────────────────────────────┐  │
+│   Analytics  │ │ Severity: [All ▾]      System:   [All ▾]                  │  │
+│   Performance│ └────────────────────────────────────────────────────────────┘  │
+│   Settings   │                                                                 │
+│   Users      │ ALERT RULES TABLE                                 [▢ Select All]│
+│   Groups &   │ ┌────┴────────────────┴────────┴──────┴─────────────┐ │
+│   Permissions│ │ □  │ Name              │ Severity │ Active │ System        │
+│              │ ├────┼────────────────┼────────┼──────┼─────────────┤ │
+│              │ │ ▢  │ High Motor Temp   │ 🔴 High   │   ✅    │ Motor         │
+│              │ │ ▢  │ Low Battery Alert │ 🟡 Medium │   ✅    │ Battery       │
+│              │ │ ▢  │ EngineOverheating│ 🔴 High   │   ✅    │ Engine        │
+│              │ │ ▢  │ Speed Violation   │ 🟢 Low    │   ❌    │ Vehicle       │
+│              │ │ ▢  │ Fuel Level Low    │ 🟡 Medium │   ✅    │ Fuel          │
+│              │ │ ▢  │ Tire Pressure     │ 🟡 Medium │   ✅    │ Tire          │
+│              │ │ ▢  │ OBD Offline Alert │ 🔴 High   │   ✅    │ Connectivity  │
+│              │ │ ▢  │ GPS Signal Lost   │ 🟡 Medium │   ✅    │ Location      │
+│              │ └────┴────────────────┴────────┴──────┴─────────────┘ │
+│              │                                                                 │
+│              │ ACTIONS                                                         │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ [Bulk Update] [Export List]                  Page 1/6 [◀][▶]│  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### KPI Cards Section
+- **API Endpoint**: Client-side computed from the alert rules list data
+- **Fields Used**:
+  - `total_rules` - Total count of alert rules
+  - `active_rules` - Count of rules with `is_active: true`
+  - `inactive_rules` - Count of rules with `is_active: false`
+  - `auto_resolve_count` - Count of rules with `auto_resolve: true`
+
+#### Filters
+- **Severity Filter**:
+  - **Options**: All, Critical, High, Medium, Low
+  - **Filter Parameter**: Client-side filter on `severity` field
+  
+- **System Filter**:
+  - **Options**: All, Motor, Battery, Engine, Vehicle, Fuel, Tire, Connectivity, Location, etc.
+  - **Filter Parameter**: Client-side filter on `system` field
+  
+- **Status Filter**:
+  - **Options**: All, Active, Inactive
+  - **Filter Parameter**: Client-side filter on `is_active` field
+  
+- **Search**:
+  - **Implementation**: Client-side search across rule names, descriptions, and vehicle types
+  - **UI**: Search box with magnifying glass icon
+  - **Note**: This is the primary way to filter by vehicle type information
+  
+- **Behind the Scenes**:
+  - Vehicle type filtering still possible through search functionality
+  - The search function now processes vehicle type information in alert rules
+
+#### Alert Rules Table
+- **API Endpoint**: `GET /api/fleet/alert-rules/`
+- **Columns**:
+  - Checkbox for selection
+  - Rule Name
+  - Severity (with color indicators)
+  - Active Status (checkmark/X)
+  - System
+  
+- **Status Indicators**:
+  - Severity: Critical/High (🔴 Red), Medium (🟡 Yellow), Low (🟢 Green)
+  - Active: Green checkmark (✅) or Red X (❌)
+
+- **Row Interaction**:
+  - Click on row to navigate to rule detail/edit page
+
+### Interaction Flow
+
+1. **On Page Load**:
+   - Fetch all alert rules with `GET /api/fleet/alert-rules/`
+   - Compute KPI card values client-side
+   - Initialize filters with default values
+
+2. **Filter Application**:
+   - When user selects filters and clicks Apply:
+     - Filter the existing rules list client-side
+     - Update KPI cards based on filtered data
+
+3. **Table Interactions**:
+   - Click on Edit button to navigate to rule detail/edit page
+   - Select checkboxes for bulk actions
+   - Sort columns by clicking on column headers
+
+4. **Bulk Actions**:
+   - Select multiple rules via checkboxes
+   - Apply bulk update to selected rules (activate/deactivate)
+   - Export selected rules data

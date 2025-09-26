@@ -1,12 +1,18 @@
 "use client";
 
 import { useDashboard } from "@/contexts/DashboardContext";
+import { useGetVehiclesDashboardStatsQuery } from "@/store/api/fleetApi";
 import { compactFormat } from "@/lib/format-number";
 import { FleetOverviewCard } from "./card";
 import * as icons from "./icons";
 
 export function FleetOverviewCards() {
-  const { summary, loading } = useDashboard();
+  const { summary, loading: dashboardLoading } = useDashboard();
+  const { data: vehiclesStats, isLoading: vehiclesLoading, error: vehiclesError } = useGetVehiclesDashboardStatsQuery({
+    dateRange: 'today'
+  });
+
+  const loading = dashboardLoading || vehiclesLoading;
 
   if (loading) {
     return (
@@ -30,44 +36,53 @@ export function FleetOverviewCards() {
 
   // Debug logging to identify the issue
   console.log('🔍 Fleet Overview Cards - Summary data:', summary);
+  console.log('🔍 Fleet Overview Cards - Vehicles stats:', vehiclesStats);
   console.log('🔍 Fleet Overview Cards - Online vehicles:', summary?.online_vehicles);
   console.log('🔍 Fleet Overview Cards - Type of online_vehicles:', typeof summary?.online_vehicles);
 
+  // Enhanced fleet data with vehicles dashboard stats - NO MOCK DATA
   const fleetData = {
     totalVehicles: { 
-      value: summary?.total_vehicles || 128, 
-      growthRate: null, // No growth rate from API
-      description: "Total fleet vehicles" 
+      value: vehiclesStats?.total_vehicles ?? summary?.total_vehicles ?? 0, 
+      growthRate: vehiclesStats?.vehicles_growth_rate || null,
+      description: "Total fleet vehicles",
+      hasData: (vehiclesStats?.total_vehicles !== undefined) || (summary?.total_vehicles !== undefined)
     },
     onlineVehicles: { 
-      value: summary?.online_vehicles ?? 114, // Use nullish coalescing to handle 0 values
-      growthRate: null, // No growth rate from API
-      description: "Currently online" 
+      value: vehiclesStats?.online_vehicles ?? summary?.online_vehicles ?? 0,
+      growthRate: vehiclesStats?.online_growth_rate || null,
+      description: "Currently online",
+      hasData: (vehiclesStats?.online_vehicles !== undefined) || (summary?.online_vehicles !== undefined)
     },
     activeTrips: { 
-      value: summary?.total_active_trips || 27, 
-      growthRate: null, // No growth rate from API
-      description: "Active trips" 
+      value: summary?.total_active_trips ?? 0, 
+      growthRate: null,
+      description: "Active trips",
+      hasData: summary?.total_active_trips !== undefined
     },
     criticalAlerts: { 
-      value: summary?.critical_alerts || 3, 
-      growthRate: null, // No growth rate from API
-      description: "Critical alerts" 
+      value: summary?.critical_alerts ?? 0,
+      growthRate: null,
+      description: "Critical alerts",
+      hasData: summary?.critical_alerts !== undefined
     },
     openMaintenance: { 
-      value: summary?.open_maintenance || 6, 
-      growthRate: null, // No growth rate from API
-      description: "Open maintenance" 
+      value: vehiclesStats?.maintenance_vehicles ?? summary?.open_maintenance ?? 0, 
+      growthRate: vehiclesStats?.maintenance_growth_rate || null,
+      description: "Open maintenance",
+      hasData: (vehiclesStats?.maintenance_vehicles !== undefined) || (summary?.open_maintenance !== undefined)
     },
     avgBattery: { 
-      value: summary?.average_battery_level || 78, 
-      growthRate: null, // No growth rate from API
-      description: "Average battery level" 
+      value: vehiclesStats?.average_battery_level ?? summary?.average_battery_level ?? 0, 
+      growthRate: vehiclesStats?.battery_growth_rate || null,
+      description: "Average battery level",
+      hasData: (vehiclesStats?.average_battery_level !== undefined) || (summary?.average_battery_level !== undefined)
     },
     totalDistance: { 
-      value: summary?.total_distance_travelled_km || 154230, 
-      growthRate: null, // No growth rate from API
-      description: "Total distance (km)" 
+      value: vehiclesStats?.total_distance_km ?? summary?.total_distance_travelled_km ?? 0, 
+      growthRate: vehiclesStats?.distance_growth_rate || null,
+      description: "Total distance (km)",
+      hasData: (vehiclesStats?.total_distance_km !== undefined) || (summary?.total_distance_travelled_km !== undefined)
     },
   };
 

@@ -1,0 +1,178 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin > OBD Devices > Create Device                                 [👤]│
+├────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                │
+│ CREATE OBD DEVICE                                                              │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ Device Information                                                        │ │
+│ ├────────────────────────────────────────────────────────────────────────────┤ │
+│ │                                                                            │ │
+│ │ Device ID*                                Model*                           │ │
+│ │ ┌─────────────────────────────┐           ┌─────────────────────────┐     │ │
+│ │ │                             │           │                         │     │ │
+│ │ └─────────────────────────────┘           └─────────────────────────┘     │ │
+│ │ Example: OBD-T2-001                       Example: TelemX T2              │ │
+│ │                                                                            │ │
+│ │ Serial Number*                            CAN Baud Rate*                   │ │
+│ │ ┌─────────────────────────────┐           ┌─────────────────────────┐     │ │
+│ │ │                             │           │                         │     │ │
+│ │ └─────────────────────────────┘           └─────────────────────────┘     │ │
+│ │ Example: SN-0001                          Example: 500000                 │ │
+│ │                                                                            │ │
+│ │ Report Interval (sec)*                    Firmware Version*                │ │
+│ │ ┌─────────────────────────────┐           ┌─────────────────────────┐     │ │
+│ │ │                             │           │                         │     │ │
+│ │ └─────────────────────────────┘           └─────────────────────────┘     │ │
+│ │ Example: 60                              Example: v1.2.3                  │ │
+│ │                                                                            │ │
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ Assignment                                                                │ │
+│ ├────────────────────────────────────────────────────────────────────────────┤ │
+│ │                                                                            │ │
+│ │ Fleet Operator*                                                           │ │
+│ │ ┌─────────────────────────────────────────────┐                           │ │
+│ │ │ Acme Logistics                            ▾ │                           │ │
+│ │ └─────────────────────────────────────────────┘                           │ │
+│ │ Note: Pre-selected for non-admin users                                    │ │
+│ │                                                                            │ │
+│ │ Vehicle*                                                                   │ │
+│ │ ┌─────────────────────────────────────────────┐                           │ │
+│ │ │ Select Vehicle...                         ▾ │                           │ │
+│ │ └─────────────────────────────────────────────┘                           │ │
+│ │ Note: Only shows vehicles without OBD devices                              │ │
+│ │                                                                            │ │
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ Status                                                                    │ │
+│ ├────────────────────────────────────────────────────────────────────────────┤ │
+│ │                                                                            │ │
+│ │ [✓] Device is active                                                      │ │
+│ │                                                                            │ │
+│ │ Note: The installed_at and last_communication_at fields are set automatically│ │
+│ │ when the device is created. SIM cards are managed separately.              │ │
+│ │                                                                            │ │
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│                                         [Cancel]   [Create Device]             │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### Device Information
+
+- **Device ID*** (text):
+  - **Validation**: Must be unique
+  - **Format**: Typically follows pattern like "OBD-{MODEL}-{SEQ}"
+  - **Example**: OBD-T2-001
+
+- **Model*** (text):
+  - **Description**: Device model name
+  - **Example**: TelemX T2
+
+- **Serial Number*** (text):
+  - **Validation**: Must be unique
+  - **Format**: Manufacturer-specific serial number
+  - **Example**: SN-0001
+
+- **CAN Baud Rate*** (number):
+  - **Description**: Controller Area Network baud rate
+  - **Common Values**: 125000, 250000, 500000 (most common), 1000000
+  - **Example**: 500000
+
+- **Report Interval (sec)*** (number):
+  - **Description**: How often the device reports telemetry data
+  - **Validation**: Positive integer
+  - **Example**: 60 (1 minute)
+
+- **Firmware Version*** (text):
+  - **Description**: Current firmware version on the device
+  - **Format**: Typically follows semantic versioning
+  - **Example**: v1.2.3
+
+#### Assignment
+
+- **Fleet Operator*** (dropdown):
+  - **API**: `GET /api/fleet/fleet-operators/`
+  - **Pre-selection**: Current user's fleet operator
+  - **Behavior**: Non-admin users have this pre-selected and disabled
+
+- **Vehicle*** (searchable dropdown):
+  - **API**: `GET /api/fleet/vehicles/?fleet={fleet_operator_id}&has_obd=false`
+  - **Display**: License plate, make, model
+  - **Notes**: Only shows vehicles without already assigned OBD devices
+
+#### Status
+
+- **Device is active** (checkbox):
+  - **Description**: Whether the device is currently active
+  - **Default**: Checked
+  - **Field**: is_active
+
+### Form Submission
+
+- **API Endpoint**: `POST /api/fleet/obd-devices/`
+- **Request Body**:
+  ```json
+  {
+    "device_id": "OBD-T2-001",
+    "model": "TelemX T2",
+    "serial_number": "SN-0001",
+    "can_baud_rate": 500000,
+    "report_interval_sec": 60,
+    "vehicle": 5,
+    "is_active": true,
+    "firmware_version": "1.2.3"
+  }
+  ```
+
+- **Notes**:
+  - Read-only fields (`installed_at`, `last_communication_at`, `fleet_operator`) are not included in the request
+  - `fleet_operator` is determined server-side from the selected vehicle
+  - SIM card association is managed separately via SIM Cards module
+
+### Edit Form Behavior
+
+When using the same form for editing:
+
+- **API Endpoint**: `PUT/PATCH /api/fleet/obd-devices/{id}/`
+- **Pre-population**: Fetch device details and populate all form fields
+- **Read-Only Fields**: Some fields may be read-only in edit mode, such as device_id
+- **Button Label**: Change to "Update Device"
+
+### Dependent Dropdowns
+
+- When fleet operator changes, reload the vehicle dropdown with vehicles from that fleet
+- If a non-admin user, fleet operator is pre-selected and disabled
+
+### Validation Rules
+
+- **Required Fields**: All fields marked with * are required
+- **Device ID**: Must be unique
+- **Serial Number**: Must be unique
+- **CAN Baud Rate**: Must be a valid positive integer
+- **Report Interval**: Must be a positive integer
+- **Firmware Version**: Should follow valid version format
+
+### User Experience
+
+- **Form Layout**: Group related fields together in sections
+- **Field Order**: Arrange from most to least important
+- **Help Text**: Provide examples for complex fields
+- **Error Messages**: Display inline with fields
+- **Required Fields**: Visually indicate which fields are required
+- **Tooltips**: Provide additional information for technical fields
+
+### After Submission
+
+- **Success**: Redirect to device detail page with success message
+- **Error**: Show validation errors inline with fields and summary at top
+- **Next Steps**: Prompt user to associate a SIM card if needed

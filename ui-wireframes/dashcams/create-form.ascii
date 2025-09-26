@@ -1,0 +1,252 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin > Dashcams > Add Dashcam                                      [👤]│
+├────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                │
+│ ADD DASHCAM                                                                    │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ Device Information                                                        │ │
+│ ├────────────────────────────────────────────────────────────────────────────┤ │
+│ │                                                                            │ │
+│ │ Device ID*                              Model*                             │ │
+│ │ ┌─────────────────────────┐             ┌─────────────────────────┐       │ │
+│ │ │                         │             │ Select Model...        ▾ │       │ │
+│ │ └─────────────────────────┘             └─────────────────────────┘       │ │
+│ │ Example: DASH-001                        Options: DashPro X, DashMax S    │ │
+│ │                                                                            │ │
+│ │ Serial Number*                          Firmware Version                   │ │
+│ │ ┌─────────────────────────┐             ┌─────────────────────────┐       │ │
+│ │ │                         │             │                         │       │ │
+│ │ └─────────────────────────┘             └─────────────────────────┘       │ │
+│ │ Example: DP-X2023-4567                   Example: v2.5.3 (auto-detected)   │ │
+│ │                                                                            │ │
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ Vehicle & Installation                                                    │ │
+│ ├────────────────────────────────────────────────────────────────────────────┤ │
+│ │                                                                            │ │
+│ │ Vehicle*                                Fleet Operator*                    │ │
+│ │ ┌─────────────────────────────────────┐ ┌─────────────────────────┐       │ │
+│ │ │ Select Vehicle...                 ▾ │ │ Acme Logistics        ▾ │       │ │
+│ │ └─────────────────────────────────────┘ └─────────────────────────┘       │ │
+│ │ Note: Select vehicle to install dashcam   Pre-selected for non-admin users  │ │
+│ │                                                                            │ │
+│ │ Installation Date*                      Installation Position              │ │
+│ │ ┌─────────────────────────┐             ┌─────────────────────────┐       │ │
+│ │ │ YYYY-MM-DD              │             │ Front Windshield      ▾ │       │ │
+│ │ └─────────────────────────┘             └─────────────────────────┘       │ │
+│ │                                          Options: Front, Rear, Cabin      │ │
+│ │                                                                            │ │
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ Connectivity                                                              │ │
+│ ├────────────────────────────────────────────────────────────────────────────┤ │
+│ │                                                                            │ │
+│ │ Connection Type*                        IP Address                         │ │
+│ │ ┌─────────────────────────┐             ┌─────────────────────────┐       │ │
+│ │ │ 4G                    ▾ │             │                         │       │ │
+│ │ └─────────────────────────┘             └─────────────────────────┘       │ │
+│ │ Options: 4G, WiFi, Ethernet              Example: 10.0.14.23 (if static)   │ │
+│ │                                                                            │ │
+│ │ SIM Card                                                                   │ │
+│ │ ┌─────────────────────────────────────────────┐                           │ │
+│ │ │ Select SIM Card...                        ▾ │                           │ │
+│ │ └─────────────────────────────────────────────┘                           │ │
+│ │ Note: Only needed for 4G connection. Shows available SIM cards             │ │
+│ │                                                                            │ │
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ Recording Configuration                                                   │ │
+│ ├────────────────────────────────────────────────────────────────────────────┤ │
+│ │                                                                            │ │
+│ │ Recording Mode*                         Resolution*                        │ │
+│ │ ┌─────────────────────────┐             ┌─────────────────────────┐       │ │
+│ │ │ Continuous           ▾ │             │ 1080p                 ▾ │       │ │
+│ │ └─────────────────────────┘             └─────────────────────────┘       │ │
+│ │ Options: Continuous, Motion, Scheduled    Options: 720p, 1080p, 1440p, 4K  │ │
+│ │                                                                            │ │
+│ │ Frame Rate*                             Quality*                           │ │
+│ │ ┌─────────────────────────┐             ┌─────────────────────────┐       │ │
+│ │ │ 30                   fps│             │ High                  ▾ │       │ │
+│ │ └─────────────────────────┘             └─────────────────────────┘       │ │
+│ │ Options: 15, 30, 60                      Options: Low, Medium, High       │ │
+│ │                                                                            │ │
+│ │ Storage Capacity*                                                          │ │
+│ │ ┌─────────────────────────┐                                               │ │
+│ │ │ 160                  GB │                                               │ │
+│ │ └─────────────────────────┘                                               │ │
+│ │ Options: 32, 64, 128, 160, 256, 512 GB                                     │ │
+│ │                                                                            │ │
+│ │ Additional Features                                                        │ │
+│ │ [✓] Night Vision          [ ] Audio Recording        [✓] Motion Detection  │ │
+│ │ [✓] Auto Upload           [ ] GPS Tagging            [✓] Tamper Alert     │ │
+│ │                                                                            │ │
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│                                         [Cancel]   [Add Dashcam]               │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### Device Information
+
+- **Device ID*** (text):
+  - **Validation**: Must be unique
+  - **Format**: Typically follows pattern like "DASH-{SEQ}"
+  - **Example**: DASH-001
+
+- **Model*** (dropdown):
+  - **API**: `GET /api/fleet/dashcams/models/` (if implemented)
+  - **Alternative**: Hardcoded list of supported models
+  - **Options**: DashPro X, DashMax S, etc.
+
+- **Serial Number*** (text):
+  - **Validation**: Must be unique
+  - **Format**: Manufacturer-specific serial number
+  - **Example**: DP-X2023-4567
+
+- **Firmware Version** (text, read-only):
+  - **Description**: Auto-detected from device if available
+  - **Example**: v2.5.3
+
+#### Vehicle & Installation
+
+- **Vehicle*** (searchable dropdown):
+  - **API**: `GET /api/fleet/vehicles/?has_dashcam=false`
+  - **Display**: License plate, make, model
+  - **Behavior**: When selected, auto-fills fleet operator
+
+- **Fleet Operator*** (dropdown):
+  - **API**: `GET /api/fleet/fleet-operators/`
+  - **Pre-selection**: Based on selected vehicle
+  - **Behavior**: Non-admin users have this pre-selected and disabled
+
+- **Installation Date*** (date picker):
+  - **Format**: YYYY-MM-DD
+  - **Validation**: Valid date
+  - **Default**: Current date
+
+- **Installation Position** (dropdown):
+  - **Options**: Front Windshield, Rear Windshield, Cabin
+  - **Default**: Front Windshield
+
+#### Connectivity
+
+- **Connection Type*** (dropdown):
+  - **Options**: 4G, WiFi, Ethernet
+  - **Default**: 4G
+  - **Behavior**: When "4G" selected, show SIM Card field
+
+- **IP Address** (text):
+  - **Validation**: Valid IP format if provided
+  - **Description**: Only needed if using static IP
+  - **Example**: 10.0.14.23
+
+- **SIM Card** (dropdown):
+  - **API**: `GET /api/fleet/sim-cards/?is_assigned=false`
+  - **Display**: SIM ID, provider
+  - **Visibility**: Only shown when Connection Type is "4G"
+
+#### Recording Configuration
+
+- **Recording Mode*** (dropdown):
+  - **Options**: Continuous, Motion, Scheduled
+  - **Default**: Continuous
+
+- **Resolution*** (dropdown):
+  - **Options**: 720p, 1080p, 1440p, 4K
+  - **Default**: 1080p
+
+- **Frame Rate*** (number):
+  - **Options**: 15, 30, 60
+  - **Default**: 30
+  - **Unit**: fps (frames per second)
+
+- **Quality*** (dropdown):
+  - **Options**: Low, Medium, High
+  - **Default**: High
+
+- **Storage Capacity*** (number):
+  - **Validation**: One of the standard storage sizes
+  - **Options**: 32, 64, 128, 160, 256, 512
+  - **Unit**: GB
+
+- **Additional Features** (checkboxes):
+  - **Night Vision**: Enhanced low-light recording
+  - **Audio Recording**: Record audio with video
+  - **Motion Detection**: Activate recording on motion
+  - **Auto Upload**: Automatically upload footage
+  - **GPS Tagging**: Include GPS coordinates
+  - **Tamper Alert**: Notify if dashcam is tampered with
+
+### Form Submission
+
+- **API Endpoint**: `POST /api/fleet/dashcams/`
+- **Request Body**:
+  ```json
+  {
+    "device_id": "DASH-001",
+    "model": "DashPro X",
+    "serial_number": "DP-X2023-4567",
+    "firmware_version": "v2.5.3",
+    "vehicle": 5,
+    "fleet_operator": 1,
+    "installation_date": "2025-09-25",
+    "installation_position": "Front Windshield",
+    "connection_type": "4G",
+    "ip_address": "10.0.14.23",
+    "sim_card": 87,
+    "recording_mode": "Continuous",
+    "resolution": "1080p",
+    "frame_rate": 30,
+    "quality": "High",
+    "storage_capacity_gb": 160,
+    "night_vision": true,
+    "audio_recording": false,
+    "motion_detection": true,
+    "auto_upload": true,
+    "gps_tagging": false,
+    "tamper_alert": true
+  }
+  ```
+
+### Edit Form Behavior
+
+When using the same form for editing:
+
+- **API Endpoint**: `PUT/PATCH /api/fleet/dashcams/{id}/`
+- **Pre-population**: Fetch dashcam details and populate all form fields
+- **Read-Only Fields**: Some fields may be read-only in edit mode, such as device_id, serial_number
+- **Button Label**: Change to "Update Dashcam"
+
+### Validation Rules
+
+- **Required Fields**: All fields marked with * are required
+- **Device ID**: Must be unique
+- **Serial Number**: Must be unique
+- **Vehicle**: Must not already have a dashcam assigned
+- **Storage Capacity**: Must be one of the standard sizes
+- **Frame Rate**: Must be one of the standard rates
+
+### User Experience
+
+- **Form Layout**: Group related fields together in sections
+- **Field Order**: Arrange from most to least important
+- **Help Text**: Provide examples for complex fields
+- **Error Messages**: Display inline with fields
+- **Required Fields**: Visually indicate which fields are required
+- **Dependent Fields**: Show/hide fields based on other selections
+
+### After Submission
+
+- **Success**: Redirect to dashcam detail page with success message
+- **Error**: Show validation errors inline with fields and summary at top
+- **Next Steps**: Provide guidance on dashcam setup and configuration

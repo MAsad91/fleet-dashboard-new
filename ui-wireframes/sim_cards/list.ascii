@@ -1,0 +1,122 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin                           [Today | 10d | 30d | 90d | 📅]   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ SIM CARDS                                                       │
+│──────────────│                                                                 │
+│   Dashboard  │ SIM Cards                                        [+ Create]     │
+│              │                                                                 │
+│   Vehicles   │ KPI CARDS                                                       │
+│   Drivers    │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐        │
+│   Driver Docs│ │ Total SIMs     │ │ Active SIMs    │ │ Data Usage     │        │
+│   Trips      │ │                │ │                │ │                │        │
+│   Telemetry  │ │     135        │ │     128        │ │   345.7 GB     │        │
+│   Alerts     │ └────────────────┘ └────────────────┘ └────────────────┘        │
+│   Alert Rules│                                                                 │
+│   OBD Devices│ FILTERS                                                         │
+│ ▶ SIM Cards  │ ┌────────────────────────────────────────────────────────────┐  │
+│   Maintenance│ │ 🔍 [Search by SIM ID, ICCID, device ID...]                │  │
+│   Insurance  │ │ Status:    [All ▾]      Plan:      [All ▾]               │  │
+│   Dashcams   │ │ Provider:  [All ▾]                               [Apply] │  │
+│   Firmware   │ └────────────────────────────────────────────────────────────┘  │
+│   Analytics  │                                                                 │
+│   Driver Logs│ SIM CARDS TABLE                                   [▢ Select All]│
+│   Performance│ ┌────┬─────────┬──────────────┬────────┬─────────┬────────┬────────┐ │
+│   Settings   │ │ ▢  │ SIM ID  │ ICCID        │ Status │ Plan    │ Usage  │ Device │ │
+│   Users      │ ├────┼─────────┼──────────────┼────────┼─────────┼────────┼────────┤ │
+│   Groups &   │ │ ▢  │ SIM-001 │ 8999010...   │ Active │ 5GB     │ 2.7/5  │ OBD-001│ │
+│   Permissions│ │ ▢  │ SIM-002 │ 8999010...   │ Active │ 10GB    │ 5.3/10 │ OBD-002│ │
+│              │ │ ▢  │ SIM-003 │ 8999010...   │ Active │ 2GB     │ 1.9/2  │ OBD-003│ │
+│              │ │ ▢  │ SIM-004 │ 8999010...   │ Suspend│ 5GB     │ 0/5    │ OBD-004│ │
+│              │ │ ▢  │ SIM-005 │ 8999010...   │ Active │ 5GB     │ 3.2/5  │ OBD-005│ │
+│              │ │ ▢  │ SIM-006 │ 8999010...   │ Active │ 10GB    │ 4.8/10 │ OBD-006│ │
+│              │ │ ▢  │ SIM-007 │ 8999010...   │ Suspend│ 2GB     │ 0/2    │ OBD-007│ │
+│              │ │ ▢  │ SIM-008 │ 8999010...   │ Active │ 5GB     │ 4.9/5  │ OBD-008│ │
+│              │ └────┴─────────┴──────────────┴────────┴─────────┴────────┴────────┘ │
+│              │                                                                 │
+│              │ ACTIONS                                                         │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ [Activate Selected] [Suspend Selected] [Export]  Page 1/17 [◀][▶]│ │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### KPI Cards Section
+- **API Endpoint**: `GET /api/fleet/sim-cards/summary/`
+- **Fields Used**:
+  - `count` - Total number of SIM cards
+  - `active_count` - Number of active SIM cards (status = active)
+  - `total_data_used_gb` - Total data usage across all SIM cards
+
+#### Filters
+- **Status Filter**:
+  - **Options**: All, Active, Inactive, Suspended
+  - **Implementation**: Client-side filtering based on `status` field
+  
+- **Plan Filter**:
+  - **Options**: All, plan names from distinct values
+  - **Implementation**: Client-side search by substring in `plan_name` field
+  
+- **Provider Filter**:
+  - **Options**: All, provider names from distinct values
+  - **Implementation**: Client-side filtering
+  
+- **Search**:
+  - **Query Parameter**: `search=<term>`
+  - **Implementation**: Client-side search across SIM ID, ICCID, and associated device fields
+  - **Note**: This is the primary way to filter by device association
+
+#### SIM Cards Table
+- **API Endpoint**: `GET /api/fleet/sim-cards/`
+- **Columns**:
+  - Checkbox for selection
+  - SIM ID
+  - ICCID
+  - Status
+  - Plan
+  - Usage
+  - Associated Device
+  
+- **Row Indicators**:
+  - Highlight rows where data usage exceeds threshold (overage)
+  - Color-code status (Active = green, Suspended = orange, Inactive = gray)
+
+#### Bulk Actions
+- **Activate Selected**:
+  - **API**: `POST /api/fleet/sim-cards/{id}/activate/` (executed for each selected SIM)
+  - **Permissions**: Admin only
+  
+- **Suspend Selected**:
+  - **API**: `POST /api/fleet/sim-cards/{id}/suspend/` (executed for each selected SIM)
+  - **Permissions**: Admin only
+  
+- **Export**:
+  - **Implementation**: Generate CSV of selected SIM cards or all filtered SIMs
+
+### Interaction Flow
+
+1. **On Page Load**:
+   - Fetch SIM card summary stats from API
+   - Fetch SIM card list with default filters
+   - Apply visual indicators for status and usage thresholds
+
+2. **Filter Application**:
+   - When user selects filters and clicks Apply:
+     - Apply client-side filtering based on selected criteria
+     - Update SIM cards table with filtered results
+
+3. **Table Interactions**:
+   - Click on SIM card row to navigate to SIM card detail view
+   - Select checkboxes to enable bulk actions
+   - Sort columns by clicking on column headers
+
+4. **Bulk Actions**:
+   - Select multiple SIM cards via checkboxes
+   - Apply activate/suspend action to selected SIM cards
+   - Export selected SIM cards data

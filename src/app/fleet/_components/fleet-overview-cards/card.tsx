@@ -8,6 +8,7 @@ type PropsType = {
     value: number | string;
     growthRate: number | null;
     description?: string;
+    hasData?: boolean;
   };
   Icon: (props: SVGProps<SVGSVGElement>) => JSX.Element;
 };
@@ -31,12 +32,20 @@ export function FleetOverviewCard({ label, data, Icon }: PropsType) {
       <div className="space-y-3">
         {/* Main metric */}
         <div className="text-3xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
-          {data.value}
+          {data.hasData === false ? (
+            <span className="text-gray-400 dark:text-gray-500 text-lg">No data</span>
+          ) : (
+            data.value
+          )}
         </div>
 
         {/* Description */}
         <div className="text-sm text-gray-600 dark:text-gray-400">
-          {data.description || label}
+          {data.hasData === false ? (
+            <span className="text-gray-400 dark:text-gray-500">Data not available</span>
+          ) : (
+            data.description || label
+          )}
         </div>
 
         {/* Growth indicator - only show if growth rate is available */}

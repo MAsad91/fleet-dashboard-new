@@ -1,0 +1,137 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin > Driver Logs > Log Detail                                    [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ DRIVER LOG DETAIL                                               │
+│──────────────│                                                                 │
+│   Dashboard  │ [◀ Back]  Log #87625493                                        │
+│              │ Driver: Jane Doe   Trip: T-2025-98   Time: 13:45:22             │
+│   Vehicles   │                                                                 │
+│   Drivers    │                                                                 │
+│   Driver Docs│ LOG ENTRY INFORMATION                                           │
+│   Trips      │ ┌────────────────────────────────────────────────────────────┐  │
+│   Telemetry  │ │ BASIC INFORMATION                                          │  │
+│   Alerts     │ │                                                            │  │
+│   Alert Rules│ │ • Log ID: 87625493                                         │  │
+│   OBD Devices│ │ • Timestamp: 2025-09-25 13:45:22                           │  │
+│   SIM Cards  │ │ • Trip: T-2025-98   [View Trip]                            │  │
+│   Maintenance│ │ • Driver: Jane Doe  [View Driver]                           │  │
+│   Insurance  │ │ • Vehicle: EV-9812  [View Vehicle]                          │  │
+│   Dashcams   │ │ • Event Type: None (Regular Log)                           │  │
+│   Firmware   │ │                                                            │  │
+│   Analytics  │ │ LOCATION DATA                                              │  │
+│ ▶ Driver Logs│ │                                                            │  │
+│   Performance│ │ • Coordinates: 17.4129° N, 78.2698° E                      │  │
+│   Settings   │ │ • Nearest Address: Gachibowli Main Road, Hyderabad         │  │
+│   Users      │ │ • Heading: 235° (Southwest)                                │  │
+│   Groups &   │ │                                                            │  │
+│   Permissions│ │ VEHICLE METRICS                                            │  │
+│              │ │                                                            │  │
+│              │ │ • Speed: 54 km/h                                           │  │
+│              │ │ • Acceleration: 0.2 m/s²                                   │  │
+│              │ │ • Battery Level: 78%                                       │  │
+│              │ │ • Engine Status: Running                                   │  │
+│              │ │ • Distance from Start: 42.5 km                             │  │
+│              │ │ • Time Elapsed: 1h 15m                                     │  │
+│              │ │                                                            │  │
+│              │ │ RELATED TELEMETRY                                          │  │
+│              │ │                                                            │  │
+│              │ │ • OBD Device: OBD-T2-001                                   │  │
+│              │ │ • Telemetry Record: #10278543  [View Telemetry]            │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ LOCATION MAP                                                    │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │                                                            │  │
+│              │ │                                                            │  │
+│              │ │                      •                                     │  │
+│              │ │                     /                                      │  │
+│              │ │                    /                                       │  │
+│              │ │                   •                                        │  │
+│              │ │                  /                                         │  │
+│              │ │                 /                                          │  │
+│              │ │                •                                           │  │
+│              │ │                                                            │  │
+│              │ │                                                            │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ RELATED LOGS                                                    │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ TIME       EVENT       LOCATION                            │  │
+│              │ │ ───────── ─────────── ────────────────────────────────────  │  │
+│              │ │ 13:45:22  -           Gachibowli Main Road     [Current]   │  │
+│              │ │ 13:30:15  -           Kothaguda Junction       [View]      │  │
+│              │ │ 13:15:05  -           HITEC City                [View]      │  │
+│              │ │ 13:00:10  -           Madhapur                 [View]      │  │
+│              │ │ 12:45:22  -           Jubilee Hills             [View]      │  │
+│              │ │ 12:30:15  -           Banjara Hills             [View]      │  │
+│              │ │ 12:15:00  Start       Madhapur                 [View]      │  │
+│              │ │                                                            │  │
+│              │ │ [View All Trip Logs]                                       │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### Log Detail Information
+- **API Endpoint**: `GET /api/fleet/driver-logs/{id}/`
+- **Fields Used**:
+  - `id` - Log ID
+  - `timestamp` - Log timestamp
+  - `driver` - Associated driver (object with id, name, etc.)
+  - `trip` - Associated trip (object with id, trip_id, etc.)
+  - `vehicle` - Associated vehicle (object with id, plate, etc.)
+  - `event_type` - Type of event (if any)
+  - `coordinates` - GeoJSON coordinates
+  - `nearest_address` - Geocoded address (if available)
+  - `heading` - Direction in degrees
+  - `speed_kph` - Speed in km/h
+  - `acceleration` - Acceleration in m/s²
+  - `battery_level` - Vehicle battery level
+  - `engine_status` - Engine status
+  - `distance_from_start` - Distance from trip start
+  - `time_elapsed` - Time elapsed since trip start
+  - `obd_device` - Associated OBD device
+  - `telemetry_record` - Associated telemetry record
+
+#### Related Logs
+- **API Endpoint**: `GET /api/fleet/driver-logs/?trip={trip_id}`
+- **Query Parameters**: `limit=10&sort=timestamp`
+- **Purpose**: Show other logs from the same trip
+
+#### Location Map
+- **API Endpoint**: `GET /api/fleet/driver-logs/trip-path/?trip={trip_id}`
+- **Display**: Show path with current log position highlighted
+- **Features**: Map with path line and markers for significant events
+
+### Interaction Flow
+
+1. **On Page Load**:
+   - Fetch log details from `GET /api/fleet/driver-logs/{id}/`
+   - Load related logs from the same trip
+   - Load trip path for the map
+
+2. **Navigation Actions**:
+   - Back button: Return to driver logs list
+   - View Trip: Navigate to trip detail page
+   - View Driver: Navigate to driver detail page
+   - View Vehicle: Navigate to vehicle detail page
+   - View Telemetry: Navigate to associated telemetry record
+   - View related logs: Navigate to those log entries
+
+3. **Related Logs Navigation**:
+   - Current log is highlighted
+   - Other logs from the same trip shown in chronological order
+   - View All Trip Logs navigates to logs list filtered by trip
+
+### Visual Design
+
+- **Organization**: Information grouped by logical categories
+- **Highlighting**: Current log entry clearly marked
+- **Context**: Related information (trip, driver, vehicle) easily accessible
+- **Spatial awareness**: Map shows position in relation to trip path

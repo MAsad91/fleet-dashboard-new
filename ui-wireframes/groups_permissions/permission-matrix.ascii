@@ -1,0 +1,117 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin                           [Today | 10d | 30d | 90d | 📅]   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ PERMISSIONS                                                     │
+│──────────────│                                                                 │
+│   Dashboard  │ Permissions                                   [Assign to Group] │
+│              │                                                                 │
+│   Vehicles   │ KPI CARDS                                                       │
+│   Drivers    │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐        │
+│   Driver Docs│ │ Total Perms    │ │ Apps           │ │ Models         │        │
+│   Trips      │ │                │ │                │ │                │        │
+│   Telemetry  │ │     187        │ │      8         │ │      24        │        │
+│   Alerts     │ └────────────────┘ └────────────────┘ └────────────────┘        │
+│   Alert Rules│                                                                 │
+│   OBD Devices│ FILTERS                                                         │
+│   SIM Cards  │ ┌────────────────────────────────────────────────────────────┐  │
+│   Maintenance│ │ 🔍 [Search by permission name or codename...]              │  │
+│   Insurance  │ │ App:      [All ▾]      Model:    [All ▾]                   │  │
+│   Dashcams   │ │ Action:   [All ▾]                             [Apply]      │  │
+│   Firmware   │ └────────────────────────────────────────────────────────────┘  │
+│   Analytics  │                                                                 │
+│   Driver Logs│ PERMISSIONS TABLE                               [▢ Select All]  │
+│   Performance│ ┌────┬────┬──────────────────────┬────────┬────────┬───────────┐│
+│   Settings   │ │ ▢  │ ID │ Name                 │ App    │ Model  │ Codename  ││
+│   Users      │ ├────┼────┼──────────────────────┼────────┼────────┼───────────┤│
+│ ▶ Groups &   │ │ ▢  │ 12 │ Can add vehicle      │ fleet  │ vehicle│add_vehicle││
+│   Permissions│ │ ▢  │ 13 │ Can change vehicle   │ fleet  │ vehicle│change_veh.││
+│              │ │ ▢  │ 14 │ Can delete vehicle   │ fleet  │ vehicle│delete_veh.││
+│              │ │ ▢  │ 15 │ Can view vehicle     │ fleet  │ vehicle│view_vehic.││
+│              │ │ ▢  │ 21 │ Can add driver       │ fleet  │ driver │add_driver ││
+│              │ │ ▢  │ 22 │ Can change driver    │ fleet  │ driver │change_driv││
+│              │ │ ▢  │ 23 │ Can delete driver    │ fleet  │ driver │delete_driv││
+│              │ │ ▢  │ 24 │ Can view driver      │ fleet  │ driver │view_driver││
+│              │ └────┴────┴──────────────────────┴────────┴────────┴───────────┘│
+│              │                                                                 │
+│              │ ACTIONS                                                         │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ With selected: [Assign to Group ▾]       Page 1/8 [◀][▶]   │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### KPI Cards Section
+- **API Endpoint**: `GET /api/users/permissions/?page_size=1` (for count)
+- **Fields Used**:
+  - `count` - Total number of permissions
+  - Number of distinct apps (content_type_app)
+  - Number of distinct models (content_type_model)
+
+#### Filters
+- **Search Filter**:
+  - **API Parameter**: `search=<term>`
+  - **Implementation**: Searches permission name or codename
+  
+- **App Filter**:
+  - **API Parameter**: `app_label=<app>`
+  - **Values**: All, fleet, users, auth, etc.
+  
+- **Model Filter**:
+  - **API Parameter**: `model=<model>`
+  - **Values**: All, vehicle, driver, user, etc.
+  
+- **Action Filter**:
+  - **Filter**: Type of action (add, change, delete, view)
+  - **Implementation**: Filter by codename pattern
+
+#### Permissions Table
+- **API Endpoint**: `GET /api/users/permissions/`
+- **Query Parameters**: All applied filters
+- **Columns**:
+  - Checkbox for selection
+  - ID
+  - Name
+  - App (content_type_app)
+  - Model (content_type_model)
+  - Codename
+
+### Actions
+- **Assign to Group**:
+  - **Flow**: Select permissions → Click "Assign to Group" → Select group
+  - **API**: `POST /api/users/groups/{group_id}/permissions/`
+  - **Options**: 
+    - Append mode: Merge existing permissions with new ones
+    - Replace mode: Overwrite existing permissions
+  
+- **Bulk App Permissions**:
+  - **API**: `POST /api/users/groups/{id}/app-permissions/`
+  - **Request Body**: `{ "app_label": "fleet", "model": "vehicle", "clear_existing": true }`
+
+### Modal Dialogs
+
+#### Assign to Group Modal
+- **Fields**:
+  - Group dropdown (populated from `GET /api/users/groups/`)
+  - Mode selection (Append or Replace)
+  - Submit button
+  
+- **Processing Logic**:
+  - Append mode:
+    1. Get existing permissions with `GET /api/users/groups/{gid}/permissions/`
+    2. Merge existing permissions with selected ones
+    3. Post the merged list
+  - Replace mode: 
+    - Directly post selected permissions
+
+### API Alignment
+All endpoints used in this design match the auth_users.md documentation:
+- `GET /api/users/permissions/` - List permissions with filters
+- `POST /api/users/groups/{id}/permissions/` - Assign permissions to group
+- `POST /api/users/groups/{id}/app-permissions/` - Assign all app permissions

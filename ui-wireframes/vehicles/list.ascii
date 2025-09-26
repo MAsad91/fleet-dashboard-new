@@ -1,0 +1,176 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin                           [Today | 10d | 30d | 90d | 📅]   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ VEHICLES                                                        │
+│──────────────│                                                                 │
+│   Dashboard  │ Vehicles                                      [+ Create] [Bulk ▾]│
+│              │                                                                 │
+│ ▶ Vehicles   │ KPI CARDS                                                       │
+│   Drivers    │ ┌───────────────┐ ┌────────────────┐ ┌────────────────┐ ┌───────┐│
+│   Driver Docs│ │ Total         │ │ Available      │ │ In Service     │ │ Maint ││
+│   Trips      │ │ Vehicles      │ │ Vehicles       │ │ Vehicles       │ │       ││
+│   Telemetry  │ │   128         │ │      62        │ │      48        │ │  18   ││
+│   Alerts     │ └───────────────┘ └────────────────┘ └────────────────┘ └───────┘│
+│   OBD Devices│ │ Avg Battery %  │ │ Expiring Vehicle Docs   │                  │
+│   SIM Cards  │ │     78%        │ │          7              │                  │
+│   Maintenance│ └────────────────┘ └─────────────────────────┘                  │
+│   Insurance  │                                                                 │
+│   Firmware   │ ┌────────────────────────────────────────────────────────────┐  │
+│   Analytics  │ │ 🔍 [Search by VIN, plate, make, model, year...]             │  │
+│   Driver Logs│ │ [Status ▾] [Has OBD ▾] [Online ▾] [Health ▾]                │  │
+│   Performance│ │                                                   [Apply]   │  │
+│   Settings   │ │                                                            │  │
+│   Users      │ │                                                            │  │
+│   Groups &   │ └────────────────────────────────────────────────────────────┘  │
+│   Permissions│                                                                 │
+│              │ VEHICLES TABLE                                    [▢ Select All]│
+│              │ ┌────┬───────────┬────────┬──────────────────┬─────┬──────┬────┬────┐│
+│              │ │ ▢  │ VIN       │ Plate  │ Make/Model (Year)│ Batt│Status│Onln│Hlth││
+│              │ ├────┼───────────┼────────┼──────────────────┼─────┼──────┼────┼────┤│
+│              │ │ ▢  │ VIN123456 │ EV-003 │ Hyundai/Kona(22) │ 82% │avail │ ● │ ⚠  ││
+│              │ │ ▢  │ VIN234567 │ EV-004 │ Chevy/Bolt(21)   │ 45% │in_srv│ ○ │ ✓  ││
+│              │ │ ▢  │ VIN345678 │ EV-005 │ Kia/EV6(23)      │ 91% │avail │ ● │ ✓  ││
+│              │ │ ▢  │ VIN456789 │ EV-006 │ Ford/Mach-E(22)  │ 53% │in_srv│ ● │ ⚠  ││
+│              │ │ ▢  │ VIN567890 │ EV-007 │ Tesla/Model 3(21)│ 67% │avail │ ○ │ ✓  ││
+│              │ │ ▢  │ VIN678901 │ EV-008 │ Nissan/Leaf(20)  │ 72% │maint │ ○ │ ⛔ ││
+│              │ └────┴───────────┴────────┴──────────────────┴─────┴──────┴────┴────┘│
+│              │                                                                 │
+│              │ BULK ACTIONS                                                    │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ [Set for Maintenance] [Retire]            Page 1/5 [◀][▶]  │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### KPI Cards Section
+- **API Endpoint**: `GET /api/fleet/vehicles/dashboard_stats/`
+- **Query Parameters**: Apply the same filters as used in the vehicles list
+- **Fields Used**:
+  - `total_vehicles`
+  - `available_vehicles`
+  - `in_service_vehicles`
+  - `maintenance_vehicles`
+  - `average_battery_level`
+  - `expiring_vehicle_docs`
+
+#### Filters
+- **Search Field**:
+  - **Query Parameter**: `search=<term>`
+  - **Implementation**: Searches across VIN, license plate, make, model, year fields
+  - **UI**: Prominent search box with magnifying glass icon
+  - **Note**: Use this to search for specific vehicles by any identifying information
+
+- **Status Filter**:
+  - **Query Parameter**: `status=<value>`
+  - **Values**: available|in_service|maintenance|retired
+  - **Implementation**: Direct filter on vehicle status field
+
+- **Has OBD Filter**:
+  - **Query Parameter**: `has_obd=true|false`
+  - **Implementation**: Server-side filtering by checking if obd_devices exists for vehicle
+
+- **Online Filter**:
+  - **Query Parameter**: `online=true|false`
+  - **Implementation**: Server-side filtering based on OBD device last communication time
+  - **Logic**: Checks if last_communication_at is within the last 5 minutes
+
+- **Health Filter**:
+  - **Query Parameter**: `health_status=<value>`
+  - **Values**: Good|Warning|Critical
+  - **Implementation**: Server-side filtering based on vehicle health status
+  - **Note**: All make, model, year, fleet, and battery filtering is done through search box
+
+#### Vehicles Table
+- **API Endpoint**: `GET /api/fleet/vehicles/`
+- **Query Parameters**: All filters applied
+- **Columns**:
+  - Checkbox for selection
+  - VIN
+  - License Plate
+  - Make/Model (Year)
+  - Battery % (current_battery_level)
+  - Status (available, in_service, maintenance, retired)
+  - Online (online_status)
+  - Health (health_status)
+  
+- **Row Actions**:
+  - Click on row to navigate to vehicle details page
+  - Checkbox to select for bulk actions
+
+#### Bulk Actions
+- **Set for Maintenance**:
+  - **API**: `POST /api/fleet/vehicles/set_for_maintenance/`
+  - **Request Body**: `{ "selected_vehicles": [ids...] }`
+  
+- **Retire Vehicles**:
+  - **API**: `POST /api/fleet/vehicles/retire_vehicles/`
+  - **Request Body**: `{ "selected_vehicles": [ids...] }`
+
+### Interaction Flow
+
+1. **On Page Load**:
+   - Fetch dashboard stats with default/saved filters
+   - Fetch vehicle list with default/saved filters
+   - Apply visual indicators for status, online status, and health
+
+2. **Filter Application**:
+   - When user types in the search box:
+     - Search across VIN, license plate, make, model, year fields
+     - Results update as user types
+   - When user selects status, OBD, online or health filters and clicks Apply:
+     - Construct query with selected parameters
+     - Reload both the dashboard stats and vehicle list with new filters
+     - Update URL parameters for shareable filtered views
+
+3. **Table Interactions**:
+   - Click on vehicle row to navigate to vehicle detail view
+   - Select checkboxes to enable bulk actions
+   - Sort columns by clicking on column headers
+
+4. **Search Functionality**:
+   - Real-time filtering as user types in search box
+   - Searches across VIN, license plate, make, model, and year fields
+   - Highlights matching text in results
+   - Primary method for finding specific vehicles by any attribute
+
+5. **Bulk Actions**:
+   - Select multiple vehicles via checkboxes
+   - Click desired bulk action button:
+     - Set for Maintenance: Send selected IDs to maintenance endpoint
+     - Retire Vehicles: Send selected IDs to retire endpoint
+     - Show confirmation dialog before executing bulk actions
+
+6. **Pagination**:
+   - Navigate between pages with prev/next buttons
+   - Update URL to maintain page position
+   - Server-side pagination using offset/limit parameters
+
+### Visual Indicators
+
+- **Status Indicators**:
+  - Available: Green
+  - In Service: Blue
+  - Maintenance: Yellow
+  - Retired: Gray
+
+- **Online Status Indicators**:
+  - Online (●): Filled green circle
+  - Offline (○): Empty gray circle
+
+- **Health Indicators**:
+  - Good (✓): Green checkmark
+  - Warning (⚠): Yellow warning icon
+  - Critical (⛔): Red error icon
+
+### Create Vehicle Button
+
+- Opens the Create Vehicle form (modal or separate page)
+- Initiates the vehicle creation process
+- Form details are in the create-form.ascii wireframe

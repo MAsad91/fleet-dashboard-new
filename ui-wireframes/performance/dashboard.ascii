@@ -1,0 +1,210 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin                           [Today | 10d | 30d | 90d | 📅]   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ PERFORMANCE DASHBOARD                                           │
+│──────────────│                                                                 │
+│   Dashboard  │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ Fleet Performance Dashboard                 [Download ▾]   │  │
+│   Vehicles   │ └────────────────────────────────────────────────────────────┘  │
+│   Drivers    │                                                                 │
+│   Driver Docs│ DATE RANGE SELECTOR                                             │
+│   Trips      │ ┌────────────────────────────────────────────────────────────┐  │
+│   Telemetry  │ │ [Today | 7d | 30d | 90d | Custom] ◀ Sep 1-25, 2025 ▶      │  │
+│   Alerts     │ └────────────────────────────────────────────────────────────┘  │
+│   Alert Rules│                                                                 │
+│   OBD Devices│ PERFORMANCE OVERVIEW                                            │
+│   SIM Cards  │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌──────┐│
+│   Maintenance│ │ Driver Score   │ │ Vehicle Score  │ │ Fleet Score    │ │Safety││
+│   Insurance  │ │                │ │                │ │                │ │Score ││
+│   Dashcams   │ │      87/100    │ │     82/100     │ │    85/100      │ │92/100││
+│   Firmware   │ └────────────────┘ └────────────────┘ └────────────────┘ └──────┘│
+│   Analytics  │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌──────┐│
+│   Driver Logs│ │ Eco Score      │ │ Efficiency     │ │ Utilization    │ │Maint.││
+│ ▶ Performance│ │                │ │                │ │                │ │Score ││
+│   Settings   │ │     79/100     │ │    83/100      │ │     76/100     │ │88/100││
+│   Users      │ └────────────────┘ └────────────────┘ └────────────────┘ └──────┘│
+│              │                                                                 │
+│              │ DRIVER PERFORMANCE                                              │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │                      DRIVER RANKINGS                        │  │
+│              │ │                                                            │  │
+│              │ │ Driver      │ Safety │ Eco   │ Overall │ Trips │ Trend    │  │
+│              │ │ ─────────── │ ────── │ ────── │ ─────── │ ───── │ ───────  │  │
+│              │ │ Jane Doe    │ 96     │ 92     │ 94      │ 42    │ ▲ 2%     │  │
+│              │ │ Amir Khan   │ 94     │ 88     │ 91      │ 38    │ ▲ 1%     │  │
+│              │ │ Priya Sharma│ 90     │ 86     │ 88      │ 35    │ ◆ 0%     │  │
+│              │ │ Raj Patel   │ 83     │ 91     │ 87      │ 40    │ ▲ 3%     │  │
+│              │ │ Sara Ahmed  │ 89     │ 81     │ 85      │ 31    │ ▼ 1%     │  │
+│              │ │                                                            │  │
+│              │ │ [View All Driver Performance]                              │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ VEHICLE PERFORMANCE                                             │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │                    VEHICLE RANKINGS                         │  │
+│              │ │                                                            │  │
+│              │ │ Vehicle    │ Efficiency │ Health │ Overall │ Usage  │ Trend │  │
+│              │ │ ─────────── │ ────────── │ ────── │ ─────── │ ────── │ ───── │  │
+│              │ │ EV-5431    │ 95         │ 92     │ 94      │ 82%    │ ▲ 1%  │  │
+│              │ │ EV-9812    │ 92         │ 94     │ 93      │ 76%    │ ▲ 2%  │  │
+│              │ │ EV-3387    │ 88         │ 90     │ 89      │ 69%    │ ◆ 0%  │  │
+│              │ │ EV-8810    │ 87         │ 88     │ 88      │ 78%    │ ▼ 1%  │  │
+│              │ │ EV-2198    │ 89         │ 82     │ 86      │ 72%    │ ▼ 2%  │  │
+│              │ │                                                            │  │
+│              │ │ [View All Vehicle Performance]                             │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ PERFORMANCE CHARTS                                              │
+│              │ ┌───────────────────────────┐  ┌──────────────────────────────┐ │
+│              │ │ Driver Performance Trend  │  │ Vehicle Efficiency Trend     │ │
+│              │ │                           │  │                              │ │
+│              │ │  ┌─────────────────────┐  │  │  ┌──────────────────────┐   │ │
+│              │ │  │                     │  │  │  │                      │   │ │
+│              │ │  │         ▄▄▄         │  │  │  │                      │   │ │
+│              │ │  │     ▄▄▄▄███▄▄▄▄     │  │  │  │      ▄▄              │   │ │
+│              │ │  │ ▄▄▄▄████████████▄▄▄▄│  │  │  │   ▄▄▄██▄▄▄▄          │   │ │
+│              │ │  │                     │  │  │  │▄▄▄███████████▄▄▄▄▄    │   │ │
+│              │ │  └─────────────────────┘  │  │  └──────────────────────┘   │ │
+│              │ │   Apr May Jun Jul Aug Sep  │  │  Apr May Jun Jul Aug Sep    │ │
+│              │ │                           │  │                              │ │
+│              │ │  [View Detailed Trends]    │  │  [View Detailed Trends]     │ │
+│              │ └───────────────────────────┘  └──────────────────────────────┘ │
+│              │                                                                 │
+│              │ SAFETY & INCIDENT METRICS                                       │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ Event Type     │ Count │ Change   │ Top Driver             │  │
+│              │ │ ───────────── │ ───── │ ──────── │ ──────────────────     │  │
+│              │ │ Harsh Braking  │ 156   │ ▼ 12%    │ Sara Ahmed (24)        │  │
+│              │ │ Speeding       │ 112   │ ▼ 8%     │ Raj Patel (18)         │  │
+│              │ │ Sharp Turn     │ 89    │ ▼ 5%     │ David Lee (15)         │  │
+│              │ │ Rapid Accel.   │ 65    │ ▼ 10%    │ Meera Singh (12)       │  │
+│              │ │                                                            │  │
+│              │ │ • Safety incidents down 9% overall compared to previous period │
+│              │ │ • 78% of drivers improved their safety score                │  │
+│              │ │                                                            │  │
+│              │ │ [View Safety Report]                                       │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ RECOMMENDATIONS                                                 │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ • Schedule coaching for bottom 5 drivers to improve scores  │  │
+│              │ │ • Investigate vehicles EV-1149, EV-4523 for efficiency issues│  │
+│              │ │ • Consider driver rotation for high-utilization vehicles    │  │
+│              │ │ • Recognize top performers: Jane Doe, Amir Khan (drivers)   │  │
+│              │ │   and EV-5431, EV-9812 (vehicles)                          │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### Performance Overview
+- **API Endpoint**: `GET /api/fleet/performance/overview/`
+- **Query Parameters**: Date range from selector
+- **Fields Used**:
+  - `driver_score_avg` - Average driver performance score
+  - `vehicle_score_avg` - Average vehicle performance score
+  - `fleet_score` - Overall fleet performance score
+  - `safety_score` - Safety performance score
+  - `eco_score` - Environmental/fuel efficiency score
+  - `efficiency_score` - Operational efficiency score
+  - `utilization_score` - Vehicle utilization score
+  - `maintenance_score` - Maintenance performance score
+
+#### Driver Performance
+- **API Endpoint**: `GET /api/fleet/performance/drivers/`
+- **Fields Used**:
+  - Driver ID and name
+  - Safety score
+  - Eco score
+  - Overall performance score
+  - Trip count
+  - Score trend (percentage change)
+
+#### Vehicle Performance
+- **API Endpoint**: `GET /api/fleet/performance/vehicles/`
+- **Fields Used**:
+  - Vehicle ID and details
+  - Efficiency score
+  - Health score
+  - Overall performance score
+  - Usage percentage
+  - Score trend (percentage change)
+
+#### Performance Charts
+- **API Endpoints**:
+  - Driver Trend: `GET /api/fleet/performance/driver_trends/`
+  - Vehicle Trend: `GET /api/fleet/performance/vehicle_trends/`
+- **Fields Used**:
+  - Time series data for performance metrics
+  - Monthly averages
+
+#### Safety & Incident Metrics
+- **API Endpoint**: `GET /api/fleet/performance/safety_incidents/`
+- **Fields Used**:
+  - Event types and counts
+  - Change percentage from previous period
+  - Top drivers for each event type
+  - Overall safety statistics
+
+#### Recommendations
+- **API Endpoint**: `GET /api/fleet/performance/recommendations/`
+- **Fields Used**:
+  - AI-generated or rule-based recommendations
+  - Action items based on performance data
+  - Recognition suggestions for top performers
+
+### Date Range Selector
+- **Options**: Today, Last 7 days, Last 30 days, Last 90 days, Custom
+- **Custom Range**: Date picker to select start and end dates
+- **Behavior**: When changed, all performance sections update with new date range
+
+### Download Options
+- **Formats**: PDF Report, Excel, CSV
+- **Content**: Full performance dashboard or individual sections
+- **API**: `GET /api/fleet/performance/export/?format=pdf|excel|csv&section=all|drivers|vehicles|safety`
+
+### Interaction Flow
+
+1. **On Page Load**:
+   - Apply default date range (Today or Last 30 days)
+   - Load performance overview metrics
+   - Load driver and vehicle rankings
+   - Load performance charts and safety metrics
+   - Generate recommendations
+
+2. **Date Range Selection**:
+   - When user changes date range:
+     - Update URL parameters
+     - Reload all dashboard sections with new date range
+     - Update chart visualizations and trends
+
+3. **Section Navigation**:
+   - View All Driver Performance: Navigate to detailed driver performance list
+   - View All Vehicle Performance: Navigate to detailed vehicle performance list
+   - View Detailed Trends: Navigate to trend analysis page
+   - View Safety Report: Navigate to detailed safety metrics page
+
+4. **Download Actions**:
+   - When user selects download format:
+     - Generate export with current date range
+     - Download file in selected format
+
+### Visualization Types
+
+- **Score Cards**: For overview metrics (out of 100)
+- **Ranking Tables**: For driver and vehicle performance comparisons
+- **Line Charts**: For performance trends over time
+- **Trend Indicators**: Direction arrows (▲▼◆) with percentage changes
+
+### Notes
+
+- All scores are normalized to a 0-100 scale for consistency
+- Trend indicators show change from previous comparable period
+- Rankings show top 5 with option to view all
+- Recommendations provide actionable insights
+- Performance metrics are calculated from telemetry, driver logs, and trip data

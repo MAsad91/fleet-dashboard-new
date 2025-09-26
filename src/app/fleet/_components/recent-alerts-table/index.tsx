@@ -1,9 +1,9 @@
 "use client";
 
 import { useDashboard } from "@/contexts/DashboardContext";
-import { useGetActiveAlertsQuery } from "@/store/api/fleetApi";
+// import { useGetActiveAlertsQuery, useGetAlertsTrendsQuery } from "@/store/api/fleetApi";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, AlertCircle, AlertOctagon, Clock, Car, Eye } from "lucide-react";
+import { AlertTriangle, AlertCircle, AlertOctagon, Clock, Car, Eye, TrendingUp, TrendingDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface RecentAlertsTableProps {
@@ -13,10 +13,15 @@ interface RecentAlertsTableProps {
 export function RecentAlertsTable({ className }: RecentAlertsTableProps) {
   const router = useRouter();
   const { stats } = useDashboard();
-  const { data: alertsData, isLoading: alertsLoading, error: alertsError } = useGetActiveAlertsQuery({
-    status: 'active',
-    limit: 5,
-  });
+  // Use dashboard context data instead of individual API calls
+  // const { data: alertsData, isLoading: alertsLoading, error: alertsError } = useGetActiveAlertsQuery({
+  //   status: 'open', // Try 'open' instead of 'active'
+  //   limit: 5,
+  // });
+
+  // const { data: alertsTrends, isLoading: trendsLoading, error: trendsError } = useGetAlertsTrendsQuery({
+  //   dateRange: 'today'
+  // });
 
   const getSeverityIcon = (severity: string) => {
     switch (severity?.toLowerCase()) {
@@ -59,29 +64,18 @@ export function RecentAlertsTable({ className }: RecentAlertsTableProps) {
     router.push(`/alerts/${alertId}`);
   };
 
-  if (alertsLoading) {
-    return (
-      <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>
-        <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-4"></div>
-          <div className="space-y-3">
-            {[...Array(5)].map((_, index) => (
-              <div key={index} className="h-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
 
-  const alerts = alertsData?.results || stats?.alerts?.results || [];
+  const alerts = stats?.alerts?.results || [];
 
   return (
     <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>
       <div className="flex items-center justify-between mb-4">
-        <h4 className="text-sm font-medium text-body-color dark:text-body-color-dark">
-          Recent Alerts
-        </h4>
+        <div className="flex items-center space-x-2">
+          <h4 className="text-sm font-medium text-body-color dark:text-body-color-dark">
+            Recent Alerts
+          </h4>
+          {/* Trend indicators removed - using dashboard data only */}
+        </div>
         <button
           onClick={() => router.push('/alerts')}
           className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
@@ -91,14 +85,7 @@ export function RecentAlertsTable({ className }: RecentAlertsTableProps) {
       </div>
       
       <div className="min-h-[300px] flex items-center justify-center">
-        {alertsError ? (
-          <div className="text-center">
-            <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-2" />
-            <p className="text-sm text-red-600 dark:text-red-400">
-              Failed to load alerts
-            </p>
-          </div>
-        ) : alerts.length === 0 ? (
+        {alerts.length === 0 ? (
           <div className="text-center">
             <AlertCircle className="h-8 w-8 text-gray-400 mx-auto mb-2" />
             <p className="text-sm text-gray-500 dark:text-gray-400">

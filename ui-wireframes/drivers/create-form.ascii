@@ -1,0 +1,212 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin > Drivers > Create Driver                                     [👤]│
+├────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                │
+│ CREATE DRIVER                                                                  │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ User Information                                                           │ │
+│ ├────────────────────────────────────────────────────────────────────────────┤ │
+│ │                                                                            │ │
+│ │ Create New User                       Use Existing User                    │ │
+│ │ (•)                                   ( )                                  │ │
+│ │                                                                            │ │
+│ │ Username*                        First Name*                               │ │
+│ │ ┌─────────────────────────┐      ┌─────────────────────────┐              │ │
+│ │ │                         │      │                         │              │ │
+│ │ └─────────────────────────┘      └─────────────────────────┘              │ │
+│ │                                                                            │ │
+│ │ Last Name*                       Email*                                    │ │
+│ │ ┌─────────────────────────┐      ┌─────────────────────────┐              │ │
+│ │ │                         │      │                         │              │ │
+│ │ └─────────────────────────┘      └─────────────────────────┘              │ │
+│ │                                                                            │ │
+│ │ OR Select Existing User:                                                   │ │
+│ │ ┌─────────────────────────────────────────┐                               │ │
+│ │ │ Select User...                        ▾ │                               │ │
+│ │ └─────────────────────────────────────────┘                               │ │
+│ │                                                                            │ │
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ Driver Details                                                            │ │
+│ ├────────────────────────────────────────────────────────────────────────────┤ │
+│ │                                                                            │ │
+│ │ Fleet Operator*                                                           │ │
+│ │ ┌─────────────────────────────────────────┐                               │ │
+│ │ │ Acme Logistics                        ▾ │                               │ │
+│ │ └─────────────────────────────────────────┘                               │ │
+│ │                                                                            │ │
+│ │ Phone Number*                        License Number*                       │ │
+│ │ ┌─────────────────────────┐          ┌─────────────────────────┐          │ │
+│ │ │                         │          │                         │          │ │
+│ │ └─────────────────────────┘          └─────────────────────────┘          │ │
+│ │                                                                            │ │
+│ │ Experience (years)*                                                        │ │
+│ │ ┌─────────────────────────┐                                               │ │
+│ │ │                         │                                               │ │
+│ │ └─────────────────────────┘                                               │ │
+│ │                                                                            │ │
+│ │ Address                                                                    │ │
+│ │ ┌───────────────────────────────────────────────────────────┐             │ │
+│ │ │                                                           │             │ │
+│ │ │                                                           │             │ │
+│ │ └───────────────────────────────────────────────────────────┘             │ │
+│ │                                                                            │ │
+│ │ Date of Birth                       Emergency Contact                      │ │
+│ │ ┌─────────────────────────┐         ┌───────────────────────────────────┐  │ │
+│ │ │ YYYY-MM-DD             │         │                                   │  │ │
+│ │ └─────────────────────────┘         └───────────────────────────────────┘  │ │
+│ │                                                                            │ │
+│ │ Note: Rating is calculated automatically based on driver performance.      │ │
+│ │                                                                            │ │
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│                                                                                │
+│                                         [Cancel]   [Create Driver]             │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### Form Options
+
+The driver creation form supports two methods:
+1. Creating a new user account with the driver profile
+2. Associating a driver profile with an existing user
+
+#### User Information Section
+
+When "Create New User" is selected:
+
+- **Username*** (text):
+  - **Validation**: Must be unique, alphanumeric
+  - **Notes**: Will be the login username
+
+- **First Name*** (text):
+  - **Notes**: User's first name
+
+- **Last Name*** (text):
+  - **Notes**: User's last name
+
+- **Email*** (text):
+  - **Validation**: Valid email format
+  - **Notes**: Will be used for notifications
+
+When "Use Existing User" is selected:
+
+- **Select User*** (dropdown):
+  - **API**: `GET /api/users/users/` (admin only)
+  - **Display**: Username, full name, and email
+  - **Notes**: Only shows users without driver profiles
+
+#### Driver Details Section
+
+- **Fleet Operator*** (dropdown):
+  - **API**: `GET /api/fleet/fleet-operators/`
+  - **Notes**: Pre-selected and disabled for non-admin users
+
+- **Phone Number*** (text):
+  - **Validation**: Valid phone format
+  - **Format**: Example +91-9876543210
+  - **Notes**: Must be unique
+
+- **License Number*** (text):
+  - **Validation**: Must be unique
+  - **Notes**: Driver's license ID
+
+- **Experience (years)*** (number):
+  - **Validation**: Positive integer
+
+- **Address** (textarea):
+  - **Notes**: Driver's residential address
+
+- **Date of Birth** (date):
+  - **Format**: YYYY-MM-DD
+  - **Validation**: Valid date, driver must be of legal age
+
+- **Emergency Contact** (text):
+  - **Format**: Name, phone number
+  - **Example**: "Jane Doe, +91-9000000000"
+
+### Form Submission
+
+#### Create New User + Driver
+
+- **API Endpoint**: `POST /api/fleet/drivers/`
+- **Request Body**:
+  ```json
+  {
+    "user": {
+      "username": "jdoe",
+      "first_name": "John",
+      "last_name": "Doe",
+      "email": "john.doe@example.com"
+    },
+    "fleet_operator": 1,
+    "phone_number": "+91-9876543210",
+    "license_number": "LIC-998",
+    "experience_years": 6,
+    "address": "123 Main St, Hyderabad",
+    "date_of_birth": "1990-04-12",
+    "emergency_contact": "Jane Doe, +91-9000000000"
+  }
+  ```
+
+#### Use Existing User
+
+- **API Endpoint**: `POST /api/fleet/drivers/`
+- **Request Body**:
+  ```json
+  {
+    "user_id": 42,
+    "fleet_operator": 1,
+    "phone_number": "+91-9812345678",
+    "license_number": "LIC-123",
+    "experience_years": 3,
+    "address": "Hyderabad",
+    "date_of_birth": "1992-07-01",
+    "emergency_contact": "John Roe, +91-9999999999"
+  }
+  ```
+
+### Edit Form Behavior
+
+When using the same form for editing:
+
+- **API Endpoint**: `PUT/PATCH /api/fleet/drivers/{id}/update_driver/`
+- **Pre-population**: Fetch driver details and populate all form fields
+- **User Section**: Read-only, cannot change associated user
+- **Button Label**: Change to "Update Driver"
+- **Validation**: Same validations apply as creation, but uniqueness checks should exclude the current driver
+- **Notes**: Should not be able to edit drivers with status "suspended"
+
+### Validation Rules
+
+- **Required Fields**: Mark fields with * and validate before submission
+- **Username Uniqueness**: Check if username already exists
+- **Phone Number Uniqueness**: Check if phone number already exists
+- **License Number Uniqueness**: Check if license number already exists
+- **Phone Format**: Validate phone number format
+- **Email Format**: Validate email format
+- **Experience**: Must be a positive integer
+- **Date of Birth**: Valid date format, driver must be of legal age
+
+### User Experience
+
+- **Form Layout**: Group related fields together in sections
+- **Field Order**: Arrange from most to least important
+- **Help Text**: Provide explanations for complex fields
+- **Error Messages**: Display clear error messages for validation failures
+- **Required Fields**: Visually indicate which fields are required
+- **Radio Selection**: Toggle between creating new user and selecting existing user
+
+### After Submission
+
+- **Success**: Redirect to driver detail page with success message
+- **Error**: Show validation errors inline with fields and summary at top
+- **Next Steps**: Provide links to upload driver documents

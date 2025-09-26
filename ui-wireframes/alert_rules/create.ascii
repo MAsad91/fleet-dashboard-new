@@ -1,0 +1,160 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin                           [Today | 10d | 30d | 90d | 📅]   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ CREATE ALERT RULE                                               │
+│──────────────│                                                                 │
+│   Dashboard  │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ Create New Alert Rule                                      │  │
+│   Vehicles   │ │                                                            │  │
+│   Drivers    │ │ This will create a new rule to trigger alerts based on     │  │
+│   Alerts     │ │ specific conditions.                                       │  │
+▶ Alert Rules│ └────────────────────────────────────────────────────────────┘  │
+│   OBD Devices│                                                                 │
+│   SIM Cards  │ RULE SETTINGS                                                   │
+│   Maintenance│ ┌─────────────────────────────┐  ┌───────────────────────────┐  │
+│   Insurance  │ │ Basic Information           │  │ Notifications & Scope     │  │
+│   Dashcams   │ │                             │  │                           │  │
+│   Firmware   │ │ • Name:                     │  │ • Notification Channels:  │  │
+│   Analytics  │ │   [_________________________]│  │   [ ] Email               │  │
+│   Driver Logs│ │                             │  │   [ ] In-App              │  │
+│   Performance│ │ • Description:              │  │   [ ] SMS                 │  │
+│   Settings   │ │   [_________________________]│  │                           │  │
+│   Users      │ │   [_________________________]│  │ • Recipients:             │  │
+│   Groups &   │ │   [_________________________]│  │   [_________________________]│  │
+│   Permissions│ │                             │  │   [+ Add Recipient]       │  │
+│              │ │ • Severity: [Select ▼]      │  │                           │  │
+│              │ │   (Critical, High, Medium,  │  │ • Vehicle Types:          │  │
+│              │ │    Low)                     │  │   [ ] Electric            │  │
+│              │ │                             │  │   [ ] SUV                 │  │
+│              │ │ • System: [Select ▼]        │  │   [ ] Sedan               │  │
+│              │ │                             │  │   [ ] Truck               │  │
+│              │ │ • Active: [✓]               │  │   [ ] Van                 │  │
+│              │ │                             │  │   [ ] All Vehicle Types   │  │
+│              │ │ • Condition Logic: [AND ▼]  │  │                           │  │
+│              │ │                             │  │                           │  │
+│              │ │ • Trigger Duration (sec):   │  │                           │  │
+│              │ │   [0_______]                │  │                           │  │
+│              │ │                             │  │                           │  │
+│              │ │ • Cooldown (minutes):       │  │                           │  │
+│              │ │   [5_______]                │  │                           │  │
+│              │ │                             │  │                           │  │
+│              │ │ • Auto Resolve: [✓]         │  │                           │  │
+│              │ └─────────────────────────────┘  └───────────────────────────┘  │
+│              │                                                                 │
+│              │ CONDITIONS                                                      │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ Field              │ Operator  │ Threshold │ Actions       │  │
+│              │ │ ──────────────────────────────────────────────────────────   │  │
+│              │ │ [Select Field  ▼]  │ [Select▼] │ [       ] │ [− Remove]    │  │
+│              │ │                     │           │           │               │  │
+│              │ │ [+ Add Condition]                                          │  │
+│              │ │                                                            │  │
+│              │ │ Note: At least one condition is required                   │  │
+│              │ │       Multiple conditions are combined using logic above   │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ ACTIONS                                                         │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ [Cancel]                                          [Create] │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### API Details
+
+#### Create Alert Rule
+- **API Endpoint**: `POST /api/fleet/alert-rules/`
+- **Permissions**: `IsAuthenticated` (admin users have full access, non-admin users have scoped access)
+
+#### Request Body (JSON)
+```json
+{
+  "name": "High Motor Temp",
+  "description": "Alert when motor temp exceeds 90C",
+  "severity": "high",
+  "system": "motor",
+  "is_active": true,
+  "condition_logic": "AND",
+  "trigger_duration_sec": 0,
+  "cooldown_minutes": 10,
+  "auto_resolve": true,
+  "notification_channels": ["in_app", "email"],
+  "recipients": ["ops@example.com"],
+  "vehicle_types": [3,5],
+  "conditions": [
+    { "field": "motor_temp_c", "operator": ">", "threshold": 90 }
+  ]
+}
+```
+
+#### Field Requirements
+- **Required Fields**:
+  - `name`: String, unique name for the alert rule
+  - `severity`: One of: `critical`, `high`, `medium`, `low`
+  - `conditions`: At least one condition object with `field`, `operator`, and `threshold`
+
+- **Field Validations**:
+  - `notification_channels`: Must be subset of `email`, `sms`, `in_app`
+  - `operators`: Must be one of `>`, `>=`, `<`, `<=`, `==`, `!=`
+  - `condition_logic`: Must be either `AND` or `OR`
+  - `trigger_duration_sec`: Non-negative integer
+  - `cooldown_minutes`: Positive integer
+
+### Data Sources
+
+#### System Field Options
+- Motor
+- Battery
+- Engine 
+- Vehicle
+- Fuel
+- Tire
+- Connectivity
+- Location
+
+#### Available Fields for Conditions
+Dynamic based on system selected, common examples:
+- `motor_temp_c`: Motor temperature in Celsius
+- `battery_level_%`: Battery percentage
+- `speed_kph`: Speed in kilometers per hour
+- `voltage`: Voltage level
+- `fuel_level_%`: Fuel level percentage
+- `tire_pressure_kpa`: Tire pressure in kilopascals
+
+### Interaction Flow
+
+1. **Form Initialization**:
+   - Load vehicle types from `GET /api/fleet/vehicle-types/`
+   - Initialize empty form with default values
+
+2. **Field Selection for Conditions**:
+   - When user selects a system, update available fields dropdown
+   - Each field may have specific operators or threshold formats
+
+3. **Form Submission**:
+   - Validate all required fields
+   - Ensure at least one condition exists
+   - Submit complete payload to `POST /api/fleet/alert-rules/`
+   - Handle validation errors with appropriate feedback
+   - On success: redirect to Alert Rule detail view
+
+### Response Handling
+
+- **Success (201 Created)**:
+  - Response includes complete alert rule object with ID
+  - Redirect to detail page for the new rule
+
+- **Validation Error (400 Bad Request)**:
+  - Display field-specific errors
+  - Common errors: duplicate name, invalid notification channels, missing required fields
+  - Highlight problematic fields for correction
+
+### Notes
+- Multiple conditions are combined using the specified logic (AND/OR)
+- Recipients should be valid email addresses for email notifications
+- Vehicle types filter which vehicles this rule applies to

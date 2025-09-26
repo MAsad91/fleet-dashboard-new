@@ -1,0 +1,143 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin > Dashcams > Dashcam Detail                                   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ DASHCAM DETAIL                                                  │
+│──────────────│                                                                 │
+│   Dashboard  │ [◀ Back]  Dashcam: DASH-001                                    │
+│              │ Vehicle: EV-9812   Model: DashPro X   Status: Online   Storage: 72% │
+│   Vehicles   │                                                                 │
+│   Drivers    │              [Edit] [Start Stream] [Reset] [Factory Reset] [Delete]│
+│   Driver Docs│                                                                 │
+│   Trips      │ KPI CARDS                                                       │
+│   Telemetry  │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌──────────┐│
+│   Alerts     │ │ Firmware       │ │ Last Streamed  │ │ API Key Created│ │Signal    ││
+│   Alert Rules│ │                │ │                │ │                │ │Strength  ││
+│   OBD Devices│ │   v2.5.1       │ │    Live        │ │ 2025-08-30     │ │ Strong   ││
+│   SIM Cards  │ └────────────────┘ └────────────────┘ └────────────────┘ └──────────┘│
+│   Maintenance│                                                                 │
+│ ▶ Dashcams   │ DEVICE INFORMATION                                              │
+│   Firmware   │ ┌─────────────────────────────┐  ┌───────────────────────────┐  │
+│   Analytics  │ │ Dashcam Details             │  │ Vehicle Information      │  │
+│   Driver Logs│ │                             │  │                           │  │
+│   Performance│ │ • Device ID: DASH-001       │  │ • Vehicle: EV-9812        │  │
+│   Settings   │ │ • Model: DashPro X          │  │ • Make/Model: Tesla Model Y│  │
+│   Users      │ │ • Firmware: v2.5.1          │  │ • VIN: 5YJ3E1EA4JF123456  │  │
+│              │ │ • Status: Online            │  │ • [View Vehicle]          │  │
+│              │ │ • Storage Usage: 72%        │  │                           │  │
+│              │ │ • Last Streamed: Live       │  │ • Installation Date:       │  │
+│              │ │ • API Key Created:          │  │   2025-01-15              │  │
+│              │ │   2025-08-30               │  │                           │  │
+│              │ │ • API Key:                  │  │                           │  │
+│              │ │   dk8s93mfls02lsm91k2      │  │                           │  │
+│              │ │   [Refresh API Key]         │  │                           │  │
+│              │ └─────────────────────────────┘  └───────────────────────────┘  │
+│              │                                                                 │
+│              │ LIVE VIEW                                                       │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ ┌────────────────────────────────────────────────────────┐ │  │
+│              │ │ │                                                        │ │  │
+│              │ │ │                                                        │ │  │
+│              │ │ │                                                        │ │  │
+│              │ │ │                                                        │ │  │
+│              │ │ │                                                        │ │  │
+│              │ │ │                                                        │ │  │
+│              │ │ └────────────────────────────────────────────────────────┘ │  │
+│              │ │                                                            │  │
+│              │ │ [▶ Play] [⏸ Pause] [⏺ Record] [📷 Snapshot] [Full Screen]  │  │
+│              │ │                                                            │  │
+│              │ │ Stream URL: rtsp://stream.fleet.com/dashcam/DASH-001      │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ RECENT RECORDINGS                                               │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ Date       │ Start → End   │ Duration │ Size    │ Actions   │  │
+│              │ │ ─────────── │ ───────────── │ ──────── │ ──────── │ ───────── │  │
+│              │ │ 2025-09-25 │ 10:15→10:45   │ 00:30    │ 120 MB   │ [View]    │  │
+│              │ │ 2025-09-25 │ 08:30→09:00   │ 00:30    │ 118 MB   │ [View]    │  │
+│              │ │ 2025-09-24 │ 15:45→16:15   │ 00:30    │ 122 MB   │ [View]    │  │
+│              │ │                                                            │  │
+│              │ │ [View All Recordings]                                      │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### Dashcam Detail
+- **API Endpoint**: `GET /api/fleet/dashcams/{id}/`
+- **Fields Used**:
+  - `id` - Dashcam ID
+  - `device_id` - Device identifier
+  - `vehicle` - Associated vehicle (ID)
+  - `firmware_version` - Current firmware version
+  - `is_active` - Active status
+  - `last_streamed_at` - Last stream timestamp
+  - `api_key` - API key for device authentication (admin-only)
+  - `created_at` - Creation timestamp
+
+#### Vehicle Information
+- **API Endpoint**: `GET /api/fleet/vehicles/{id}/` (where id is from dashcam.vehicle)
+- **Fields Used**: Vehicle details like make, model, VIN, etc.
+
+#### KPI Cards
+- **Firmware**: Current firmware version
+- **Last Streamed**: Time since last stream or "Live" if streaming
+- **API Key Created**: When the API key was created/refreshed
+- **Signal Strength**: Connection quality (if available)
+
+### Live Stream Section
+- **WebSocket Endpoint**: `ws://stream/dashcam/{id}/` (hypothetical)
+- **Alternative**: HTTP streaming via `GET /api/fleet/dashcams/{id}/stream/`
+- **Controls**:
+  - Play/Pause: Start/stop video playback
+  - Record: Initiate recording
+  - Snapshot: Capture still image
+  - Full Screen: Expand video to full screen
+- **Stream URL**: Displayed for reference/debugging purposes
+
+### Recent Recordings Section
+- **API Endpoint**: `GET /api/fleet/video-segments/?dashcam={id}&limit=3`
+- **Fields Used**:
+  - Date
+  - Start/End times
+  - Duration
+  - File size
+- **View Action**: Opens video player modal or navigates to recording detail page
+
+### Action Buttons
+- **Edit**:
+  - **API**: `PUT /api/fleet/dashcams/{id}/`
+  - **Documentation Reference**: Update endpoint in base endpoints section
+  
+- **Start Stream**:
+  - **API**: Custom implementation or WebSocket connection
+
+- **Reset**:
+  - **API**: Custom implementation
+  - **Purpose**: Restart the device software
+
+- **Factory Reset**:
+  - **API**: Custom implementation
+  - **Purpose**: Reset device to factory settings (more drastic than simple reset)
+
+- **Delete**:
+  - **API**: `DELETE /api/fleet/dashcams/{id}/`
+  - **Documentation Reference**: Delete endpoint in base endpoints section
+
+- **Refresh API Key** (in device details section):
+  - **API**: `POST /api/fleet/dashcams/refresh_api_key/`
+  - **Request Body**: `{ "selected_records": [id] }`
+  - **Documentation Reference**: Documented refresh_api_key endpoint
+
+### API Alignment
+All endpoints and fields used in this design match the documentation in dashcams.md:
+- `GET /api/fleet/dashcams/{id}/` - Get dashcam details
+- `PUT /api/fleet/dashcams/{id}/` - Update dashcam
+- `DELETE /api/fleet/dashcams/{id}/` - Delete dashcam
+- `POST /api/fleet/dashcams/refresh_api_key/` - Refresh API key
+- `GET /api/fleet/video-segments/?dashcam={id}` - Get dashcam recordings
+- `GET /api/fleet/vehicles/{id}/` - Get vehicle details

@@ -191,12 +191,22 @@ export const fleetApi = createApi({
     }),
 
     // Dashboard stats blocks
-    getVehiclesDashboardStats: builder.query<any, void>({
-      query: () => `/fleet/vehicles/dashboard_stats/`,
+    getVehiclesDashboardStats: builder.query<any, { dateRange?: string; startDate?: string; endDate?: string }>({
+      query: ({ dateRange = 'today', startDate, endDate }) => ({
+        url: `/fleet/vehicles/dashboard_stats/`,
+        params: startDate && endDate
+          ? { start_date: startDate, end_date: endDate }
+          : { date_range: dateRange }
+      }),
       providesTags: ['Vehicles'],
     }),
-    getDriversDashboardStats: builder.query<any, void>({
-      query: () => `/fleet/drivers/dashboard_stats/`,
+    getDriversDashboardStats: builder.query<any, { dateRange?: string; startDate?: string; endDate?: string }>({
+      query: ({ dateRange = 'today', startDate, endDate }) => ({
+        url: `/fleet/drivers/dashboard_stats/`,
+        params: startDate && endDate
+          ? { start_date: startDate, end_date: endDate }
+          : { date_range: dateRange }
+      }),
       providesTags: ['Drivers'],
     }),
     getTripsDashboardStats: builder.query<any, void>({
@@ -211,8 +221,13 @@ export const fleetApi = createApi({
       query: () => `/fleet/scheduled-maintenance/dashboard_stats/`,
       providesTags: ['Maintenance'],
     }),
-    getDashcamsDashboardStats: builder.query<any, void>({
-      query: () => `/fleet/dashcams/dashboard_stats/`,
+    getDashcamsDashboardStats: builder.query<any, { dateRange?: string; startDate?: string; endDate?: string }>({
+      query: ({ dateRange = 'today', startDate, endDate }) => ({
+        url: `/fleet/dashcams/dashboard_stats/`,
+        params: startDate && endDate
+          ? { start_date: startDate, end_date: endDate }
+          : { date_range: dateRange }
+      }),
       providesTags: ['Dashcams'],
     }),
     getScheduledMaintenanceDashboardStats: builder.query<any, void>({
@@ -278,8 +293,13 @@ export const fleetApi = createApi({
       query: ({ id }) => ({ url: `/fleet/alerts/resolve_alert/`, method: 'POST', body: { id } }),
       invalidatesTags: ['Alerts'],
     }),
-    getAlertsTrends: builder.query<any, void>({
-      query: () => `/fleet/alerts/trends/`,
+    getAlertsTrends: builder.query<any, { dateRange?: string; startDate?: string; endDate?: string }>({
+      query: ({ dateRange = 'today', startDate, endDate }) => ({
+        url: `/fleet/alerts/trends/`,
+        params: startDate && endDate 
+          ? { start_date: startDate, end_date: endDate }
+          : { date_range: dateRange }
+      }),
       providesTags: ['Alerts'],
     }),
     
@@ -926,6 +946,34 @@ export const fleetApi = createApi({
       query: (body) => ({ url: `/fleet/fleet-settings/`, method: 'PATCH', body }),
       invalidatesTags: ['FleetSettings'],
     }),
+
+    // Top Error Codes endpoint - Available in postman collection
+    getTopErrorCodes: builder.query<any, { limit?: number; dateRange?: string }>({
+      query: ({ limit = 10, dateRange = 'today' }) => ({
+        url: `/fleet/obd-telemetry/`,
+        params: {
+          top_errors: true,
+          limit,
+          date_range: dateRange,
+        },
+      }),
+      providesTags: ['Telemetry'],
+    }),
+
+    // Telemetry Aggregated - Available in postman collection
+    getTelemetryAggregated: builder.query<any, { dateRange?: string; startDate?: string; endDate?: string }>({
+      query: ({ dateRange = 'today', startDate, endDate }) => ({
+        url: `/fleet/obd-telemetry/`,
+        params: {
+          aggregated: true,
+          ...(startDate && endDate 
+            ? { start_date: startDate, end_date: endDate }
+            : { date_range: dateRange })
+        }
+      }),
+      providesTags: ['Telemetry'],
+    }),
+
   }),
 });
 
@@ -1066,4 +1114,6 @@ export const {
   useDeleteVehiclePerformanceMutation,
   useGetFleetSettingsQuery,
   useUpdateFleetSettingsMutation,
+  useGetTopErrorCodesQuery,
+  useGetTelemetryAggregatedQuery,
 } = fleetApi;

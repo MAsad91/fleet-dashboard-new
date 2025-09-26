@@ -1,0 +1,145 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin                           [Today | 10d | 30d | 90d | 📅]   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ USERS                                                           │
+│──────────────│                                                                 │
+│   Dashboard  │ Users                                            [+ Add User]   │
+│              │                                                                 │
+│   Vehicles   │ KPI CARDS                                                       │
+│   Drivers    │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐        │
+│   Driver Docs│ │ Total Users    │ │ Active Users   │ │ Admin Users    │        │
+│   Trips      │ │                │ │                │ │                │        │
+│   Telemetry  │ │      54        │ │      48        │ │       6        │        │
+│   Alerts     │ └────────────────┘ └────────────────┘ └────────────────┘        │
+│   Alert Rules│                                                                 │
+│   OBD Devices│ FILTERS                                                         │
+│   SIM Cards  │ ┌────────────────────────────────────────────────────────────┐  │
+│   Maintenance│ │ 🔍 [Search by username, email, name, fleet...]             │  │
+│   Insurance  │ │ Role:     [All ▾]      Status:    [All ▾]                  │  │
+│   Dashcams   │ │ Group:     [All ▾]                            [Apply]     │  │
+│   Firmware   │ └────────────────────────────────────────────────────────────┘  │
+│   Analytics  │                                                                 │
+│   Driver Logs│ USERS TABLE                                        [▢ Select All]│
+│   Performance│ ┌────┬──────────┬────────────┬─────────┬──────────┬──────┬─────────┐ │
+│   Settings   │ │ ▢  │ Username │ Name       │ Role    │ Fleet    │Status│ Last    │ │
+│ ▶ Users      │ ├────┼──────────┼────────────┼─────────┼──────────┼──────┼─────────┤ │
+│              │ │ ▢  │ admin    │ Admin User │ Admin   │ All      │Active│ Now     │ │
+│              │ │ ▢  │ sjohnson │ S. Johnson │ Fleet   │ Acme     │Active│ 1h ago  │ │
+│              │ │ ▢  │ jdoe     │ Jane Doe   │ Driver  │ Acme     │Active│ 3h ago  │ │
+│              │ │ ▢  │ akhan    │ Amir Khan  │ Driver  │ Acme     │Active│ 5h ago  │ │
+│              │ │ ▢  │ rsharma  │ R. Sharma  │ Fleet   │ TrustLog │Active│ 1d ago  │ │
+│              │ │ ▢  │ jpatel   │ J. Patel   │ Manager │ TrustLog │Active│ 2d ago  │ │
+│              │ │ ▢  │ msingh   │ M. Singh   │ Driver  │ Acme     │Locked│ 15d ago │ │
+│              │ │ ▢  │ dlee     │ David Lee  │ Driver  │ FastFlt  │Active│ 8h ago  │ │
+│              │ └────┴──────────┴────────────┴─────────┴──────────┴──────┴─────────┘ │
+│              │                                                                 │
+│              │ ACTIONS                                                         │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ [Bulk Actions ▾] [Export]                   Page 1/3 [◀][▶]│  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### KPI Cards Section
+- **API Endpoint**: `GET /api/users/users/statistics/`
+- **Fields Used**:
+  - `total_users` - Total number of user accounts
+  - `active_users` - Number of active users with is_active=true
+  - `admin_users` - Users with admin privileges or is_staff=true
+
+#### Filters
+- **Search Field**:
+  - **API Parameter**: `search=<term>`
+  - **Implementation**: Searches username, email, first_name, last_name, profile.phone_number, fleet
+  - **Note**: This is the primary way to filter by fleet information
+  
+- **Role Filter**:
+  - **API Parameter**: `profile__role=OEM_ADMIN|FLEET_ADMIN|FLEET_USER|DRIVER|TECHNICIAN`
+  - **Values**: All, OEM_ADMIN, FLEET_ADMIN, FLEET_USER, DRIVER, TECHNICIAN
+  
+- **Status Filter**:
+  - **API Parameter**: `is_active=true|false`
+  - **Values**: All, Active, Inactive
+  
+- **Group Filter**:
+  - **API Parameter**: `exclude_group_id={id}` (helper to exclude users in a group)
+  - **API for Dropdown**: `GET /api/users/groups/`
+  
+- **Behind the Scenes**:
+  - **Fleet Filtering**: `profile__fleet_operator={id}` parameter still supported by API but accessed through search
+  - **Search Implementation**: Server-side search now includes fleet operator name and ID
+
+#### Users Table
+- **API Endpoint**: `GET /api/users/users/`
+- **Query Parameters**: All applied filters
+- **Pagination**: `page` and `page_size` parameters
+- **Columns**:
+  - Checkbox for selection
+  - Username
+  - Name (first_name + last_name)
+  - Role (profile.role)
+  - Fleet (profile.fleet_operator)
+  - Status (is_active)
+  - Last Login (last_login)
+
+- **Row Actions**:
+  - Click on row to navigate to user details page
+  - Select checkboxes for bulk actions
+
+### Bulk Actions
+- **Activate Users**:
+  - **API**: `PUT /api/users/users/{id}/` with `is_active: true`
+  - **Bulk Implementation**: Update multiple users in sequence
+  
+- **Deactivate Users**:
+  - **API**: `PUT /api/users/users/{id}/` with `is_active: false`
+  - **Bulk Implementation**: Update multiple users in sequence
+  
+- **Reset Password**:
+  - **API**: `POST /api/users/forgot_password/` (for each user)
+  - **Bulk Implementation**: Send request for each selected user
+  
+- **Export Users**:
+  - **Format**: CSV/Excel
+  - **Content**: Selected users or filtered list
+
+### Interaction Flow
+
+1. **On Page Load**:
+   - Fetch user statistics with `GET /api/users/users/?page_size=1` (for count)
+   - Fetch active users with `GET /api/users/users/?is_active=true&page_size=1` (for count)
+   - Fetch admin users with `GET /api/users/users/?is_staff=true&page_size=1` (for count)
+   - Load users list with default filters
+
+2. **Filter Application**:
+   - When user selects filters and clicks Apply:
+     - Construct query with selected parameters
+     - Reload users table with filtered data
+     - Update URL parameters for sharing filtered views
+
+3. **Table Interactions**:
+   - Click on user row to navigate to user detail view
+   - Select checkboxes to enable bulk actions
+   - Sort columns by clicking headers (using `ordering` parameter)
+
+4. **Bulk Actions**:
+   - Select multiple users via checkboxes
+   - Click Bulk Actions dropdown and select action
+   - Show confirmation dialog before execution
+   - Execute selected action on all chosen users
+   - Refresh table data after completion
+
+### API Alignment
+All API endpoints used in this implementation match the documentation in auth_users.md:
+- List users: `GET /api/users/users/`
+- User details: `GET /api/users/users/{id}/`
+- Update user: `PUT/PATCH /api/users/users/{id}/`
+- Forgot password: `POST /api/users/forgot_password/`
+- Groups: `GET /api/users/groups/`

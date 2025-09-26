@@ -1,0 +1,167 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin                           [Today | 10d | 30d | 90d | 📅]   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ TRIPS                                                           │
+│──────────────│                                                                 │
+│   Dashboard  │ Trips                                        [+ Create] [Bulk ▾] │
+│              │                                                                 │
+│   Vehicles   │ KPI CARDS                                                       │
+│   Drivers    │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌──────┐│
+│   Driver Docs│ │ Total Trips    │ │ In Progress    │ │ Completed      │ │ Avg  ││
+│ ▶ Trips      │ │                │ │                │ │                │ │Dist. ││
+│   Telemetry  │ │     356        │ │      27        │ │     312        │ │ 45km ││
+│   Alerts     │ └────────────────┘ └────────────────┘ └────────────────┘ └──────┘│
+│   Alert Rules│ ┌────────────────┐ ┌────────────────────────────────────────┐   │
+│   OBD Devices│ │ Cancelled      │ │ Total Distance (Last 30 days)          │   │
+│   SIM Cards  │ │                │ │                                        │   │
+│   Maintenance│ │      17        │ │           14,325 km                    │   │
+│   Insurance  │ └────────────────┘ └────────────────────────────────────────┘   │
+│   Dashcams   │                                                                 │
+│   Firmware   │ FILTERS                                                         │
+│   Analytics  │ ┌────────────────────────────────────────────────────────────┐  │
+│   Driver Logs│ │ 🔍 [Search by trip ID, vehicle, driver, etc...]            │  │
+│   Performance│ │ Status:  [All ▾]      Date Range: [30 Days ▾]      [Apply] │  │
+│   Settings   │ │                                                        │  │
+│   Users      │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ TRIP METRICS                                                    │
+│              │ ┌────────────────────────────────┐ ┌────────────────────────┐  │
+│              │ │ Distance Travelled (30 days)   │ │ Trip Status Breakdown  │  │
+│              │ │                                │ │                        │  │
+│              │ │   ┌─────────────────────────┐  │ │  ┌─────┐              │  │
+│              │ │   │                         │  │ │  │█████│              │  │
+│              │ │   │   █  █   █     █        │  │ │  └─────┘              │  │
+│              │ │   │  █ █ █ █ █ █ █ █  █   █ │  │ │                        │  │
+│              │ │   │ █████████████████████████│  │ │  • Scheduled: 38      │  │
+│              │ │   └─────────────────────────┘  │ │  • In Progress: 27     │  │
+│              │ │     S M T W T F S S M T W T F  │ │  • Completed: 312      │  │
+│              │ │                                │ │  • Cancelled: 17        │  │
+│              │ │ Total: 14,325 km               │ │                        │  │
+│              │ └────────────────────────────────┘ └────────────────────────┘  │
+│              │                                                                 │
+│              │ TRIPS TABLE                                    [▢ Select All]   │
+│              │ ┌────┬──────────┬────────────┬───────────┬─────────────┬──────────┐ │
+│              │ │ ▢  │ Trip ID  │ Vehicle    │ Driver    │ Start → End │ Status   │ │
+│              │ ├────┼──────────┼────────────┼───────────┼─────────────┼──────────┤ │
+│              │ │ ▢  │ T-2025-98│ EV-9012    │ J. Doe    │ 09:30→12:00 │in_progress│ │
+│              │ │ ▢  │ T-2025-87│ EV-4523    │ A. Khan   │ 08:15→10:45 │completed  │ │
+│              │ │ ▢  │ T-2025-76│ EV-8701    │ P. Patel  │ 14:00→16:30 │completed  │ │
+│              │ │ ▢  │ T-2025-65│ EV-3254    │ M. Singh  │ 11:30→13:15 │cancelled  │ │
+│              │ │ ▢  │ T-2025-54│ EV-7712    │ S. Ali    │ 09:45→11:30 │completed  │ │
+│              │ │ ▢  │ T-2025-43│ EV-5411    │ R. Das    │ 13:00→15:30 │in_progress│ │
+│              │ │ ▢  │ T-2025-32│ EV-6623    │ N. Kumar  │ 10:00→12:30 │scheduled  │ │
+│              │ │ ▢  │ T-2025-21│ EV-2134    │ T. Shah   │ 15:30→17:45 │completed  │ │
+│              │ │ ▢  │ T-2025-10│ EV-5593    │ K. Mehta  │ 08:45→10:15 │completed  │ │
+│              │ │ ▢  │ T-2025-09│ EV-7284    │ L. Gupta  │ 12:30→15:00 │scheduled  │ │
+│              │ │ ▢  │ T-2025-08│ EV-3941    │ V. Sharma │ 09:15→11:00 │cancelled  │ │
+│              │ └────┴──────────┴────────────┴───────────┴─────────────┴──────────┘ │
+│              │                                                                 │
+│              │ ACTIONS                                                         │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ [Bulk Actions ▾] [Export ▾]                Page 1/5 [◀][▶] │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### KPI Cards Section
+- **API Endpoint**: `GET /api/fleet/trips/dashboard_stats/`
+- **Query Parameters**: Apply the same filters as used in the trips list
+- **Fields Used**:
+  - `total_trips`
+  - `in_progress_trips`
+  - `completed_trips`
+  - `cancelled_trips`
+  - `average_distance_km`
+  - `total_distance_km` (last 30 days)
+
+#### Trip Metrics Section
+- **Left Chart**: Distance traveled over time (30 days)
+  - **API Endpoint**: `GET /api/fleet/trips/?status=completed&date_range=30days`
+  - **Data Processing**: Aggregate `distance_travelled_km` by day
+  - **X-axis**: Days
+  - **Y-axis**: Total distance traveled (km)
+  
+- **Right Chart**: Trip status breakdown
+  - **API Endpoint**: Same as KPI cards endpoint
+  - **Data Processing**: Format as pie/donut chart
+  - **Segments**: Scheduled, In Progress, Completed, Cancelled
+
+#### Filters
+- **Search Filter**:
+  - **Query Parameter**: `search=<term>`
+  - **Implementation**: Searches across trip ID, vehicle license plate, driver name, etc.
+  - **UI**: Prominent search box with magnifying glass icon
+  - **Note**: Use this for filtering by vehicle, driver, trip ID and other fields
+  
+- **Status Filter**:
+  - **Query Parameter**: `status=scheduled|in_progress|completed|cancelled`
+  - **Values**: All, Scheduled, In Progress, Completed, Cancelled
+  - **UI**: Simple dropdown with fixed status options
+
+- **Date Filter**:
+  - **Query Parameters**: `start_date=YYYY-MM-DD&end_date=YYYY-MM-DD`
+  - **Alternative**: `date_range=today|10days|30days|90days` 
+  - **UI**: Dropdown with preset options for common date ranges
+
+#### Trips Table
+- **API Endpoint**: `GET /api/fleet/trips/`
+- **Query Parameters**: Only using `search`, `status`, and date range parameters
+- **Note**: Using only the built-in trip API parameters for better performance
+- **Columns**:
+  - Checkbox for selection
+  - Trip ID
+  - Vehicle (license plate)
+  - Driver (name)
+  - Start Time → End Time (scheduled or actual)
+  - Status
+
+#### Bulk Actions
+- **Bulk Actions Dropdown**:
+  - **Cancel Selected Trips**:
+    - **API**: `POST /api/fleet/trips/cancel_trips/`
+    - **Request Body**: `{ "selected_trips": [ids...] }`
+  - **Start Selected Trips** (for scheduled trips):
+    - **API**: Multiple calls to `POST /api/fleet/trips/{id}/start/`
+  - **End Selected Trips** (for in-progress trips):
+    - **API**: Multiple calls to `POST /api/fleet/trips/{id}/end/`
+
+- **Export Dropdown**:
+  - **CSV**: Export to CSV format
+  - **Excel**: Export to Excel format
+  - **PDF**: Export to PDF format
+
+### Vehicle Commands
+When using the Command action for in-progress trips, the following options are available:
+- Lock/Unlock vehicle
+- Start/Stop engine
+- Adjust climate control
+- Flash lights/honk horn
+- Send message to vehicle display
+- These are sent through the `POST /api/fleet/trips/{id}/command/` endpoint with appropriate parameters.
+
+### Interaction Flow
+
+1. **On Page Load**:
+   - Fetch dashboard stats with default/saved filters
+   - Load trip metrics charts 
+   - Fetch trip list with default/saved filters
+   - Show relevant row action buttons based on trip status
+
+2. **Filter Application**:
+   - When user selects filters and clicks Apply:
+     - Construct query with selected parameters
+     - Reload dashboard stats, trip metrics, and trip list
+     - Update URL parameters for shareable filtered views
+
+3. **Table & Bulk Actions**:
+   - Select multiple trips via checkboxes
+   - Use Bulk Actions dropdown for operations on selected trips
+   - Use Export dropdown for downloading data in various formats
+   - Table pagination with prev/next buttons

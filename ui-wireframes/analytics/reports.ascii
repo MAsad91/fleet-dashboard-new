@@ -1,0 +1,197 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin                           [Today | 10d | 30d | 90d | 📅]   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ ANALYTICS REPORTS                                               │
+│──────────────│                                                                 │
+│   Dashboard  │ Analytics Reports                                   [Export ▾]  │
+│              │                                                                 │
+│   Vehicles   │ KPI CARDS                                                       │
+│   Drivers    │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐        │
+│   Driver Docs│ │ Total Reports  │ │ Last Generated │ │ Saved Reports  │        │
+│   Trips      │ │                │ │                │ │                │        │
+│   Telemetry  │ │      12        │ │  Just Now      │ │      5         │        │
+│   Alerts     │ └────────────────┘ └────────────────┘ └────────────────┘        │
+│   Alert Rules│                                                                 │
+│   OBD Devices│ FILTERS                                                         │
+│   SIM Cards  │ ┌────────────────────────────────────────────────────────────┐  │
+│   Maintenance│ │ 🔍 [Search reports...]                                     │  │
+│   Insurance  │ │ Report Type: [Fleet Summary ▾]                             │  │
+│   Dashcams   │ │ Date Range: [Sep 1-25, 2025 ▾]                             │  │
+│   Firmware   │ │ Compare To: [Previous Period ▾]                 [Generate] │  │
+│ ▶ Analytics  │ └────────────────────────────────────────────────────────────┘  │
+│   Driver Logs│                                                                 │
+│   Performance│ REPORT SUMMARY                                                  │
+│   Settings   │ ┌────────────────────────────────────────────────────────────┐  │
+│   Users      │ │ Fleet Summary Report - September 1-25, 2025                │  │
+│              │ │ Generated: September 25, 2025 13:50                        │  │
+│              │ │                                                            │  │
+│              │ │ This report provides a comprehensive overview of fleet      │  │
+│              │ │ performance metrics including utilization, efficiency,      │  │
+│              │ │ maintenance, and operational costs.                        │  │
+│              │ │                                                            │  │
+│              │ │ Highlights:                                                │  │
+│              │ │ • Total Distance: 142,876 km (+12.5% vs previous period)   │  │
+│              │ │ • Fleet Utilization: 68% (+5% vs previous period)          │  │
+│              │ │ • Energy Efficiency: 6.1 km/kWh (no change)                │  │
+│              │ │ • Maintenance Costs: ₹245,800 (-8.3% vs previous period)   │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ PERFORMANCE METRICS                                             │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │                   KEY METRICS COMPARISON                    │  │
+│              │ │                                                            │  │
+│              │ │ Metric               Current     Previous    Change        │  │
+│              │ │ ────────────────── │ ───────── │ ───────── │ ───────────  │  │
+│              │ │ Total Trips         │ 356       │ 329       │ +8.2% ▲      │  │
+│              │ │ Avg Trip Distance   │ 45 km     │ 43 km     │ +4.7% ▲      │  │
+│              │ │ Total Distance      │ 142,876 km│ 127,010 km│ +12.5% ▲     │  │
+│              │ │ Energy Consumed     │ 23,476 kWh│ 20,875 kWh│ +12.5% ▲     │  │
+│              │ │ Energy Efficiency   │ 6.1 km/kWh│ 6.1 km/kWh│ 0.0% ◆       │  │
+│              │ │ Fleet Utilization   │ 68%       │ 63%       │ +5.0% ▲      │  │
+│              │ │ Driver Rating       │ 4.7       │ 4.6       │ +2.2% ▲      │  │
+│              │ │ Maintenance Events  │ 42        │ 48        │ -12.5% ▼     │  │
+│              │ │ Maintenance Costs   │ ₹245,800  │ ₹268,200  │ -8.3% ▼      │  │
+│              │ │ Vehicle Downtime    │ 96 days   │ 114 days  │ -15.8% ▼     │  │
+│              │ │ CO₂ Emissions Saved │ 12.6 tons │ 11.2 tons │ +12.5% ▲     │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ TREND ANALYSIS                                                  │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │                    MONTHLY TREND ANALYSIS                   │  │
+│              │ │                                                            │  │
+│              │ │  ┌────────────────────────────────────────────────────┐    │  │
+│              │ │  │                                                    │    │  │
+│              │ │  │                      ▄▄▄▄▄                         │    │  │
+│              │ │  │                 ▄▄▄▄▄█████                         │    │  │
+│              │ │  │            ▄▄▄▄▄██████████                         │    │  │
+│              │ │  │       ▄▄▄▄▄████████████████▄▄▄▄                    │    │  │
+│              │ │  │  ▄▄▄▄▄███████████████████████████▄▄▄▄              │    │  │
+│              │ │  │                                                    │    │  │
+│              │ │  └────────────────────────────────────────────────────┘    │  │
+│              │ │   Apr    May    Jun    Jul    Aug    Sep                   │  │
+│              │ │                                                            │  │
+│              │ │  ━━━ Total Distance   ━━━ Fleet Utilization               │  │
+│              │ │  ━━━ Energy Efficiency ━━━ Maintenance Costs               │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ VEHICLE PERFORMANCE                                             │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │               TOP 5 VEHICLES BY EFFICIENCY                 │  │
+│              │ │                                                            │  │
+│              │ │ Vehicle    │ Distance │ Energy   │ Efficiency │ Utilization│  │
+│              │ │ ─────────── │ ──────── │ ──────── │ ─────────── │ ──────────│  │
+│              │ │ EV-5431    │ 2,453 km │ 354 kWh  │ 6.9 km/kWh  │ 82%       │  │
+│              │ │ EV-9812    │ 3,125 km │ 462 kWh  │ 6.8 km/kWh  │ 76%       │  │
+│              │ │ EV-3387    │ 2,845 km │ 431 kWh  │ 6.6 km/kWh  │ 69%       │  │
+│              │ │ EV-8810    │ 3,254 km │ 497 kWh  │ 6.5 km/kWh  │ 78%       │  │
+│              │ │ EV-2198    │ 2,751 km │ 429 kWh  │ 6.4 km/kWh  │ 72%       │  │
+│              │ │                                                            │  │
+│              │ │               BOTTOM 5 VEHICLES BY EFFICIENCY              │  │
+│              │ │                                                            │  │
+│              │ │ Vehicle    │ Distance │ Energy   │ Efficiency │ Utilization│  │
+│              │ │ ─────────── │ ──────── │ ──────── │ ─────────── │ ──────────│  │
+│              │ │ EV-1149    │ 1,852 km │ 339 kWh  │ 5.5 km/kWh  │ 56%       │  │
+│              │ │ EV-4523    │ 2,143 km │ 388 kWh  │ 5.5 km/kWh  │ 63%       │  │
+│              │ │ EV-6721    │ 1,953 km │ 345 kWh  │ 5.7 km/kWh  │ 59%       │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ RECOMMENDATIONS                                                 │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ Based on the analysis, we recommend:                       │  │
+│              │ │                                                            │  │
+│              │ │ 1. Investigate low efficiency in vehicles EV-1149, EV-4523,│  │
+│              │ │    and EV-6721. Consider maintenance check or driver       │  │
+│              │ │    training.                                              │  │
+│              │ │                                                            │  │
+│              │ │ 2. Optimize vehicle assignment to increase overall fleet   │  │
+│              │ │    utilization from current 68% to target 75%.             │  │
+│              │ │                                                            │  │
+│              │ │ 3. Schedule preventative maintenance for high-utilization  │  │
+│              │ │    vehicles to prevent unexpected downtime.                │  │
+│              │ │                                                            │  │
+│              │ │ 4. Review routes for vehicles with below-average efficiency│  │
+│              │ │    to identify optimization opportunities.                 │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### Report Options
+- **Report Type Dropdown**:
+  - **Options**: Fleet Summary, Cost Analysis, Vehicle Comparison, Efficiency Report, Driver Ranking, Maintenance Forecast
+  - **API Parameter**: `report_type`
+  
+- **Date Range Picker**:
+  - **Default**: Last 30 days or custom range
+  - **API Parameters**: `date_range` or `start_date`/`end_date`
+  
+- **Compare To Dropdown**:
+  - **Options**: Previous Period, Same Period Last Year, No Comparison
+  - **API Parameter**: `compare_to`
+
+- **Generate Button**:
+  - **Action**: Refreshes report with selected options
+  - **API Call**: `GET /api/fleet/analytics/`
+
+#### Report Sections
+- **API Endpoint**: `GET /api/fleet/analytics/` with appropriate parameters
+- **Fields Used**: All analytics metrics from analytics.md documentation
+
+#### Report Data
+- Uses the standard analytics API with appropriate filters and metrics
+- For time series data (trends), uses aggregated data from domain endpoints
+
+### Filters
+- **Report Type Filter**:
+  - Maps to specific metrics and visualizations
+  - Each report type has predefined metrics of interest
+
+- **Date Range Filter**:
+  - Maps directly to API parameters
+  - Controls the data window for all metrics
+
+- **Compare To Filter**:
+  - Controls comparative analysis functionality
+  - Shows current period data alongside historical data
+
+- **Dashboard Integration**:
+  - Reports page accepts URL parameters from dashboard shortcuts
+  - Expected parameters: `report_type`, `date_range` (or `start_date`/`end_date`)
+  - When loaded with these parameters, auto-selects appropriate options
+  - Auto-generates report based on received parameters
+  - Controls comparison behavior
+  - Previous Period: Compare to previous equal time period
+  - Same Period Last Year: Compare to same dates last year
+  - No Comparison: Show only current data
+
+### Export Options
+- **Formats**: PDF Report, Excel, CSV
+- **API**: `GET /api/fleet/analytics/export/?format=pdf|excel|csv`
+
+### Interaction Flow
+
+1. **On Page Load**:
+   - Load report with default options (Fleet Summary, Last 30 days)
+   - Display all report sections with initial data
+
+2. **Filter Changes**:
+   - When filters are changed and Generate is clicked:
+     - Construct query with selected options
+     - Reload report data with new parameters
+     - Update all visualizations and tables
+
+3. **Export Actions**:
+   - When Export is clicked:
+     - Generate export with current report configuration
+     - Download file in selected format
+
+### Notes
+- Reports use consistent data sources with the main analytics dashboard
+- The filter section follows the OBD devices list page pattern
+- All API endpoints are aligned with the analytics.md documentation
+- Report types focus on different aspects of fleet performance

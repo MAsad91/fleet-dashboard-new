@@ -1,6 +1,7 @@
 "use client";
 
 import { useDashboard } from "@/contexts/DashboardContext";
+import { useGetTopErrorCodesQuery } from "@/store/api/fleetApi";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 import { AlertTriangle } from "lucide-react";
@@ -13,7 +14,13 @@ interface TopErrorCodesChartProps {
 }
 
 export function TopErrorCodesChart({ className }: TopErrorCodesChartProps) {
-  const { summary, loading } = useDashboard();
+  const { summary, loading: dashboardLoading } = useDashboard();
+  const { data: errorCodesData, isLoading: errorCodesLoading, error: errorCodesError } = useGetTopErrorCodesQuery({
+    limit: 10,
+    dateRange: 'today'
+  });
+
+  const loading = dashboardLoading || errorCodesLoading;
 
   if (loading) {
     return (
@@ -26,8 +33,9 @@ export function TopErrorCodesChart({ className }: TopErrorCodesChartProps) {
     );
   }
 
-  // Mock data since top_error_codes API might not be available
-  const topErrorCodes = summary?.top_error_codes || [
+
+  // Use real API data if available, fallback to dashboard summary, then mock data
+  const topErrorCodes = errorCodesData?.top_error_codes || errorCodesData?.results || summary?.top_error_codes || [
     { code: "P0301", description: "Cylinder 1 Misfire", count: 15 },
     { code: "P0171", description: "System Too Lean", count: 12 },
     { code: "P0420", description: "Catalyst Efficiency", count: 10 },
@@ -41,10 +49,10 @@ export function TopErrorCodesChart({ className }: TopErrorCodesChartProps) {
   const chartData = {
     series: [{
       name: "Error Count",
-      data: topErrorCodes.map(error => error.count),
+      data: topErrorCodes.map((error: any) => error.count),
     }],
-    categories: topErrorCodes.map(error => error.code),
-    labels: topErrorCodes.map(error => `${error.code}: ${error.description}`),
+    categories: topErrorCodes.map((error: any) => error.code),
+    labels: topErrorCodes.map((error: any) => `${error.code}: ${error.description || 'No description'}`),
   };
 
   const chartOptions = {
@@ -107,7 +115,7 @@ export function TopErrorCodesChart({ className }: TopErrorCodesChartProps) {
       y: {
         formatter: function(value: number, { dataPointIndex }: any) {
           const error = topErrorCodes[dataPointIndex];
-          return `${value} vehicles - ${error.description}`;
+          return `${value} vehicles - ${error.description || error.code}`;
         },
       },
     },
@@ -131,7 +139,26 @@ export function TopErrorCodesChart({ className }: TopErrorCodesChartProps) {
     ],
   };
 
-  const totalErrors = topErrorCodes.reduce((sum, error) => sum + error.count, 0);
+  const totalErrors = topErrorCodes.reduce((sum: number, error: any) => sum + error.count, 0);
+
+  // Show error state if API fails and no fallback data
+  if (errorCodesError && !summary?.top_error_codes) {
+    return (
+      <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="text-sm font-medium text-body-color dark:text-body-color-dark flex items-center">
+            <AlertTriangle className="h-4 w-4 mr-2 text-red-500" />
+            Top Error Codes
+          </h4>
+        </div>
+        <div className="text-center py-8">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Unable to load error codes data
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>
@@ -160,11 +187,11 @@ export function TopErrorCodesChart({ className }: TopErrorCodesChartProps) {
           Error Descriptions:
         </div>
         <div className="grid grid-cols-1 gap-1 text-xs">
-          {topErrorCodes.slice(0, 4).map((error, index) => (
+          {topErrorCodes.slice(0, 4).map((error: any, index: number) => (
             <div key={index} className="flex items-center space-x-2">
               <div className="w-3 h-3 bg-red-500 rounded-sm flex-shrink-0"></div>
               <span className="text-gray-700 dark:text-gray-300">
-                <span className="font-medium">{error.code}:</span> {error.description}
+                <span className="font-medium">{error.code}:</span> {error.description || 'No description available'}
               </span>
             </div>
           ))}

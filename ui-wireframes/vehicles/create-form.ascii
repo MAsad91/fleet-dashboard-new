@@ -1,0 +1,242 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin > Vehicles > Create Vehicle                                   [👤]│
+├────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                │
+│ CREATE VEHICLE                                                                 │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ Basic Information                                                          │ │
+│ ├────────────────────────────────────────────────────────────────────────────┤ │
+│ │                                                                            │ │
+│ │ Fleet Operator*                Vehicle Type*                               │ │
+│ │ ┌─────────────────────────┐    ┌─────────────────────────┐                │ │
+│ │ │ Acme Logistics        ▾ │    │ Select Vehicle Type   ▾ │                │ │
+│ │ └─────────────────────────┘    └─────────────────────────┘                │ │
+│ │                                                                            │ │
+│ │ VIN*                           License Plate*                              │ │
+│ │ ┌─────────────────────────┐    ┌─────────────────────────┐                │ │
+│ │ │                         │    │                         │                │ │
+│ │ └─────────────────────────┘    └─────────────────────────┘                │ │
+│ │                                                                            │ │
+│ │ Make*                          Model*                                      │ │
+│ │ ┌─────────────────────────┐    ┌─────────────────────────┐                │ │
+│ │ │                         │    │                         │                │ │
+│ │ └─────────────────────────┘    └─────────────────────────┘                │ │
+│ │                                                                            │ │
+│ │ Year*                          Status*                                     │ │
+│ │ ┌─────────────────────────┐    ┌─────────────────────────┐                │ │
+│ │ │                         │    │ available             ▾ │                │ │
+│ │ └─────────────────────────┘    └─────────────────────────┘                │ │
+│ │                                                                            │ │
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ Vehicle Details                                                           │ │
+│ ├────────────────────────────────────────────────────────────────────────────┤ │
+│ │                                                                            │ │
+│ │ Color                           Seating Capacity                           │ │
+│ │ ┌─────────────────────────┐    ┌─────────────────────────┐                │ │
+│ │ │                         │    │                         │                │ │
+│ │ └─────────────────────────┘    └─────────────────────────┘                │ │
+│ │                                                                            │ │
+│ │ Fuel Type                      Transmission Type                           │ │
+│ │ ┌─────────────────────────┐    ┌─────────────────────────┐                │ │
+│ │ │ Electric             ▾ │    │ Automatic            ▾ │                │ │
+│ │ └─────────────────────────┘    └─────────────────────────┘                │ │
+│ │                                                                            │ │
+│ │ Battery Capacity (kWh)*        Current Battery Level (%)*                  │ │
+│ │ ┌─────────────────────────┐    ┌─────────────────────────┐                │ │
+│ │ │                         │    │                         │                │ │
+│ │ └─────────────────────────┘    └─────────────────────────┘                │ │
+│ │                                                                            │ │
+│ │ Mileage (km)                   Efficiency (km/kWh)                         │ │
+│ │ ┌─────────────────────────┐    ┌─────────────────────────┐                │ │
+│ │ │                         │    │                         │                │ │
+│ │ └─────────────────────────┘    └─────────────────────────┘                │ │
+│ │                                                                            │ │
+│ │ Warranty Expiry Date                                                      │ │
+│ │ ┌─────────────────────────┐                                               │ │
+│ │ │                         │                                               │ │
+│ │ └─────────────────────────┘                                               │ │
+│ │                                                                            │ │
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ Location & Features                                                       │ │
+│ ├────────────────────────────────────────────────────────────────────────────┤ │
+│ │                                                                            │ │
+│ │ Last Known Location                                                       │ │
+│ │ ┌────────────────────┐  ┌────────────────────┐  [📍 Pick on Map]          │ │
+│ │ │ Latitude           │  │ Longitude          │                           │ │
+│ │ └────────────────────┘  └────────────────────┘                           │ │
+│ │                                                                            │ │
+│ │ Features                                                                  │ │
+│ │ [✓] Alerts Enabled     [  ] OTA Enabled                                   │ │
+│ │                                                                            │ │
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│                                                                                │
+│ ┌────────────────────────────────────────────────────────────────────────────┐ │
+│ │ Note: OBD devices and SIM cards are managed separately after vehicle creation.│
+│ └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                │
+│                                                                                │
+│                                         [Cancel]   [Create Vehicle]            │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### Form Fields
+
+The vehicle creation form captures all writeable fields for a vehicle. The required fields are marked with an asterisk (*).
+
+- **Basic Information**:
+  - **Fleet Operator*** (dropdown):
+    - **API**: `GET /api/fleet/fleet-operators/`
+    - **Notes**: Pre-selected for non-admin users and may be disabled
+  
+  - **Vehicle Type*** (dropdown):
+    - **API**: `GET /api/fleet/vehicle-types/`
+    - **Notes**: Uses `id` as value, shows `name` and `category`
+  
+  - **VIN*** (text):
+    - **Validation**: Must be unique
+    - **Notes**: Vehicle Identification Number
+  
+  - **License Plate*** (text):
+    - **Notes**: Registration plate number
+  
+  - **Make*** (text):
+    - **Notes**: Vehicle manufacturer
+  
+  - **Model*** (text):
+    - **Notes**: Vehicle model name
+  
+  - **Year*** (number):
+    - **Validation**: Valid year format
+  
+  - **Status*** (dropdown):
+    - **Options**: available, in_service, maintenance, retired
+    - **Default**: available
+
+- **Vehicle Details**:
+  - **Color** (text):
+    - **Notes**: Vehicle color
+  
+  - **Seating Capacity** (number):
+    - **Notes**: Number of passenger seats
+  
+  - **Fuel Type** (dropdown):
+    - **Default**: Electric
+    - **Options**: Electric, Hybrid, Gasoline, Diesel, etc.
+  
+  - **Transmission Type** (dropdown):
+    - **Default**: Automatic
+    - **Options**: Automatic, Manual, etc.
+  
+  - **Battery Capacity (kWh)*** (number):
+    - **Validation**: Must be > 0
+  
+  - **Current Battery Level (%)*** (number):
+    - **Validation**: 0-100 range
+  
+  - **Mileage (km)** (number):
+    - **Notes**: Current odometer reading
+  
+  - **Efficiency (km/kWh)** (number):
+    - **Notes**: Vehicle efficiency rating
+  
+  - **Warranty Expiry Date** (date):
+    - **Format**: YYYY-MM-DD
+
+- **Location & Features**:
+  - **Last Known Location** (coordinates):
+    - **Format**: Latitude and longitude as decimal numbers
+    - **Notes**: Will be converted to GeoJSON on submission
+  
+  - **Features** (checkboxes):
+    - **Alerts Enabled**: Boolean flag for alert generation
+    - **OTA Enabled**: Boolean flag for over-the-air updates
+
+### Form Submission
+
+- **API Endpoint**: `POST /api/fleet/vehicles/`
+- **Request Body**:
+  ```json
+  {
+    "vin": "VAUZZZ8V5LA567890",
+    "fleet_operator": 3,
+    "license_plate": "EV-5678",
+    "vehicle_type": 3,
+    "alerts_enabled": true,
+    "ota_enabled": false,
+    "make": "Hyundai",
+    "model": "Kona Electric",
+    "year": 2023,
+    "battery_capacity_kwh": 64.0,
+    "current_battery_level": 92.0,
+    "mileage_km": 5200,
+    "warranty_expiry_date": "2026-10-15",
+    "status": "available",
+    "color": "Blue",
+    "seating_capacity": 5,
+    "fuel_type": "Electric",
+    "transmission_type": "Automatic",
+    "last_known_location": { "type": "Point", "coordinates": [78.47258, 17.40406] },
+    "efficiency_km_per_kwh": 5.0
+  }
+  ```
+
+- **Notes**:
+  - Read-only fields (`id`, `created_at`, `health_status`, etc.) should not be included in the request
+  - `last_known_location` needs to be formatted as a GeoJSON point
+  - Date fields should use `YYYY-MM-DD` format
+
+### Edit Form Behavior
+
+When using the same form for editing, make these adjustments:
+
+- **API Endpoint**: `PUT/PATCH /api/fleet/vehicles/{id}/`
+- **Pre-population**: Fetch vehicle details and populate all form fields
+- **Button Label**: Change to "Update Vehicle"
+- **Validation**: Same validations apply as creation, but VIN uniqueness check should exclude the current vehicle
+- **Notes**: Editing may be restricted based on vehicle status (e.g., retired vehicles)
+
+### Location Map Picker
+
+- **Feature**: "Pick on Map" button opens a map interface
+- **Behavior**: 
+  - User can click on the map to select a location
+  - Selected coordinates are automatically filled into latitude/longitude fields
+  - User confirms location by closing the map picker
+
+### Validation Rules
+
+- **Required Fields**: Mark fields with * and validate before submission
+- **VIN Uniqueness**: Check if VIN already exists before submission
+- **Battery Capacity**: Must be greater than 0
+- **Battery Level**: Must be between 0 and 100
+- **Year**: Must be a valid 4-digit year
+- **Numeric Fields**: Validate as numbers with appropriate ranges
+- **Date Fields**: Validate date format YYYY-MM-DD
+
+### User Experience
+
+- **Form Layout**: Group related fields together in sections
+- **Field Order**: Arrange from most to least important
+- **Help Text**: Provide explanations for complex fields
+- **Error Messages**: Display clear error messages for validation failures
+- **Required Fields**: Visually indicate which fields are required
+- **Dropdowns**: Use select inputs for fields with predefined options
+- **Checkboxes**: Use for boolean options (alerts_enabled, ota_enabled)
+
+### After Submission
+
+- **Success**: Redirect to vehicle detail page with success message
+- **Error**: Show validation errors inline with fields and summary at top
+- **Next Steps**: Provide links to create related OBD devices and SIM cards

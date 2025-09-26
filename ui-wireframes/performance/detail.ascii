@@ -1,0 +1,222 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin > Performance > Driver Detail                                 [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ DRIVER PERFORMANCE DETAIL                                       │
+│──────────────│                                                                 │
+│   Dashboard  │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ Driver: Jane Doe                              [◀ Back]    │  │
+│   Vehicles   │ │ Overall Score: 94/100                   Period: Sep 1-25, 2025│
+│   Drivers    │ └────────────────────────────────────────────────────────────┘  │
+│   Driver Docs│                                                                 │
+│   Trips      │ SCORE OVERVIEW                                                  │
+│   Telemetry  │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌──────┐│
+│   Alerts     │ │ Safety Score   │ │ Eco Score      │ │ Efficiency     │ │Trips ││
+│   Alert Rules│ │                │ │                │ │                │ │      ││
+│   OBD Devices│ │     96/100     │ │     92/100     │ │     94/100     │ │  42  ││
+│   SIM Cards  │ └────────────────┘ └────────────────┘ └────────────────┘ └──────┘│
+│   Maintenance│                                                                 │
+│   Insurance  │ SCORE BREAKDOWN                                                 │
+│   Dashcams   │ ┌────────────────────────────────────────────────────────────┐  │
+│   Firmware   │ │ COMPONENT SCORES                                           │  │
+│   Analytics  │ │                                                            │  │
+│   Driver Logs│ │ Component    │ Score │ Benchmark │ Trend                   │  │
+│ ▶ Performance│ │ ───────────── │ ───── │ ───────── │ ───────────────────     │  │
+│   Settings   │ │ Harsh Braking │ 98    │ 85        │ ▲ 3% (Excellent)       │  │
+│   Users      │ │ Speeding      │ 95    │ 82        │ ▲ 2% (Excellent)       │  │
+│              │ │ Sharp Turns   │ 97    │ 87        │ ◆ 0% (Excellent)       │  │
+│              │ │ Acceleration  │ 94    │ 79        │ ▲ 4% (Excellent)       │  │
+│              │ │ Eco Driving   │ 92    │ 80        │ ▲ 1% (Excellent)       │  │
+│              │ │ Fuel Economy  │ 91    │ 78        │ ▼ 1% (Very Good)       │  │
+│              │ │ Avg Speed     │ 94    │ 85        │ ▲ 2% (Excellent)       │  │
+│              │ │ Trip Duration │ 92    │ 81        │ ▲ 3% (Excellent)       │  │
+│              │ │ Route Adh.    │ 95    │ 83        │ ▲ 2% (Excellent)       │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ PERFORMANCE TRENDS                                              │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ 6-MONTH PERFORMANCE HISTORY                                │  │
+│              │ │                                                            │  │
+│              │ │ ┌────────────────────────────────────────────────────────┐ │  │
+│              │ │ │                                                        │ │  │
+│              │ │ │                                                ▄▄▄▄    │ │  │
+│              │ │ │                                         ▄▄▄▄▄▄█████    │ │  │
+│              │ │ │                            ▄▄▄▄▄      ██████████████   │ │  │
+│              │ │ │                  ▄▄▄▄▄▄▄▄▄████████▄▄▄▄███████████████   │ │  │
+│              │ │ │      ▄▄▄▄▄▄▄▄▄▄▄█████████████████████████████████████   │ │  │
+│              │ │ │                                                        │ │  │
+│              │ │ └────────────────────────────────────────────────────────┘ │  │
+│              │ │  Apr     May     Jun     Jul     Aug     Sep                │  │
+│              │ │                                                            │  │
+│              │ │  ━━━ Overall   ━━━ Safety   ━━━ Eco                        │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ RECENT TRIPS                                                    │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ Trip ID    │ Date       │ Score │ Safety │ Eco  │ Distance │  │
+│              │ │ ───────── │ ─────────── │ ───── │ ────── │ ───── │ ─────── │  │
+│              │ │ T-2025-98 │ 2025-09-25 │ 95    │ 97     │ 93    │ 43 km   │  │
+│              │ │ T-2025-92 │ 2025-09-24 │ 94    │ 95     │ 92    │ 38 km   │  │
+│              │ │ T-2025-85 │ 2025-09-23 │ 96    │ 98     │ 94    │ 52 km   │  │
+│              │ │ T-2025-78 │ 2025-09-22 │ 93    │ 96     │ 90    │ 41 km   │  │
+│              │ │ T-2025-72 │ 2025-09-21 │ 95    │ 97     │ 93    │ 45 km   │  │
+│              │ │                                                            │  │
+│              │ │ [View All Trips]                                           │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ SAFETY EVENTS                                                   │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ Event Type     │ Count │ Benchmark │ Trend                 │  │
+│              │ │ ───────────── │ ───── │ ───────── │ ───────────────      │  │
+│              │ │ Harsh Braking  │ 2     │ 12        │ ▼ 83% (Excellent)     │  │
+│              │ │ Speeding       │ 3     │ 15        │ ▼ 80% (Excellent)     │  │
+│              │ │ Sharp Turn     │ 1     │ 8         │ ▼ 88% (Excellent)     │  │
+│              │ │ Rapid Accel.   │ 2     │ 10        │ ▼ 80% (Excellent)     │  │
+│              │ │                                                            │  │
+│              │ │ [View Safety Event Details]                                │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ RECOMMENDATIONS                                                 │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ • Driver is performing excellently across most metrics      │  │
+│              │ │ • Consider using as a mentor for lower-performing drivers   │  │
+│              │ │ • Small opportunity for improvement in fuel economy score   │  │
+│              │ │ • Eligible for quarterly performance bonus                  │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+│              │ ACTIONS                                                         │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ [Download Report] [Send Feedback] [Compare With Others]     │  │
+│              │ └────────────────────────────────────────────────────────────┘  │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### Driver Information Header
+- **API Endpoint**: `GET /api/fleet/performance/drivers/{id}/`
+- **Fields Used**:
+  - `driver_id`, `first_name`, `last_name`
+  - `overall_score` - Combined performance score
+  - Period dates from URL parameters
+
+#### Score Overview
+- **API Endpoint**: Same driver performance endpoint
+- **Fields Used**:
+  - `safety_score` - Safety performance score
+  - `eco_score` - Environmental/fuel efficiency score
+  - `efficiency_score` - Trip efficiency score
+  - `trip_count` - Total trips in period
+
+#### Score Breakdown
+- **API Endpoint**: `GET /api/fleet/performance/drivers/{id}/components/`
+- **Fields Used**:
+  - Component names and scores
+  - Fleet benchmark averages
+  - Trend indicators (change from previous period)
+  - Performance ratings (Excellent, Very Good, Good, etc.)
+
+#### Performance Trends
+- **API Endpoint**: `GET /api/fleet/performance/drivers/{id}/trends/`
+- **Fields Used**:
+  - Time series data for overall, safety, and eco scores
+  - Monthly data points for 6-month history
+
+#### Recent Trips
+- **API Endpoint**: `GET /api/fleet/trips/?driver={id}&limit=5`
+- **Fields Used**:
+  - Trip ID and date
+  - Performance scores for each trip
+  - Trip distance
+
+#### Safety Events
+- **API Endpoint**: `GET /api/fleet/performance/drivers/{id}/events/`
+- **Fields Used**:
+  - Safety event types and counts
+  - Fleet benchmark averages
+  - Trend indicators (change from previous period)
+
+#### Recommendations
+- **API Endpoint**: `GET /api/fleet/performance/drivers/{id}/recommendations/`
+- **Fields Used**:
+  - AI-generated or rule-based recommendations
+  - Performance improvement suggestions
+  - Recognition and reward eligibility
+
+### Action Buttons
+
+#### Download Report
+- **API Endpoint**: `GET /api/fleet/performance/drivers/{id}/report/?format=pdf`
+- **Action**: Downloads complete performance report in PDF format
+
+#### Send Feedback
+- **API Endpoint**: `POST /api/fleet/performance/drivers/{id}/feedback/`
+- **Action**: Opens a modal to send feedback to the driver
+- **Purpose**: Coaching and recognition mechanism
+
+#### Compare With Others
+- **API Endpoint**: `GET /api/fleet/performance/drivers/compare/?ids={id},{id2},{id3}`
+- **Action**: Opens comparison view with selected drivers
+- **Purpose**: Benchmarking and relative performance analysis
+
+### Interaction Flow
+
+1. **On Page Load**:
+   - Fetch driver performance data for specified period
+   - Load score breakdown and components
+   - Load performance trends chart
+   - Load recent trips and safety events
+   - Generate recommendations
+
+2. **Period Selection**:
+   - When user changes the time period:
+     - Update URL parameters
+     - Reload all sections with new period data
+     - Update trend calculations and benchmarks
+
+3. **Navigation Links**:
+   - View All Trips: Navigate to trips list filtered by this driver
+   - View Safety Event Details: Navigate to detailed safety event listing
+
+4. **Action Button Clicks**:
+   - Download Report: Generate and download PDF report
+   - Send Feedback: Open feedback form modal
+   - Compare With Others: Navigate to comparison view
+
+### Alternative View - Vehicle Performance Detail
+
+The wireframe and implementation can be adapted for vehicle performance detail by changing:
+1. Title to "Vehicle Performance Detail"
+2. Driver name to vehicle identifier
+3. Component scores to include:
+   - Energy Efficiency
+   - Battery Health
+   - Maintenance Adherence
+   - Utilization Rate
+   - Downtime
+4. Recent trips to show trips by this vehicle
+5. Safety events to show vehicle-specific incidents
+
+### Visual Indicators
+
+- **Score Ratings**:
+  - 90-100: Excellent (Green)
+  - 80-89: Very Good (Light Green)
+  - 70-79: Good (Yellow)
+  - 60-69: Fair (Orange)
+  - <60: Needs Improvement (Red)
+  
+- **Trend Indicators**:
+  - Improvement: Upward arrow (▲) in green
+  - Decline: Downward arrow (▼) in red
+  - No change: Diamond (◆) in gray
+
+### Notes
+
+- Performance metrics are normalized for fair comparison
+- Benchmarks represent fleet-wide averages
+- Trends show change from previous equivalent period
+- Recommendations adapt based on performance profile

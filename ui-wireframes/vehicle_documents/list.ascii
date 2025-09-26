@@ -1,0 +1,155 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin                           [Today | 10d | 30d | 90d | 📅]   [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ VEHICLE DOCUMENTS                                               │
+│──────────────│                                                                 │
+│   Dashboard  │ Vehicle Documents                             [+ Create] [Bulk ▾]│
+│              │                                                                 │
+│   Vehicles   │ KPI CARDS                                                       │
+│ ▶ Vehicle Docs│ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐        │
+│   Drivers    │ │ Total Documents│ │ Active Docs    │ │ Expiring ≤30d  │        │
+│   Driver Docs│ │                │ │                │ │                │        │
+│   Trips      │ │     142        │ │     138        │ │      15        │        │
+│   Telemetry  │ └────────────────┘ └────────────────┘ └────────────────┘        │
+│   Alerts     │                                                                 │
+│   Alert Rules│                                                                 │
+│   OBD Devices│ ┌────────────────────────────────────────────────────────────┐  │
+│   SIM Cards  │ │ 🔍 [Search document number, vehicle, type...]              │  │
+│   Maintenance│ │ [Doc Type ▾] [Status ▾] [Expiry Date ▾]                 │  │
+│   Insurance  │ │                                                   [Apply]   │  │
+│   Dashcams   │ │ ◯ Simple   ◉ Advanced                                        │  │
+│   Firmware   │ └────────────────────────────────────────────────────────────┘  │
+│   Analytics  │                                                                 │
+│   Driver Logs│ DOCUMENTS TABLE                                 [▢ Select All] │
+│   Performance│ ┌────┬────────┬───────────┬────────┬──────────┬──────────┬────┐ │
+│   Settings   │ │ ▢  │ Vehicle │ Type      │ Number │ Issue    │ Expiry   │ Act│ │
+│   Users      │ ├────┼────────┼───────────┼────────┼──────────┼──────────┼────┤ │
+│   Groups &   │ │ ▢  │ EV-9812 │ Insurance │ POL-123│ 2024-01-15│ 2025-01-15│ ✅ │ │
+│   Permissions│ │ ▢  │ EV-4523 │ Registrat.│ REG-789│ 2023-06-01│ 2028-06-01│ ✅ │ │
+│              │ │ ▢  │ EV-6721 │ Warranty  │ WAR-456│ 2023-09-15│ 2026-09-15│ ✅ │ │
+│              │ │ ▢  │ EV-1149 │ Battery   │ BAT-234│ 2024-03-10│ 2025-03-10│ ✅ │ │
+│              │ │ ▢  │ EV-8810 │ Software  │ SW-678 │ 2024-02-05│ N/A      │ ✅ │ │
+│              │ │ ▢  │ EV-3387 │ Insurance │ POL-567│ 2023-12-20│ 2024-12-20│ ✅ │ │
+│              │ │ ▢  │ EV-5431 │ Registrat.│ REG-901│ 2022-08-15│ 2027-08-15│ ✅ │ │
+│              │ │ ▢  │ EV-2198 │ Other     │ DOC-123│ 2024-04-30│ N/A      │ ❌ │ │
+│              │ └────┴────────┴───────────┴────────┴──────────┴──────────┴────┘ │
+│              │                                                                 │
+│              │ ACTIONS                                                         │
+│              │ ┌────────────────────────────────────────────────────────────┐  │
+│              │ │ [Select All] [Delete Selected]               Page 1/18 [◀][▶]│ │
+│              │ └────────────────────────────────────────────────────────────┘  │
+│              │                                                                 │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### KPI Cards Section
+- **API Endpoint**: Client-side computation from `GET /api/fleet/vehicle-documents/`
+- **Fields Used**:
+  - `total` - Total number of vehicle documents
+  - `active_count` - Number of documents with is_active=true
+  - `expiring_30d_count` - Documents expiring within 30 days
+
+#### Filters
+- **Search Field**:
+  - **Query Parameter**: `search=<term>`
+  - **Implementation**: Searches across document number, vehicle license plate, and document type fields
+  - **UI Component**: Prominent search box with magnifying glass icon
+  - **Usage**: As user types, filters document list to show only matching results
+  - **Note**: Use this for finding documents by vehicle - no separate vehicle filter needed
+
+- **Doc Type Filter**:
+  - **Implementation**: Client-side filtering based on `doc_type` field
+  - **Values**: All, Registration, Insurance, Battery Test, Software, Warranty, Other
+  
+- **Status Filter**:
+  - **Implementation**: Client-side filtering based on `is_active` field
+  - **Values**: All, Active, Inactive
+
+- **Expiry Date Filter**:
+  - **Implementation**: Client-side filtering based on `expiry_date` field
+  - **Values**: All, Expired, Expiring in 30 days, Expiring in 90 days, Valid
+
+- **Simple/Advanced Toggle**:
+  - Simple view shows only most commonly used filters
+  - Advanced view shows all available filters
+
+#### Documents Table
+- **API Endpoint**: `GET /api/fleet/vehicle-documents/`
+- **Query Parameters**:
+  - `search=<term>`: Search across document fields
+  - Other filters handled client-side
+- **Note**: For best performance, use the search parameter when possible
+- **Columns**:
+  - Checkbox for selection
+  - Vehicle (license plate)
+  - Document Type
+  - Document Number
+  - Issue Date
+  - Expiry Date
+  - Active Status
+  
+- **Row Actions**:
+  - Click on row to navigate to document detail page
+  - Select checkboxes for bulk actions
+  
+- **Expiry Highlighting**:
+  - Documents expiring within 30 days should have their entire row or expiry date highlighted in red
+  - This replaces the separate Expiring Documents section
+
+#### Bulk Actions
+- **Delete Selected**:
+  - **API**: `DELETE /api/fleet/vehicle-documents/{id}/` (executed for each selected document)
+  - **Permissions**: Admin users only
+
+### Interaction Flow
+
+1. **On Page Load**:
+   - Fetch all vehicle documents
+   - Apply client-side filtering based on default or saved filters
+   - Calculate KPIs from the filtered data
+   - Highlight expiring documents directly in the table
+
+2. **Filter Application**:
+   - When user selects filters and clicks Apply:
+     - Apply client-side filtering based on selected criteria
+     - Update document table with filtered results
+     - Recalculate KPIs based on filtered data
+     - Maintain highlighting for expiring documents
+
+3. **Table Interactions**:
+   - Click on document row to navigate to document detail view
+   - Select checkboxes to enable bulk actions
+   - Sort columns by clicking on column headers
+
+4. **Bulk Actions**:
+   - Select multiple documents via checkboxes
+   - Click Delete Selected to delete the selected documents
+   - Show confirmation dialog before executing bulk actions
+
+5. **Pagination**:
+   - Navigate between pages with prev/next buttons
+   - Client-side pagination implementation
+
+### Visual Indicators
+
+- **Active Status**:
+  - Active: Green checkmark (✅)
+  - Inactive: Red X (❌)
+  
+- **Expiring Documents**:
+  - Color-coded based on time remaining directly in the main table:
+    - <7 days: Bright red
+    - <30 days: Red
+    - <90 days: Orange
+    - ≥90 days: Normal text color
+
+### Create Button
+
+- Opens the Create Vehicle Document form
+- Form details are in the create-form.ascii wireframe

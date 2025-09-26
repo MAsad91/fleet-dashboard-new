@@ -13,22 +13,55 @@ import { OBDMetricsSnapshot } from "./_components/obd-metrics-snapshot";
 import { DeviceHealthCard } from "./_components/device-health-card";
 import { SimUsageCard } from "./_components/sim-usage-card";
 import { BatteryHealthCard } from "./_components/battery-health-card";
-import { EnergyConsumptionChart } from "./_components/energy-consumption-chart";
-import { BatteryHealthFleetChart } from "./_components/battery-health-fleet-chart";
+// import { EnergyConsumptionChart } from "./_components/energy-consumption-chart"; // COMMENTED OUT: No API
+// import { BatteryHealthFleetChart } from "./_components/battery-health-fleet-chart"; // COMMENTED OUT: No API
 import { MostActiveVehicle } from "./_components/most-active-vehicle";
 import { VehicleStatusPieChart } from "./_components/vehicle-status-pie-chart";
-import { EnergyKPIs } from "./_components/energy-kpis";
+// import { EnergyKPIs } from "./_components/energy-kpis"; // COMMENTED OUT: No API
 import { RecentAlertsTable } from "./_components/recent-alerts-table";
 import { ActiveTripsTable } from "./_components/active-trips-table";
 import { TopErrorCodesChart } from "./_components/top-error-codes-chart";
 import { DistanceChart } from "./_components/distance-chart";
 import { SpeedChart } from "./_components/speed-chart";
+import { DashcamAnalytics } from "./_components/dashcam-analytics";
+import { TelemetryAggregated } from "./_components/telemetry-aggregated";
+import { MaintenanceDashboardCards } from "./_components/maintenance-dashboard-cards";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 // Dashboard content component that can use the dashboard context
 function DashboardContent() {
   const { updateDateRange } = useDashboard();
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [dateRange, setDateRange] = useState("1month");
   const [tenant, setTenant] = useState("acme-logistics");
+  const [activeAnalytics, setActiveAnalytics] = useState<'distance' | 'speed' | 'dashcam' | 'telemetry'>('distance');
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push('/auth/sign-in');
+    }
+  }, [isAuthenticated, authLoading, router]);
+
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render dashboard if not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
   
   // Update dashboard when date range changes
   const handleDateRangeChange = (newRange: string) => {
@@ -38,6 +71,7 @@ function DashboardContent() {
 
   return (
     <>
+
         {/* Header */}
         <div className="mb-6 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
@@ -115,12 +149,19 @@ function DashboardContent() {
         </Suspense>
       </div>
 
-      {/* Row 2: Status & Energy Panel */}
+      {/* Row 2: Maintenance Dashboard */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Maintenance Overview</h2>
+        <MaintenanceDashboardCards dateRange={dateRange} />
+      </div>
+
+      {/* Row 3: Status & Energy Panel */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Status & Energy Panel</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <VehicleStatusPieChart />
-          <EnergyKPIs />
+          {/* EnergyKPIs - COMMENTED OUT: No energy metrics API available */}
+          {/* <EnergyKPIs /> */}
         </div>
       </div>
 
@@ -152,8 +193,8 @@ function DashboardContent() {
         <LiveTrackingMap />
       </div>
 
-      {/* Row 7: Live Telemetry */}
-      <div className="mb-6">
+      {/* Row 7: Live Telemetry - COMMENTED OUT: No WebSocket API available */}
+      {/* <div className="mb-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Live Telemetry</h2>
         <div className="bg-white dark:bg-gray-dark rounded-[10px] p-6 shadow-1">
           <div className="text-center py-12">
@@ -172,7 +213,7 @@ function DashboardContent() {
             <p className="text-xs text-gray-400 mt-2">WebSocket connection required</p>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Row 8: Charts & Tables */}
       <div className="mb-6">
@@ -184,24 +225,78 @@ function DashboardContent() {
         </div>
       </div>
 
-      {/* Row 9: Distance/Speed Time Series Charts */}
+      {/* Row 9: Dynamic Analytics Section */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Analytics & Performance</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="lg:col-span-1">
-            <DistanceChart />
-          </div>
-          <div className="lg:col-span-1">
-            <SpeedChart />
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-4">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Analytics & Performance</h2>
+          
+          {/* Analytics Toggle Buttons */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setActiveAnalytics('distance')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                activeAnalytics === 'distance'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
+              }`}
+            >
+              📊 Distance
+            </button>
+            <button
+              onClick={() => setActiveAnalytics('speed')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                activeAnalytics === 'speed'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
+              }`}
+            >
+              🚗 Speed
+            </button>
+            <button
+              onClick={() => setActiveAnalytics('dashcam')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                activeAnalytics === 'dashcam'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
+              }`}
+            >
+              📹 Dashcam
+            </button>
+            <button
+              onClick={() => setActiveAnalytics('telemetry')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                activeAnalytics === 'telemetry'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
+              }`}
+            >
+              📈 Telemetry
+            </button>
           </div>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          <div className="lg:col-span-1">
-            <EnergyConsumptionChart />
-          </div>
-          <div className="lg:col-span-1">
-            <BatteryHealthFleetChart />
-          </div>
+        
+        {/* Dynamic Analytics Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {activeAnalytics === 'distance' && (
+            <div className="lg:col-span-2">
+              <DistanceChart />
+            </div>
+          )}
+          {activeAnalytics === 'speed' && (
+            <div className="lg:col-span-2">
+              <SpeedChart />
+            </div>
+          )}
+          {activeAnalytics === 'dashcam' && (
+            <div className="lg:col-span-2">
+              <DashcamAnalytics />
+            </div>
+          )}
+          {activeAnalytics === 'telemetry' && (
+            <div className="lg:col-span-2">
+              <TelemetryAggregated />
+            </div>
+          )}
         </div>
       </div>
 

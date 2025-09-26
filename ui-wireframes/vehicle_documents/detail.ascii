@@ -1,0 +1,108 @@
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER                                                                         │
+│  Fleet Admin > Vehicle Documents > Document Detail                         [👤]│
+├──────────────┬─────────────────────────────────────────────────────────────────┤
+│ SIDE NAV     │ VEHICLE DOCUMENT DETAIL                                         │
+│──────────────│                                                                 │
+│   Dashboard  │ [◀ Back]  Document #DOC-123                                    │
+│              │ Vehicle: EV-9812   Type: Insurance                              │
+│   Vehicles   │                                                                 │
+│ ▶ Vehicle Docs│                           [View Vehicle] [Edit] [Delete]        │
+│   Drivers    │                                                                 │
+│   Driver Docs│ KPI CARDS                                                       │
+│   Trips      │ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌──────┐│
+│   Telemetry  │ │ Status         │ │ Expires In     │ │ Expiry Date    │ │ Type ││
+│   Alerts     │ │                │ │                │ │                │ │      ││
+│   Alert Rules│ │     Active     │ │    112 days    │ │  2025-01-15    │ │Insur.││
+│   OBD Devices│ └────────────────┘ └────────────────┘ └────────────────┘ └──────┘│
+│   SIM Cards  │                                                                 │
+│   Maintenance│ DOCUMENT INFORMATION                                            │
+│   Insurance  │ ┌─────────────────────────────┐  ┌───────────────────────────┐  │
+│   Dashcams   │ │ Document Details            │  │ File                      │  │
+│   Firmware   │ │                             │  │                           │  │
+│   Analytics  │ │ • Document ID: DOC-123      │  │ • File Uploaded: Yes      │  │
+│   Driver Logs│ │ • Vehicle: EV-9812          │  │ • File Name: POL-123.pdf  │  │
+│   Performance│ │   Tesla Model Y (2023)      │  │ • Size: 2.4 MB            │  │
+│   Settings   │ │   [View Vehicle]            │  │ • Uploaded: 2024-01-15    │  │
+│   Users      │ │ • Document Type: Insurance  │  │                           │  │
+│   Groups &   │ │ • Document Number: POL-123  │  │ [Preview] [Download]      │  │
+│   Permissions│ │ • Issue Date: 2024-01-15    │  │                           │  │
+│              │ │ • Expiry Date: 2025-01-15   │  │ Document Preview:         │  │
+│              │ │ • Active: Yes               │  │ ┌─────────────────────┐   │  │
+│              │ │ • Created At: 2024-01-15    │  │ │                     │   │  │
+│              │ │ • Created By: Admin User    │  │ │ [PDF Document       │   │  │
+│              │ │                             │  │ │  Preview]           │   │  │
+│              │ │                             │  │ │                     │   │  │
+│              │ │                             │  │ │                     │   │  │
+│              │ │                             │  │ └─────────────────────┘   │  │
+│              │ └─────────────────────────────┘  └───────────────────────────┘  │
+│              │                                                                 │
+└──────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Guide
+
+### Data Sources
+
+#### Vehicle Document Detail
+- **API Endpoint**: `GET /api/fleet/vehicle-documents/{id}/`
+- **Fields Used**:
+  - `id` - Document ID
+  - `vehicle` - Associated vehicle (object with id, license_plate, etc.)
+  - `doc_type` - Document type (insurance, registration, etc.)
+  - `doc_number` - Document identifier/number
+  - `issue_date` - Date of issuance
+  - `expiry_date` - Date of expiration
+  - `is_active` - Active status
+  - `created_at` - Creation timestamp
+  - `created_by` - User who created the document
+  - `doc_file` - Uploaded file (if any)
+
+#### KPI Cards
+- Computed from document details:
+  - Status: Active/Inactive based on `is_active`
+  - Expires In: Calculated from `expiry_date` and current date
+  - Expiry Date: Directly from `expiry_date`
+  - Type: Abbreviated form of `doc_type`
+
+#### File Information
+- If `doc_file` is present:
+  - File name
+  - File size
+  - Upload date (from `created_at`)
+  - Preview capability (for supported file types)
+  - Download capability
+
+### Interaction Flow
+
+1. **On Page Load**:
+   - Fetch document details from `GET /api/fleet/vehicle-documents/{id}/`
+   - Calculate derived values (days to expiration)
+   - Load file preview if available
+
+2. **Action Buttons**:
+   - **View Vehicle**: Navigate to `GET /api/fleet/vehicles/{vehicle_id}/`
+   - **Edit**: Open document edit form with pre-filled values
+   - **Delete**: Send `DELETE /api/fleet/vehicle-documents/{id}/` (admin only)
+   - **Back**: Return to document list view
+   - **Preview**: Open file preview in modal or new tab
+   - **Download**: Trigger file download
+
+### Visual Indicators
+
+- **Status**:
+  - Active: Green text
+  - Inactive: Red text
+  
+- **Expiry**:
+  - <7 days: Red text
+  - <30 days: Orange text
+  - <90 days: Yellow text
+  - ≥90 days: Normal text
+
+### Form Integration
+
+- Edit action opens the document edit form
+- Form pre-filled with current document values
+- Submit updates via `PUT /api/fleet/vehicle-documents/{id}/`
