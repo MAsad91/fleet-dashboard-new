@@ -71,79 +71,45 @@ function DashboardContent() {
 
   return (
     <>
-
-        {/* Header */}
-        <div className="mb-6 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
-            <div>
-              <h1 className="text-2xl font-bold mb-1 text-gray-900 dark:text-white">
-                Fleet Admin Dashboard
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">
-                Welcome back! Here&apos;s what&apos;s happening with your fleet today.
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              {/* Tenant Selector */}
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Tenant:</span>
-                <Select
-                  label=""
-                  items={[
-                    { value: "acme-logistics", label: "Acme Logistics" },
-                    { value: "quick-delivery", label: "Quick Delivery" },
-                    { value: "metro-fleet", label: "Metro Fleet" },
-                  ]}
-                  defaultValue={tenant}
-                  onChange={(e) => setTenant(e.target.value)}
-                  className="w-48"
-                />
-              </div>
-              
-              {/* Date Range Filters */}
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Period:</span>
-                <div className="flex items-center space-x-1">
-                  {["1d", "1 week", "4 week", "1 month"].map((range) => (
-                    <button
-                      key={range}
-                      onClick={() => handleDateRangeChange(range.toLowerCase().replace(' ', ''))}
-                      className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
-                        dateRange === range.toLowerCase().replace(' ', '') 
-                          ? 'bg-blue-600 text-white shadow-sm' 
-                          : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      {range}
-                    </button>
-                  ))}
-                </div>
-                <button
-                  onClick={() => console.log("Custom date range")}
-                  className="ml-2 px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 flex items-center"
-                >
-                  <Calendar className="h-4 w-4" />
-                </button>
-              </div>
-              
-              {/* User Menu */}
-              <div className="flex items-center space-x-3 bg-gray-50 dark:bg-gray-700 rounded-lg px-4 py-2">
-                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                  <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white">Admin User</p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">Fleet Manager</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-
-      {/* Row 1: Key Performance Indicators */}
+      {/* Dashboard Header */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Key Performance Indicators</h2>
+        <h1 className="text-2xl font-bold mb-1 text-gray-900 dark:text-white">
+          Dashboard
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 text-sm">
+          Welcome back! Here&apos;s what&apos;s happening with your fleet today.
+        </p>
+      </div>
+
+      {/* Date Range Selector */}
+      <div className="mb-6 flex items-center space-x-2">
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Date Range:</span>
+        <div className="flex items-center space-x-1">
+          {["Today", "10d", "30d", "90d"].map((range) => (
+            <button
+              key={range}
+              onClick={() => handleDateRangeChange(range.toLowerCase())}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
+                dateRange === range.toLowerCase() 
+                  ? 'bg-blue-600 text-white shadow-sm' 
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'
+              }`}
+            >
+              {range}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() => console.log("Custom date range")}
+          className="ml-2 px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 flex items-center"
+        >
+          <Calendar className="h-4 w-4" />
+        </button>
+      </div>
+
+
+      {/* KPI CARDS */}
+      <div className="mb-6">
         <Suspense fallback={<FleetOverviewCardsSkeleton />}>
           <FleetOverviewCards />
         </Suspense>
@@ -155,9 +121,8 @@ function DashboardContent() {
         <MaintenanceDashboardCards dateRange={dateRange} />
       </div>
 
-      {/* Row 3: Status & Energy Panel */}
+      {/* STATUS & ENERGY */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Status & Energy Panel</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <VehicleStatusPieChart />
           {/* EnergyKPIs - COMMENTED OUT: No energy metrics API available */}
@@ -165,15 +130,13 @@ function DashboardContent() {
         </div>
       </div>
 
-      {/* Row 3: OBD Metrics Snapshot */}
+      {/* OBD METRICS */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">OBD Metrics Snapshot</h2>
         <OBDMetricsSnapshot />
       </div>
 
-      {/* Row 4: Diagnostics */}
+      {/* DIAGNOSTICS */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Diagnostics</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <DeviceHealthCard />
           <SimUsageCard />
@@ -181,15 +144,13 @@ function DashboardContent() {
         </div>
       </div>
 
-      {/* Row 5: Most Active Vehicle */}
+      {/* MOST ACTIVE VEHICLE */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Most Active Vehicle</h2>
         <MostActiveVehicle />
       </div>
 
-      {/* Row 6: Vehicles on Map */}
+      {/* VEHICLE MAP */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Vehicles on Map</h2>
         <LiveTrackingMap />
       </div>
 
@@ -215,9 +176,8 @@ function DashboardContent() {
         </div>
       </div> */}
 
-      {/* Row 8: Charts & Tables */}
+      {/* DATA TABLES */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Charts & Tables</h2>
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <TopErrorCodesChart />
           <RecentAlertsTable />
@@ -225,23 +185,13 @@ function DashboardContent() {
         </div>
       </div>
 
-      {/* Row 9: Dynamic Analytics Section */}
+      {/* FLEET TELEMETRY INSIGHTS */}
       <div className="mb-6">
         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Analytics & Performance</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Fleet Telemetry Insights</h2>
           
           {/* Analytics Toggle Buttons */}
           <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setActiveAnalytics('distance')}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                activeAnalytics === 'distance'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
-              }`}
-            >
-              📊 Distance
-            </button>
             <button
               onClick={() => setActiveAnalytics('speed')}
               className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
@@ -250,7 +200,17 @@ function DashboardContent() {
                   : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
               }`}
             >
-              🚗 Speed
+              Speed
+            </button>
+            <button
+              onClick={() => setActiveAnalytics('distance')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                activeAnalytics === 'distance'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
+              }`}
+            >
+              Battery
             </button>
             <button
               onClick={() => setActiveAnalytics('dashcam')}
@@ -260,7 +220,7 @@ function DashboardContent() {
                   : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
               }`}
             >
-              📹 Dashcam
+              Temperature
             </button>
             <button
               onClick={() => setActiveAnalytics('telemetry')}
@@ -270,21 +230,21 @@ function DashboardContent() {
                   : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
               }`}
             >
-              📈 Telemetry
+              Range
             </button>
           </div>
         </div>
         
         {/* Dynamic Analytics Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {activeAnalytics === 'distance' && (
-            <div className="lg:col-span-2">
-              <DistanceChart />
-            </div>
-          )}
           {activeAnalytics === 'speed' && (
             <div className="lg:col-span-2">
               <SpeedChart />
+            </div>
+          )}
+          {activeAnalytics === 'distance' && (
+            <div className="lg:col-span-2">
+              <DistanceChart />
             </div>
           )}
           {activeAnalytics === 'dashcam' && (

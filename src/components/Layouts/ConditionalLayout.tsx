@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Header } from "./header";
 import { Sidebar } from "./sidebar";
+import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 
 interface ConditionalLayoutProps {
   children: React.ReactNode;
@@ -116,6 +117,8 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
       <div className="w-full bg-gray-2 dark:bg-[#020d1a]">
         <Header />
         <main className="isolate mx-auto w-full max-w-screen-2xl overflow-hidden p-4 md:p-6 2xl:p-10">
+          {/* Don't show breadcrumbs on dashboard */}
+          {pathname !== '/fleet' && <Breadcrumb />}
           {children}
         </main>
       </div>
