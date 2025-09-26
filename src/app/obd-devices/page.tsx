@@ -166,7 +166,7 @@ export default function OBDDevicesPage() {
             <h1 className="text-3xl font-bold tracking-tight">OBD Devices</h1>
           </div>
           <Button
-            label="+ Create"
+            label="Create"
             variant="primary"
             icon={<Plus className="h-4 w-4" />}
             onClick={() => router.push('/obd-devices/add')}

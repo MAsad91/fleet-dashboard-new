@@ -170,7 +170,7 @@ export default function VehicleHistoryPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
-              Vehicle — History (VIN: {vehicle.vin ? `${vehicle.vin.substring(0, 12)}...` : 'N/A'})
+              Vehicle — History (VIN: {vehicle.vin || 'N/A'})
             </h1>
           </div>
           <Button

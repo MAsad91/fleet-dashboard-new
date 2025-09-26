@@ -82,7 +82,7 @@ export default function VehiclePerformancePage() {
             </p>
           </div>
           <Button
-            label="+ Create"
+            label="Create"
             variant="primary"
             icon={<Plus className="h-4 w-4" />}
             onClick={() => router.push('/vehicle-performance/create')}

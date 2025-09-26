@@ -719,7 +719,7 @@ export default function DashcamsPage() {
             {currentView === 'dashcams' && (
               <>
                 <Button
-                  label="+ Create"
+                  label="Create"
                   variant="primary"
                   icon={<Plus className="h-4 w-4" />}
                 />

@@ -156,7 +156,7 @@ export default function VehicleViewPage() {
                         <span className="text-sm font-medium text-gray-600 dark:text-gray-400">VIN</span>
                       </div>
                       <p className="text-sm font-mono text-gray-900 dark:text-white">
-                        {vehicle.vin ? `${vehicle.vin.substring(0, 12)}...` : 'N/A'}
+                        {vehicle.vin || 'N/A'}
                       </p>
                     </div>
                     

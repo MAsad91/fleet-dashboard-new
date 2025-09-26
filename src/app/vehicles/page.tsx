@@ -278,7 +278,7 @@ export default function VehiclesPage() {
           </div>
           <div className="flex items-center space-x-2">
             <Button
-              label="+ Create"
+              label="Create"
               variant="primary"
               icon={<Plus className="h-4 w-4" />}
               onClick={() => router.push('/vehicles/add')}
@@ -639,7 +639,7 @@ export default function VehiclesPage() {
                         />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-white">
-                        {vehicle.vin ? `${vehicle.vin.substring(0, 6)}...` : 'N/A'}
+                        {vehicle.vin || 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                         {vehicle.license_plate || 'N/A'}

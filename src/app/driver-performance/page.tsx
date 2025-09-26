@@ -75,7 +75,7 @@ export default function DriverPerformancePage() {
             </p>
           </div>
           <Button
-            label="+ Create"
+            label="Create"
             variant="primary"
             icon={<Plus className="h-4 w-4" />}
             onClick={() => router.push('/driver-performance/create')}

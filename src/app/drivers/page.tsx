@@ -563,7 +563,7 @@ export default function DriversPage() {
           </div>
           <div className="flex space-x-2">
             <Button
-              label="+ Create"
+              label="Create"
               variant="primary"
               icon={<Plus className="h-4 w-4" />}
               onClick={() => router.push('/drivers/add')}

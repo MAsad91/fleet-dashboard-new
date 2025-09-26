@@ -169,7 +169,7 @@ export default function VehicleTypesPage() {
               />
             </div>
             <Button
-              label="+ Create"
+              label="Create"
               variant="primary"
               icon={<Plus className="h-4 w-4" />}
               onClick={handleAddType}

@@ -160,7 +160,7 @@ export default function VehicleDocumentsPage() {
           </div>
           <div className="flex items-center space-x-2">
             <Button
-              label="+ Create"
+              label="Create"
               variant="primary"
               icon={<Plus className="h-4 w-4" />}
               onClick={() => router.push('/vehicle-documents/add')}
