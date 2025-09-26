@@ -14,37 +14,23 @@ export const NAV_DATA = [
         title: "Vehicles",
         icon: Icons.TruckIcon,
         url: "/vehicles",
-        items: [],
-      },
-      {
-        title: "Vehicle Documents",
-        icon: Icons.DocumentIcon,
-        url: "/vehicle-documents",
-        items: [],
-      },
-      {
-        title: "Vehicle Types",
-        icon: Icons.SettingsIcon,
-        url: "/vehicle-types",
-        items: [],
+        items: [
+          {
+            title: "Vehicle Documents",
+            url: "/vehicle-documents",
+          },
+        ],
       },
       {
         title: "Drivers",
         icon: Icons.DriverIcon,
         url: "/drivers",
-        items: [],
-      },
-      {
-        title: "Driver Documents",
-        icon: Icons.DocumentIcon,
-        url: "/driver-documents",
-        items: [],
-      },
-      {
-        title: "Driver Logs",
-        icon: Icons.ClockIcon,
-        url: "/driver-logs",
-        items: [],
+        items: [
+          {
+            title: "Driver Documents",
+            url: "/driver-documents",
+          },
+        ],
       },
       {
         title: "Trips",
@@ -62,13 +48,12 @@ export const NAV_DATA = [
         title: "Alerts",
         icon: Icons.AlertIcon,
         url: "/alerts",
-        items: [],
-      },
-      {
-        title: "Alert Rules",
-        icon: Icons.SettingsIcon,
-        url: "/alert-rules",
-        items: [],
+        items: [
+          {
+            title: "Alert Rules",
+            url: "/alert-rules",
+          },
+        ],
       },
       {
         title: "OBD Devices",
@@ -101,20 +86,21 @@ export const NAV_DATA = [
         items: [],
       },
       {
-        title: "Firmware Updates",
+        title: "Firmware",
         icon: Icons.SettingsIcon,
         url: "/firmware-updates",
         items: [],
       },
-    ],
-  },
-  {
-    label: "ANALYTICS & PERFORMANCE",
-    items: [
       {
         title: "Analytics",
         icon: Icons.PieChart,
         url: "/analytics",
+        items: [],
+      },
+      {
+        title: "Driver Logs",
+        icon: Icons.ClockIcon,
+        url: "/driver-logs",
         items: [],
       },
       {
@@ -123,22 +109,22 @@ export const NAV_DATA = [
         url: "/performance",
         items: [],
       },
-    ],
-  },
-  {
-    label: "SYSTEM & SETTINGS",
-    items: [
       {
-        title: "Fleet Settings",
+        title: "Settings",
         icon: Icons.SettingsIcon,
         url: "/fleet-settings",
         items: [],
       },
       {
-        title: "Users & Permissions",
+        title: "Users",
         icon: Icons.User,
         url: "/users",
-        items: [],
+        items: [
+          {
+            title: "Groups & Permissions",
+            url: "/users/groups",
+          },
+        ],
       },
     ],
   },

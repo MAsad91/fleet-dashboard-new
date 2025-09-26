@@ -29,17 +29,17 @@ export function UserInfo() {
       <DropdownTrigger className="rounded align-middle outline-none ring-primary ring-offset-2 focus-visible:ring-1 dark:ring-offset-gray-dark">
         <span className="sr-only">My Account</span>
 
-        <figure className="flex items-center gap-3">
-          <div className="size-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-            <User className="size-6 text-gray-600 dark:text-gray-400" />
+        <figure className="flex items-center gap-2">
+          <div className="size-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+            <User className="size-4 text-gray-600 dark:text-gray-400" />
           </div>
           <figcaption className="flex items-center gap-1 font-medium text-dark dark:text-dark-6 max-[1024px]:sr-only">
-            <span>{user?.name || 'User'}</span>
+            <span className="text-sm">{user?.name || 'User'}</span>
 
             <ChevronUpIcon
               aria-hidden
               className={cn(
-                "rotate-180 transition-transform",
+                "rotate-180 transition-transform size-4",
                 isOpen && "rotate-0",
               )}
               strokeWidth={1.5}
