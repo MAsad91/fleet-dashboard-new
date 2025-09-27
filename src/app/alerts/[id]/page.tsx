@@ -4,40 +4,64 @@ import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 import { Button } from "@/components/ui-elements/button";
-import { ArrowLeft, AlertTriangle, AlertCircle, Clock, Calendar, Check, X, Car, User, Eye } from "lucide-react";
+import { TabbedInterface } from "@/components/ui/TabbedInterface";
+import { useGetAlertByIdQuery } from "@/store/api/fleetApi";
+import { ArrowLeft, AlertTriangle, AlertCircle, Clock, Calendar, Check, X, Car, User, Eye, Wifi, MapPin, Activity, BarChart3, FileText, ExternalLink } from "lucide-react";
 
 export default function AlertDetailPage() {
   const router = useRouter();
   const params = useParams();
   const alertId = params.id as string;
 
-  // Mock data since API hooks don't exist yet
-  const alertData = {
-    id: parseInt(alertId),
-    alert_type: "vehicle_health",
-    system: "motor",
-    vehicle: 123,
-    driver: 456,
-    title: "High Motor Temperature",
-    message: "Vehicle motor temperature has exceeded safe operating limits. Immediate attention required.",
-    severity: "high",
-    created_at: new Date().toISOString(),
-    status_label: "New",
-    status: "active",
-    read: false,
-    ignored: false,
-    resolved: false,
-    resolved_at: null,
-    vehicle_info: {
-      license_plate: "EV-9012",
-      make: "Tesla",
-      model: "Model 3"
-    },
-    device_id: "DEV-456"
+  // Use real API data from alerts endpoint
+  const { data: alertData, isLoading, error } = useGetAlertByIdQuery(parseInt(alertId));
+
+
+  // Show no data message when no alert data is available
+  if (!alertData) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Alert Not Found</h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">The requested alert could not be found.</p>
+            <button
+              onClick={() => router.back()}
+              className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark"
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    return `${Math.floor(diffInMinutes / 1440)}d ago`;
   };
 
-  const isLoading = false;
-  const error = null;
+  const getSeverityIcon = (severity: string) => {
+    switch (severity?.toLowerCase()) {
+      case 'critical':
+        return '🔴';
+      case 'high':
+        return '🟠';
+      case 'medium':
+        return '🟡';
+      case 'low':
+        return '🟢';
+      default:
+        return '⚪';
+    }
+  };
 
   if (isLoading) {
     return (
@@ -66,73 +90,378 @@ export default function AlertDetailPage() {
   }
 
   const handleAcknowledge = () => {
+    if (!alertData) return;
     console.log('Acknowledging alert:', alertData.id);
     // TODO: Implement acknowledge API call
   };
 
   const handleIgnore = () => {
+    if (!alertData) return;
     console.log('Ignoring alert:', alertData.id);
     // TODO: Implement ignore API call
   };
 
   const handleResolve = () => {
+    if (!alertData) return;
     console.log('Resolving alert:', alertData.id);
     // TODO: Implement resolve API call
   };
 
-  const handleViewVehicle = () => {
-    router.push(`/vehicles/${alertData.vehicle}`);
-  };
+  // Tab content components
+  const OverviewTab = () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Alert Summary */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Alert Summary</h3>
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Title:</span>
+              <span className="text-gray-900 dark:text-white">{alertData.title || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Message:</span>
+              <span className="text-gray-900 dark:text-white text-sm">{alertData.message || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Alert Type:</span>
+              <span className="text-gray-900 dark:text-white">{alertData.alert_type || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">System:</span>
+              <span className="text-gray-900 dark:text-white">{alertData.system || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Severity:</span>
+              <span className="text-gray-900 dark:text-white">{alertData.severity || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Created:</span>
+              <span className="text-gray-900 dark:text-white">{alertData.created_at || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Read:</span>
+              <span className="text-gray-900 dark:text-white">{alertData.read ? 'Yes' : 'No'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Ignored:</span>
+              <span className="text-gray-900 dark:text-white">{alertData.ignored ? 'Yes' : 'No'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Resolved:</span>
+              <span className="text-gray-900 dark:text-white">{alertData.resolved ? 'Yes' : 'No'}</span>
+            </div>
+          </div>
+        </div>
 
-  const handleViewOBDDevice = () => {
-    router.push(`/obd-devices/${alertData.device_id}`);
-  };
+        {/* Context */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Context</h3>
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Vehicle:</span>
+              <div className="text-right">
+                <span className="text-gray-900 dark:text-white">{alertData.vehicle_info?.license_plate || 'N/A'}</span>
+                <Button
+                  variant="outlineDark"
+                  label="View Vehicle"
+                  icon={<Car className="h-3 w-3" />}
+                  className="ml-2 px-2 py-1 text-xs"
+                />
+              </div>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Driver:</span>
+              <div className="text-right">
+                <span className="text-gray-900 dark:text-white">
+                  {typeof alertData.driver === 'object' && alertData.driver 
+                    ? (alertData.driver.full_name || alertData.driver.display_name || alertData.driver.name || 'N/A')
+                    : alertData.driver || 'N/A'
+                  }
+                </span>
+                <Button
+                  variant="outlineDark"
+                  label="View Driver"
+                  icon={<User className="h-3 w-3" />}
+                  className="ml-2 px-2 py-1 text-xs"
+                />
+              </div>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Device:</span>
+              <div className="text-right">
+                <span className="text-gray-900 dark:text-white">{alertData.device_id || 'N/A'}</span>
+                <Button
+                  variant="outlineDark"
+                  label="View OBD Device"
+                  icon={<Wifi className="h-3 w-3" />}
+                  className="ml-2 px-2 py-1 text-xs"
+                />
+              </div>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Similar Alerts:</span>
+              <div className="text-right">
+                <span className="text-gray-900 dark:text-white">5</span>
+                <Button
+                  variant="outlineDark"
+                  label="View Similar Alerts"
+                  icon={<ExternalLink className="h-3 w-3" />}
+                  className="ml-2 px-2 py-1 text-xs"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
-  const getSeverityBadge = (severity: string) => {
-    const severityConfig = {
-      low: { className: "bg-gray-100 text-gray-800", label: "Low" },
-      medium: { className: "bg-yellow-100 text-yellow-800", label: "Medium" },
-      high: { className: "bg-orange-100 text-orange-800", label: "High" },
-      critical: { className: "bg-red-100 text-red-800", label: "Critical" },
-    };
-    
-    const config = severityConfig[severity as keyof typeof severityConfig] || { 
-      className: "bg-gray-100 text-gray-800", 
-      label: severity
-    };
-    
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.className}`}>
-        {config.label}
-      </span>
-    );
-  };
+  const TelemetryTab = () => (
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">TELEMETRY TAB</h3>
+        
+        <div className="mb-6">
+          <h4 className="font-medium text-gray-900 dark:text-white mb-4">ALERT PARAMETER CHART</h4>
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+            <div className="h-64 bg-white dark:bg-gray-800 rounded flex items-center justify-center">
+              <div className="text-gray-500 dark:text-gray-400 text-center">
+                <BarChart3 className="h-12 w-12 mx-auto mb-2" />
+                <p>Temperature Chart (2h window around alert time)</p>
+                <p className="text-sm mt-2">105°C Threshold</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      active: { className: "bg-red-100 text-red-800", label: "Active" },
-      acknowledged: { className: "bg-yellow-100 text-yellow-800", label: "Acknowledged" },
-      ignored: { className: "bg-gray-100 text-gray-800", label: "Ignored" },
-      resolved: { className: "bg-green-100 text-green-800", label: "Resolved" },
-      new: { className: "bg-blue-100 text-blue-800", label: "New" },
-    };
-    
-    const config = statusConfig[status as keyof typeof statusConfig] || { 
-      className: "bg-gray-100 text-gray-800", 
-      label: status 
-    };
-    
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.className}`}>
-        {config.label}
-      </span>
-    );
-  };
+        <div>
+          <h4 className="font-medium text-gray-900 dark:text-white mb-4">TELEMETRY DATA AT ALERT TIME</h4>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200 dark:border-gray-700">
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Parameter</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Value</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Status</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Threshold</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-gray-100 dark:border-gray-700">
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">Motor Temperature</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">112°C</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">CRITICAL</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">&gt;105°C</td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-700">
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">Speed</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">65 km/h</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">Normal</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">-</td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-700">
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">Battery Level</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">72%</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">Normal</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-4 flex space-x-2">
+            <Button
+              variant="outlineDark"
+              label="Export Data"
+              className="px-4 py-2"
+            />
+            <Button
+              variant="outlineDark"
+              label="View Full Telemetry"
+              className="px-4 py-2"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const TimelineTab = () => (
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">TIMELINE TAB</h3>
+        
+        <div className="mb-6">
+          <h4 className="font-medium text-gray-900 dark:text-white mb-4">ALERT HISTORY</h4>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200 dark:border-gray-700">
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Date & Time</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Event</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">User/System</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-gray-100 dark:border-gray-700">
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">{alertData.created_at || 'N/A'}</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">Alert created</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">System</td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-700">
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">{alertData.created_at || 'N/A'}</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">Notification sent</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">System</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <h4 className="font-medium text-gray-900 dark:text-white mb-4">RESPONSE TIMELINE</h4>
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                Add Note/Response:
+              </label>
+              <textarea
+                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                rows={4}
+                placeholder="Enter your note or response..."
+              />
+            </div>
+            <Button
+              variant="outlineDark"
+              label="Add Note"
+              className="px-4 py-2"
+            />
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+              Note: Notes and responses will be added to the alert timeline
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const RelatedTab = () => (
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">RELATED TAB</h3>
+        
+        <div className="mb-6">
+          <h4 className="font-medium text-gray-900 dark:text-white mb-4">SIMILAR ALERTS</h4>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200 dark:border-gray-700">
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Date</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Vehicle</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Value</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Status</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-gray-100 dark:border-gray-700">
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">2025-09-24</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">EV-9812</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">108°C</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">Resolved</td>
+                  <td className="py-3 px-4">
+                    <Button
+                      variant="outlineDark"
+                      label="View"
+                      icon={<Eye className="h-3 w-3" />}
+                      className="px-2 py-1 text-xs"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            Note: Showing similar alerts with the same alert type
+          </p>
+        </div>
+
+        <div>
+          <h4 className="font-medium text-gray-900 dark:text-white mb-4">RELATED ENTITIES</h4>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200 dark:border-gray-700">
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Entity Type</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">ID/Name</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Relationship</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-gray-100 dark:border-gray-700">
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">Vehicle</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">{alertData.vehicle_info?.license_plate || 'N/A'}</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">Source of alert</td>
+                  <td className="py-3 px-4">
+                    <Button
+                      variant="outlineDark"
+                      label="View Vehicle"
+                      icon={<Car className="h-3 w-3" />}
+                      className="px-2 py-1 text-xs"
+                    />
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-700">
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">Driver</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">
+                    {typeof alertData.driver === 'object' && alertData.driver 
+                      ? (alertData.driver.full_name || alertData.driver.display_name || alertData.driver.name || 'N/A')
+                      : alertData.driver || 'N/A'
+                    }
+                  </td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">Assigned to vehicle</td>
+                  <td className="py-3 px-4">
+                    <Button
+                      variant="outlineDark"
+                      label="View Driver"
+                      icon={<User className="h-3 w-3" />}
+                      className="px-2 py-1 text-xs"
+                    />
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-700">
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">OBD Device</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">{alertData.device_id || 'N/A'}</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">Reporting device</td>
+                  <td className="py-3 px-4">
+                    <Button
+                      variant="outlineDark"
+                      label="View OBD"
+                      icon={<Wifi className="h-3 w-3" />}
+                      className="px-2 py-1 text-xs"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const tabs = [
+    { id: 'overview', label: 'Overview', content: <OverviewTab /> },
+    { id: 'telemetry', label: 'Telemetry', content: <TelemetryTab /> },
+    { id: 'timeline', label: 'Timeline', content: <TimelineTab /> },
+    { id: 'related', label: 'Related', content: <RelatedTab /> },
+  ];
 
   return (
     <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
       <div className="space-y-6">
-        {/* HEADER: Back Button + Beautiful Title Card */}
+        {/* HEADER: Back Button + Compact Header */}
         <div className="relative">
           {/* Back Button */}
           <div className="mb-6">
@@ -145,227 +474,71 @@ export default function AlertDetailPage() {
             />
           </div>
 
-          {/* Beautiful Title Card */}
-          <div className="bg-gradient-to-r from-red-50 to-orange-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 shadow-lg border border-red-200 dark:border-gray-600 relative overflow-hidden">
-            {/* Background Pattern */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-red-200 dark:bg-gray-600 rounded-full -translate-y-16 translate-x-16 opacity-20"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-orange-200 dark:bg-gray-600 rounded-full translate-y-12 -translate-x-12 opacity-20"></div>
-            
-            <div className="relative z-10">
-              <div className="flex justify-between items-start">
-                {/* Left Side - Alert Info */}
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
-                      <AlertTriangle className="h-8 w-8 text-red-600" />
-                    </div>
-                    <div>
-                      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                        Alert — Detail
-                      </h1>
-                      <p className="text-lg text-gray-600 dark:text-gray-400">
-                        Type: {alertData.alert_type} • Severity: {alertData.severity} • Status: {alertData.status_label} • System: {alertData.system}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Quick Info Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Severity</span>
-                      </div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {getSeverityBadge(alertData.severity)}
-                      </p>
-                    </div>
-                    
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Status</span>
-                      </div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {getStatusBadge(alertData.status_label)}
-                      </p>
-                    </div>
-                    
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Created</span>
-                      </div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {new Date(alertData.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
+          {/* Compact Header */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="flex justify-between items-center">
+              <div className="flex-1">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  Alert ID: {alertData.id}   {getSeverityIcon(alertData.severity)} {alertData.severity?.toUpperCase()}: {alertData.title}   Status: {alertData.status_label}   Created: {formatTimeAgo(alertData.created_at)}
                 </div>
-
-                {/* Right Side - Action Buttons */}
-                <div className="flex flex-col space-y-2 ml-6">
-                  <div className="flex space-x-2">
-                    {alertData.status === 'active' || alertData.status === 'new' ? (
-                      <Button
-                        label="Acknowledge"
-                        variant="outlineDark"
-                        size="small"
-                        icon={<Check className="h-3 w-3" />}
-                        onClick={handleAcknowledge}
-                        className="px-3 py-2 text-xs"
-                      />
-                    ) : null}
-                    {alertData.status === 'active' || alertData.status === 'new' || alertData.status === 'acknowledged' ? (
-                      <Button
-                        label="Ignore"
-                        variant="outlineDark"
-                        size="small"
-                        icon={<X className="h-3 w-3" />}
-                        onClick={handleIgnore}
-                        className="px-3 py-2 text-xs"
-                      />
-                    ) : null}
-                    {alertData.status === 'acknowledged' ? (
-                      <Button
-                        label="Resolve"
-                        variant="primary"
-                        size="small"
-                        icon={<Check className="h-3 w-3" />}
-                        onClick={handleResolve}
-                        className="px-3 py-2 text-xs"
-                      />
-                    ) : null}
-                  </div>
-                </div>
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  variant="outlineDark"
+                  label="Mark Read"
+                  icon={<Eye className="h-3 w-3" />}
+                  className="px-3 py-1 text-sm"
+                  onClick={handleAcknowledge}
+                />
+                <Button
+                  variant="outlineDark"
+                  label="Ignore"
+                  icon={<X className="h-3 w-3" />}
+                  className="px-3 py-1 text-sm"
+                  onClick={handleIgnore}
+                />
+                <Button
+                  variant="outlineDark"
+                  label="Resolve"
+                  icon={<Check className="h-3 w-3" />}
+                  className="px-3 py-1 text-sm"
+                  onClick={handleResolve}
+                />
+                <Button
+                  variant="outlineDark"
+                  label="Delete"
+                  icon={<X className="h-3 w-3" />}
+                  className="px-3 py-1 text-sm"
+                />
               </div>
             </div>
           </div>
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Severity</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {getSeverityBadge(alertData.severity)}
-                </p>
-              </div>
-              <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-lg">
-                <AlertTriangle className="h-6 w-6 text-orange-600" />
-              </div>
-            </div>
+        {/* KPI CARDS */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 text-center">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">System</div>
+            <div className="text-lg font-semibold text-gray-900 dark:text-white">{alertData.system || 'N/A'}</div>
           </div>
-
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Status</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {getStatusBadge(alertData.status_label)}
-                </p>
-              </div>
-              <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <Clock className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 text-center">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Severity</div>
+            <div className="text-lg font-semibold text-gray-900 dark:text-white">{alertData.severity || 'N/A'}</div>
           </div>
-
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Created At</p>
-                <p className="text-lg font-bold text-gray-900 dark:text-white">
-                  {alertData.created_at ? new Date(alertData.created_at).toLocaleDateString() : 'N/A'}
-                </p>
-              </div>
-              <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-                <Calendar className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 text-center">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Status</div>
+            <div className="text-lg font-semibold text-gray-900 dark:text-white">{alertData.status_label || 'New'}</div>
           </div>
-
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Resolved</p>
-                <p className="text-lg font-bold text-gray-900 dark:text-white">
-                  {alertData.resolved_at ? new Date(alertData.resolved_at).toLocaleDateString() : '—'}
-                </p>
-              </div>
-              <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                <Check className="h-6 w-6 text-purple-600" />
-              </div>
-            </div>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 text-center">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Count</div>
+            <div className="text-lg font-semibold text-gray-900 dark:text-white">5</div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Summary (Left) */}
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <h3 className="text-lg font-semibold mb-4">Summary</h3>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">title:</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">{alertData.title}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">message:</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">{alertData.message}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">created_at:</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">{new Date(alertData.created_at).toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between items-center py-2">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">status_label:</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">{getStatusBadge(alertData.status_label)}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Context (Right) */}
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <h3 className="text-lg font-semibold mb-4">Context</h3>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">vehicle_info (plate/make):</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {alertData.vehicle_info ? `${alertData.vehicle_info.license_plate} - ${alertData.vehicle_info.make} ${alertData.vehicle_info.model}` : 'N/A'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">device_id (if any):</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">{alertData.device_id || 'N/A'}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">driver (if any):</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">{alertData.driver ? `Driver #${alertData.driver}` : 'N/A'}</span>
-              </div>
-              <div className="flex justify-between items-center py-2">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Actions:</span>
-                <div className="flex space-x-2">
-                  <Button
-                    label="View Vehicle"
-                    variant="outlineDark"
-                    size="small"
-                    icon={<Car className="h-3 w-3" />}
-                    onClick={handleViewVehicle}
-                    className="px-2 py-1 text-xs"
-                  />
-                  <Button
-                    label="View OBD Device"
-                    variant="outlineDark"
-                    size="small"
-                    icon={<Eye className="h-3 w-3" />}
-                    onClick={handleViewOBDDevice}
-                    className="px-2 py-1 text-xs"
-                  />
-                </div>
-              </div>
-            </div>
+        {/* TABBED INTERFACE */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="p-6">
+            <TabbedInterface tabs={tabs} defaultTab="overview" />
           </div>
         </div>
       </div>

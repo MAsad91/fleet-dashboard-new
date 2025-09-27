@@ -15,7 +15,7 @@ interface SpeedChartProps {
 
 export function SpeedChart({ className }: SpeedChartProps) {
   const { summary, loading: dashboardLoading } = useDashboard();
-  const { data: telemetryData, isLoading: telemetryLoading, error: telemetryError } = useGetObdTelemetryQuery({
+  const { data: telemetryApiData, isLoading: telemetryLoading, error: telemetryError } = useGetObdTelemetryQuery({
     date_range: '30days',
   });
 
@@ -32,13 +32,13 @@ export function SpeedChart({ className }: SpeedChartProps) {
     );
   }
 
-  // Process real telemetry data if available, fallback to mock data
+  // Process real telemetry data if available
   const generateTimeSeriesData = () => {
-    if (telemetryData?.results && telemetryData.results.length > 0) {
+    if (telemetryApiData?.results && telemetryApiData.results.length > 0) {
       // Group telemetry data by date and calculate daily average speeds
       const dailyData = new Map();
       
-      telemetryData.results.forEach((point: any) => {
+      telemetryApiData.results.forEach((point: any) => {
         const date = new Date(point.timestamp).toDateString();
         if (!dailyData.has(date)) {
           dailyData.set(date, { speed: 0, count: 0 });
@@ -63,25 +63,15 @@ export function SpeedChart({ className }: SpeedChartProps) {
       
       return { days, speedData };
     } else {
-      // Fallback to mock data
-      const days = [];
-      const speedData = [];
-      
-      for (let i = 29; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        days.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-        speedData.push(Math.floor(Math.random() * 20) + 40);
-      }
-      
-      return { days, speedData };
+      // No data available
+      return { days: [], speedData: [] };
     }
   };
 
   const { days, speedData } = generateTimeSeriesData();
 
   // Show "No data" if no telemetry data is available
-  if (!telemetryData?.results || telemetryData.results.length === 0) {
+  if (!telemetryApiData?.results || telemetryApiData.results.length === 0) {
     return (
       <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>
         <div className="flex items-center gap-2 mb-4">

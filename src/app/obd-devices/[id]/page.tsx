@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 import { Button } from "@/components/ui-elements/button";
+import { useGetObdDeviceByIdQuery } from "@/store/api/fleetApi";
 import { ArrowLeft, Cpu, Activity, Clock, Car, Wifi, WifiOff, Edit, Trash2, Save, Signal } from "lucide-react";
 
 export default function OBDDeviceDetailPage() {
@@ -11,55 +12,38 @@ export default function OBDDeviceDetailPage() {
   const params = useParams();
   const deviceId = params.id as string;
 
-  // Mock data since API hooks don't exist yet
-  const deviceData = {
-    id: parseInt(deviceId),
-    device_id: "OBD-T2-2024-001",
-    model: "TelemX T2",
-    serial_number: "SN-0001",
-    can_baud_rate: 500000,
-    report_interval_sec: 60,
-    vehicle: {
-      id: 5,
-      license_plate: "EV-123",
-      make: "Tesla",
-      model: "Model 3"
-    },
-    fleet_operator: {
-      id: 1,
-      name: "FleetOps Inc"
-    },
-    installed_at: "2024-01-15T10:30:00Z",
-    is_active: true,
-    last_communication_at: "2025-01-12T10:02:00Z",
-    firmware_version: "1.2.3",
-    sim_card: {
-      id: 123,
-      sim_id: "SIM-001",
-      iccid: "8988247000001234567",
-      status: "active",
-      plan_name: "Business Plan",
-      plan_data_limit_gb: 50,
-      plan_cost: 25.99,
-      current_data_used_gb: 12.5,
-      current_cycle_start: "2025-01-01T00:00:00Z",
-      overage_threshold: 45,
-      last_activity: "2025-01-12T09:45:00Z",
-      signal_strength: -75,
-      created_at: "2024-01-15T10:30:00Z"
-    }
-  };
+  // Use real API data from OBD devices endpoint
+  const { data: deviceData, isLoading, error } = useGetObdDeviceByIdQuery(deviceId);
 
-  const [formData, setFormData] = useState(deviceData);
+  const [formData, setFormData] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const isLoading = false;
-  const error = null;
-
   useEffect(() => {
-    setFormData(deviceData);
-  }, [deviceId, deviceData]);
+    if (deviceData) {
+      setFormData(deviceData);
+    }
+  }, [deviceData]);
+
+  // Show no data message when no device data is available
+  if (!deviceData) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">OBD Device Not Found</h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">The requested OBD device could not be found.</p>
+            <button
+              onClick={() => router.back()}
+              className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark"
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

@@ -41,6 +41,39 @@ next-env.d.ts
 # documentation
 readme/
 
+# markdown files
+*.md
+
 # deployment
 for deployment*
 render.yaml
+
+# UI wireframes (design files - not needed in production)
+ui-wireframes/
+
+# backup files
+*.backup
+*.bak
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+Thumbs.db
+.DS_Store
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+
+# Build artifacts
+dist/
+build/

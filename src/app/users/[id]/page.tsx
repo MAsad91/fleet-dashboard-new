@@ -19,36 +19,31 @@ export default function UserDetailPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
-  // Mock user data
-  const mockUser = {
-    id: parseInt(userId),
-    username: "john.doe",
-    email: "john.doe@company.com",
-    first_name: "John",
-    last_name: "Doe",
-    is_active: true,
-    last_login: "2024-01-15 09:30:00",
-    profile: {
-      phone_number: "+1-555-0123",
-      city: "New York",
-      state: "NY",
-      pin: "10001",
-      address: "123 Main St, New York, NY 10001",
-      role: "FLEET_ADMIN",
-      preferred_theme: "light",
-      fleet_operator: "Fleet Operator 1",
-      is_phone_verified: true,
-      is_email_verified: true
-    },
-    permissions: {
-      direct_permissions: 5,
-      group_permissions: 12,
-      all_permissions: 17
-    },
-    groups: ["Admins", "Fleet Ops"]
-  };
+  // TODO: Implement real API hook when available
+  // const { data: userData, isLoading, error } = useGetUserQuery(userId);
+  const mockUser: any = null;
 
-  const [userData, setUserData] = useState(mockUser);
+  const [userData, setUserData] = useState<any>(mockUser);
+
+  // Show no data message when no user data is available
+  if (!userData) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">User Not Found</h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">The requested user could not be found.</p>
+            <button
+              onClick={() => router.back()}
+              className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark"
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // KPI data
   const kpiData = {
@@ -263,7 +258,7 @@ export default function UserDetailPage() {
                   label="Username"
                   placeholder="Enter username"
                   value={userData.username}
-                  handleChange={(e) => setUserData(prev => ({ ...prev, username: e.target.value }))}
+                  handleChange={(e) => setUserData((prev: any) => ({ ...prev, username: e.target.value }))}
                   icon={<User className="h-4 w-4" />}
                 />
                 <InputGroup
@@ -271,7 +266,7 @@ export default function UserDetailPage() {
                   label="First Name"
                   placeholder="Enter first name"
                   value={userData.first_name}
-                  handleChange={(e) => setUserData(prev => ({ ...prev, first_name: e.target.value }))}
+                  handleChange={(e) => setUserData((prev: any) => ({ ...prev, first_name: e.target.value }))}
                   icon={<User className="h-4 w-4" />}
                 />
                 <InputGroup
@@ -279,7 +274,7 @@ export default function UserDetailPage() {
                   label="Last Name"
                   placeholder="Enter last name"
                   value={userData.last_name}
-                  handleChange={(e) => setUserData(prev => ({ ...prev, last_name: e.target.value }))}
+                  handleChange={(e) => setUserData((prev: any) => ({ ...prev, last_name: e.target.value }))}
                   icon={<User className="h-4 w-4" />}
                 />
                 <InputGroup
@@ -287,14 +282,14 @@ export default function UserDetailPage() {
                   label="Email"
                   placeholder="Enter email"
                   value={userData.email}
-                  handleChange={(e) => setUserData(prev => ({ ...prev, email: e.target.value }))}
+                  handleChange={(e) => setUserData((prev: any) => ({ ...prev, email: e.target.value }))}
                   icon={<Mail className="h-4 w-4" />}
                 />
                 <div className="md:col-span-2">
                   <Checkbox
                     label="Active"
                     name="is_active"
-                    onChange={(e) => setUserData(prev => ({ ...prev, is_active: e.target.checked }))} 
+                    onChange={(e) => setUserData((prev: any) => ({ ...prev, is_active: e.target.checked }))} 
                   />
                 </div>
               </div>
@@ -309,7 +304,7 @@ export default function UserDetailPage() {
                   label="Phone Number"
                   placeholder="Enter phone number"
                   value={userData.profile.phone_number}
-                  handleChange={(e) => setUserData(prev => ({ 
+                  handleChange={(e) => setUserData((prev: any) => ({ 
                     ...prev, 
                     profile: { ...prev.profile, phone_number: e.target.value }
                   }))}
@@ -325,7 +320,7 @@ export default function UserDetailPage() {
                     { value: "TECHNICIAN", label: "Technician" },
                   ]}
                   defaultValue={userData.profile.role}
-                  onChange={(e) => setUserData(prev => ({ 
+                  onChange={(e) => setUserData((prev: any) => ({ 
                     ...prev, 
                     profile: { ...prev.profile, role: e.target.value }
                   }))}
@@ -335,7 +330,7 @@ export default function UserDetailPage() {
                   label="City"
                   placeholder="Enter city"
                   value={userData.profile.city}
-                  handleChange={(e) => setUserData(prev => ({ 
+                  handleChange={(e) => setUserData((prev: any) => ({ 
                     ...prev, 
                     profile: { ...prev.profile, city: e.target.value }
                   }))}
@@ -346,7 +341,7 @@ export default function UserDetailPage() {
                   label="State"
                   placeholder="Enter state"
                   value={userData.profile.state}
-                  handleChange={(e) => setUserData(prev => ({ 
+                  handleChange={(e) => setUserData((prev: any) => ({ 
                     ...prev, 
                     profile: { ...prev.profile, state: e.target.value }
                   }))}
@@ -357,7 +352,7 @@ export default function UserDetailPage() {
                   label="PIN"
                   placeholder="Enter PIN"
                   value={userData.profile.pin}
-                  handleChange={(e) => setUserData(prev => ({ 
+                  handleChange={(e) => setUserData((prev: any) => ({ 
                     ...prev, 
                     profile: { ...prev.profile, pin: e.target.value }
                   }))}
@@ -371,7 +366,7 @@ export default function UserDetailPage() {
                     { value: "system", label: "System" },
                   ]}
                   defaultValue={userData.profile.preferred_theme}
-                  onChange={(e) => setUserData(prev => ({ 
+                  onChange={(e) => setUserData((prev: any) => ({ 
                     ...prev, 
                     profile: { ...prev.profile, preferred_theme: e.target.value }
                   }))}
@@ -382,7 +377,7 @@ export default function UserDetailPage() {
                     label="Address"
                     placeholder="Enter address"
                     value={userData.profile.address}
-                    handleChange={(e) => setUserData(prev => ({ 
+                    handleChange={(e) => setUserData((prev: any) => ({ 
                       ...prev, 
                       profile: { ...prev.profile, address: e.target.value }
                     }))}
@@ -395,7 +390,7 @@ export default function UserDetailPage() {
                     label="Fleet Operator"
                     placeholder="Fleet Operator"
                     value={userData.profile.fleet_operator}
-                    handleChange={(e) => setUserData(prev => ({ 
+                    handleChange={(e) => setUserData((prev: any) => ({ 
                       ...prev, 
                       profile: { ...prev.profile, fleet_operator: e.target.value }
                     }))}
@@ -464,7 +459,7 @@ export default function UserDetailPage() {
                 />
               </div>
               <div className="space-y-2">
-                {userData.groups.map((group, index) => (
+                {userData.groups.map((group: any, index: number) => (
                   <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                     <div className="flex items-center">
                       <Users className="h-4 w-4 text-gray-400 mr-2" />

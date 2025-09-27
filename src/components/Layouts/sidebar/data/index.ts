@@ -14,23 +14,25 @@ export const NAV_DATA = [
         title: "Vehicles",
         icon: Icons.TruckIcon,
         url: "/vehicles",
-        items: [
-          {
-            title: "Vehicle Documents",
-            url: "/vehicle-documents",
-          },
-        ],
+        items: [],
+      },
+      {
+        title: "Vehicle Docs",
+        icon: Icons.DocumentIcon,
+        url: "/vehicle-documents",
+        items: [],
       },
       {
         title: "Drivers",
         icon: Icons.DriverIcon,
         url: "/drivers",
-        items: [
-          {
-            title: "Driver Documents",
-            url: "/driver-documents",
-          },
-        ],
+        items: [],
+      },
+      {
+        title: "Driver Docs",
+        icon: Icons.DocumentIcon,
+        url: "/driver-documents",
+        items: [],
       },
       {
         title: "Trips",
@@ -48,12 +50,13 @@ export const NAV_DATA = [
         title: "Alerts",
         icon: Icons.AlertIcon,
         url: "/alerts",
-        items: [
-          {
-            title: "Alert Rules",
-            url: "/alert-rules",
-          },
-        ],
+        items: [],
+      },
+      {
+        title: "Alert Rules",
+        icon: Icons.SettingsIcon,
+        url: "/alert-rules",
+        items: [],
       },
       {
         title: "OBD Devices",
@@ -119,12 +122,13 @@ export const NAV_DATA = [
         title: "Users",
         icon: Icons.User,
         url: "/users",
-        items: [
-          {
-            title: "Groups & Permissions",
-            url: "/users/groups",
-          },
-        ],
+        items: [],
+      },
+      {
+        title: "Groups & Permissions",
+        icon: Icons.SettingsIcon,
+        url: "/users/groups",
+        items: [],
       },
     ],
   },

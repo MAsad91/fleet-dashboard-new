@@ -7,7 +7,7 @@ interface User {
   id: string;
   email: string;
   name: string;
-  role: 'admin' | 'manager' | 'operator' | 'viewer' | 'FLEET_USER';
+  role: 'admin' | 'manager' | 'operator' | 'viewer' | 'FLEET_USER' | 'OEM_ADMIN' | 'FLEET_ADMIN' | 'DRIVER' | 'TECHNICIAN';
   avatar?: string;
   created_at: string;
   updated_at: string;
@@ -88,9 +88,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(mappedUser);
       console.log('✅ AuthContext: Login successful, user set');
       
-      // Set loading to false after successful login
-      setLoading(false);
-      console.log('✅ AuthContext: Loading set to false, isAuthenticated:', !!mappedUser);
+      // Keep loading true briefly to prevent flash, let ConditionalLayout handle the redirect
+      setTimeout(() => {
+        setLoading(false);
+        console.log('✅ AuthContext: Loading set to false after delay, isAuthenticated:', !!mappedUser);
+      }, 100);
       
       return { success: true };
     } catch (error: any) {
@@ -165,7 +167,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const hasAnyRole = (roles: string[]): boolean => {
     if (!user) return false;
-    return roles.includes(user.role);
+    
+    
+    // Map API roles to frontend roles for compatibility
+    const roleMapping: { [key: string]: string[] } = {
+      'OEM_ADMIN': ['admin', 'manager', 'operator', 'viewer'],
+      'FLEET_ADMIN': ['admin', 'manager', 'operator', 'viewer'],
+      'FLEET_USER': ['FLEET_USER', 'operator', 'viewer'],
+      'DRIVER': ['viewer'],
+      'TECHNICIAN': ['operator', 'viewer'],
+      'admin': ['admin'],
+      'manager': ['manager'],
+      'operator': ['operator'],
+      'viewer': ['viewer']
+    };
+    
+    const userRoles = roleMapping[user.role] || [user.role];
+    const hasAccess = roles.some(role => userRoles.includes(role));
+    
+    console.log('🔒 Role Check:', {
+      userEmail: user.email,
+      userRole: user.role,
+      requiredRoles: roles,
+      userRoles: userRoles,
+      hasAccess: hasAccess
+    });
+    
+    return hasAccess;
   };
 
   // Hydration effect

@@ -12,38 +12,14 @@ export default function GroupsPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
 
-  // Mock data for demonstration
-  const mockGroups = [
-    {
-      id: 1,
-      name: "Admins",
-      users: 5,
-      permissions: 87
-    },
-    {
-      id: 2,
-      name: "Fleet Ops",
-      users: 8,
-      permissions: 23
-    },
-    {
-      id: 3,
-      name: "Support",
-      users: 3,
-      permissions: 11
-    },
-    {
-      id: 4,
-      name: "Drivers",
-      users: 12,
-      permissions: 5
-    }
-  ];
+  // TODO: Implement real API hook when available
+  // const { data: groupsData, isLoading, error } = useGetGroupsQuery();
+  const mockGroups: any[] = [];
 
-  // Calculate KPI data (mock for now)
+  // Calculate KPI data (empty for now)
   const kpiData = {
-    totalGroups: mockGroups.length,
-    totalPerms: mockGroups.reduce((sum, group) => sum + group.permissions, 0)
+    totalGroups: 0,
+    totalPerms: 0
   };
 
   const handleAddGroup = () => {
@@ -89,7 +65,7 @@ export default function GroupsPage() {
           </div>
           <div className="flex space-x-2">
             <Button
-              label="+ New Group"
+              label="New Group"
               variant="outlineDark"
               icon={<Plus className="h-4 w-4" />}
               onClick={handleAddGroup}

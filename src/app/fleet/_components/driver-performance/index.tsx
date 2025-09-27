@@ -13,8 +13,8 @@ type PropsType = {
 };
 
 export function DriverPerformance({ className }: PropsType) {
-  const { data: driversStats, isLoading, error } = useGetDriversDashboardStatsQuery({
-    dateRange: 'today'
+  const { data: driversStatsData, isLoading, error } = useGetDriversDashboardStatsQuery({
+    dateRange: '1month'
   });
 
   if (isLoading) {
@@ -46,14 +46,7 @@ export function DriverPerformance({ className }: PropsType) {
     );
   }
 
-  // Use real API data if available, fallback to mock data
-  const driverData = driversStats?.top_performers || [
-    { name: "John Doe", score: 95, trips: 45, distance: 1200 },
-    { name: "Jane Smith", score: 88, trips: 38, distance: 980 },
-    { name: "Mike Johnson", score: 82, trips: 32, distance: 850 },
-    { name: "Sarah Wilson", score: 78, trips: 28, distance: 720 },
-    { name: "Tom Brown", score: 75, trips: 25, distance: 650 },
-  ];
+  const driverData = driversStatsData?.top_performers || [];
 
   const chartOptions: ApexOptions = {
     chart: {
@@ -119,14 +112,8 @@ export function DriverPerformance({ className }: PropsType) {
     },
   ];
 
-  // Use real API data for drivers list, fallback to mock data
-  const drivers = driversStats?.drivers || driverData.map((driver: any) => ({
-    name: driver.name,
-    trips: driver.trips || 0,
-    hours: driver.hours || 0,
-    rating: driver.rating || 4.5,
-    status: driver.status || "good"
-  }));
+  // Use real API data for drivers list only
+  const drivers = driversStatsData?.drivers || [];
 
   const getStatusColor = (status: string) => {
     switch (status) {

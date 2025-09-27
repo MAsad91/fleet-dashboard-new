@@ -1,7 +1,7 @@
 "use client";
 
 import { GoogleMapWrapper } from "./GoogleMapWrapper";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { MapPin, Navigation, Car, AlertCircle } from "lucide-react";
 
 interface Vehicle {
@@ -26,45 +26,8 @@ interface VehicleTrackingMapProps {
   selectedVehicleId?: string;
 }
 
-// Mock vehicle data for demonstration
-const mockVehicles: Vehicle[] = [
-  {
-    id: "1",
-    name: "EV-001",
-    license_plate: "ABC-123",
-    driver: "John Doe",
-    status: "in_progress",
-    location: { lat: 40.7128, lng: -74.0060 },
-    last_updated: new Date().toISOString(),
-    speed: 45,
-    battery_level: 85,
-  },
-  {
-    id: "2",
-    name: "EV-002",
-    license_plate: "XYZ-789",
-    driver: "Jane Smith",
-    status: "in_progress",
-    location: { lat: 40.7589, lng: -73.9851 },
-    last_updated: new Date().toISOString(),
-    speed: 32,
-    battery_level: 92,
-  },
-  {
-    id: "3",
-    name: "EV-003",
-    license_plate: "DEF-456",
-    driver: "Mike Johnson",
-    status: "completed",
-    location: { lat: 40.6892, lng: -74.0445 },
-    last_updated: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-    speed: 0,
-    battery_level: 78,
-  },
-];
-
 export function VehicleTrackingMap({
-  vehicles = mockVehicles,
+  vehicles = [],
   className = "h-96 w-full",
   onVehicleClick,
   selectedVehicleId,
@@ -115,7 +78,7 @@ export function VehicleTrackingMap({
     }
   };
 
-  const createCustomMarker = (vehicle: Vehicle) => {
+  const createCustomMarker = useCallback((vehicle: Vehicle) => {
     const color = getStatusColor(vehicle.status);
     const icon = getStatusIcon(vehicle.status);
     
@@ -132,9 +95,9 @@ export function VehicleTrackingMap({
         fontWeight: "bold",
       },
     };
-  };
+  }, []);
 
-  const createInfoWindowContent = (vehicle: Vehicle) => {
+  const createInfoWindowContent = useCallback((vehicle: Vehicle) => {
     return `
       <div class="p-3 min-w-[200px]">
         <div class="flex items-center mb-2">
@@ -159,7 +122,7 @@ export function VehicleTrackingMap({
         </div>
       </div>
     `;
-  };
+  }, []);
 
   // Set up markers when map loads
   useEffect(() => {
@@ -213,7 +176,7 @@ export function VehicleTrackingMap({
       newInfoWindows.forEach(infoWindow => infoWindow.close());
       delete (window as any).selectVehicle;
     };
-  }, [map, vehicles, onVehicleClick]);
+  }, [map, vehicles, onVehicleClick, createCustomMarker, createInfoWindowContent, infoWindows, markers]);
 
   // Update map center when vehicles change
   useEffect(() => {

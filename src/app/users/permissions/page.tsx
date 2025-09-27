@@ -15,65 +15,9 @@ export default function PermissionsPage() {
   const [modelFilter, setModelFilter] = useState("");
   const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
 
-  // Mock data for demonstration
-  const mockPermissions = [
-    {
-      id: 12,
-      name: "Can add vehicle",
-      app: "fleet",
-      model: "vehicle",
-      codename: "add_vehicle"
-    },
-    {
-      id: 13,
-      name: "Can change vehicle",
-      app: "fleet",
-      model: "vehicle",
-      codename: "change_vehicle"
-    },
-    {
-      id: 14,
-      name: "Can delete vehicle",
-      app: "fleet",
-      model: "vehicle",
-      codename: "delete_vehicle"
-    },
-    {
-      id: 15,
-      name: "Can view vehicle",
-      app: "fleet",
-      model: "vehicle",
-      codename: "view_vehicle"
-    },
-    {
-      id: 55,
-      name: "Can view trip",
-      app: "fleet",
-      model: "trip",
-      codename: "view_trip"
-    },
-    {
-      id: 56,
-      name: "Can add trip",
-      app: "fleet",
-      model: "trip",
-      codename: "add_trip"
-    },
-    {
-      id: 78,
-      name: "Can view user",
-      app: "users",
-      model: "user",
-      codename: "view_user"
-    },
-    {
-      id: 79,
-      name: "Can change user",
-      app: "users",
-      model: "user",
-      codename: "change_user"
-    }
-  ];
+  // TODO: Implement real API hook when available
+  // const { data: permissionsData, isLoading, error } = useGetPermissionsQuery();
+  const mockPermissions: any[] = [];
 
   const filteredPermissions = mockPermissions.filter((permission) => {
     const matchesSearch = searchTerm

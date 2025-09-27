@@ -16,8 +16,9 @@ export default function DriverLogsPage() {
   const [dateRange, setDateRange] = useState("7days");
   const [hasCoordinatesFilter, setHasCoordinatesFilter] = useState("");
   const [isExporting, setIsExporting] = useState(false);
-  // Mock data since API hooks don't exist yet
-  const logsData = { results: [] };
+  // TODO: Implement real API hook when available
+  // const { data: logsData, isLoading, error } = useGetDriverLogsQuery(filters);
+  const logsData: any = null;
   const isLoading = false;
   const error = null;
 

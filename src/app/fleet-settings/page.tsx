@@ -14,7 +14,7 @@ export default function FleetSettingsPage() {
   const router = useRouter();
   
   // API calls
-  const { data: settingsData, isLoading: isLoadingSettings, error } = useGetFleetSettingsQuery();
+  const { data: settingsData, isLoading: isLoadingSettings, error } = useGetFleetSettingsQuery({});
   const [updateSettings] = useUpdateFleetSettingsMutation();
   
   // KPI data for admin/OEM users
@@ -31,7 +31,6 @@ export default function FleetSettingsPage() {
     name: "",
     code: "",
     contact: "",
-    contact_email: "",
     address: "",
     metadata: "{}",
     timezone: "UTC",
@@ -52,7 +51,6 @@ export default function FleetSettingsPage() {
         name: settingsData.name || "",
         code: settingsData.code || "",
         contact: settingsData.contact || "",
-        contact_email: settingsData.contact_email || "",
         address: settingsData.address || "",
         metadata: settingsData.metadata ? JSON.stringify(settingsData.metadata, null, 2) : "{}",
         timezone: settingsData.timezone || "UTC",
@@ -66,6 +64,10 @@ export default function FleetSettingsPage() {
       });
     }
   }, [settingsData]);
+
+  // Show the form even if no settings data is available (with default values)
+  // Handle 404 as a normal case (no settings exist yet)
+  const showForm = !isLoadingSettings;
 
   const handleInputChange = (field: string, value: any) => {
     setSettings(prev => ({
@@ -119,19 +121,11 @@ export default function FleetSettingsPage() {
     );
   }
 
-  if (error) {
+
+  if (showForm) {
     return (
       <ProtectedRoute requiredRoles={['admin', 'manager', 'operator']}>
-        <div className="text-center text-red-600">
-          <p>Error loading fleet settings</p>
-        </div>
-      </ProtectedRoute>
-    );
-  }
-
-  return (
-    <ProtectedRoute requiredRoles={['admin', 'manager', 'operator']}>
-      <div className="p-6">
+        <div className="p-6">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -256,14 +250,6 @@ export default function FleetSettingsPage() {
                   icon={<Phone className="h-4 w-4" />}
                 />
                 
-                <InputGroup
-                  type="email"
-                  label="Contact Email"
-                  placeholder="Enter contact email"
-                  value={settings.contact_email}
-                  handleChange={(e) => handleInputChange('contact_email', e.target.value)}
-                  icon={<Mail className="h-4 w-4" />}
-                />
                 
                 <div className="md:col-span-2">
                   <InputGroup
@@ -483,6 +469,16 @@ export default function FleetSettingsPage() {
             </div>
           </div>
         </div>
+      </div>
+    </ProtectedRoute>
+  );
+  }
+
+  // Fallback for loading state
+  return (
+    <ProtectedRoute requiredRoles={['admin', 'manager', 'operator']}>
+      <div className="flex items-center justify-center h-64">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
       </div>
     </ProtectedRoute>
   );

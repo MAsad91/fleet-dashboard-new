@@ -455,6 +455,14 @@ export const fleetApi = createApi({
       query: (id) => ({ url: `/fleet/drivers/${id}/`, method: 'DELETE' }),
       invalidatesTags: ['Drivers'],
     }),
+    bulkSuspendDrivers: builder.mutation<any, { selected_drivers: string[] }>({
+      query: (body) => ({ url: `/fleet/drivers/suspend_drivers/`, method: 'POST', body }),
+      invalidatesTags: ['Drivers'],
+    }),
+    exportDriversCSV: builder.query<any, { ids: string }>({
+      query: ({ ids }) => ({ url: `/fleet/drivers/export_drivers_csv/?ids=${ids}` }),
+      providesTags: ['Drivers'],
+    }),
 
     // Driver Documents endpoints
     getDriverDocuments: builder.query<any, void>({
@@ -611,6 +619,19 @@ export const fleetApi = createApi({
       }),
       providesTags: ['VideoSegments'],
     }),
+    uploadVideo: builder.mutation<any, FormData>({
+      query: (formData) => ({ 
+        url: `/fleet/upload-video/`, 
+        method: 'POST', 
+        body: formData,
+        // Don't set Content-Type header - let browser set it for multipart/form-data
+        prepareHeaders: (headers: Headers) => {
+          headers.delete('Content-Type');
+          return headers;
+        }
+      }),
+      invalidatesTags: ['VideoSegments'],
+    }),
 
     // Maintenance - Added missing endpoints from postman collection
     listScheduledMaintenance: builder.query<PaginatedResponse<any>, { page?: number; status?: string }>({
@@ -690,6 +711,10 @@ export const fleetApi = createApi({
       query: ({ id }) => ({ url: `/fleet/scheduled-maintenance/${id}/mark_done/`, method: 'POST' }),
       invalidatesTags: ['Maintenance'],
     }),
+    bulkMarkServiceDone: builder.mutation<any, { selected_records: string[] }>({
+      query: (body) => ({ url: `/fleet/scheduled-maintenance/mark_service_done/`, method: 'POST', body }),
+      invalidatesTags: ['Maintenance'],
+    }),
 
     // OBD Devices
     listObdDevices: builder.query<PaginatedResponse<any>, { page?: number; status?: string }>({
@@ -715,6 +740,10 @@ export const fleetApi = createApi({
     }),
     deleteObdDevice: builder.mutation<any, string>({
       query: (id) => ({ url: `/fleet/obd-devices/${id}/`, method: 'DELETE' }),
+      invalidatesTags: ['OBDDevices'],
+    }),
+    updateOBDDeviceCommunication: builder.mutation<any, { id: string; body?: any }>({
+      query: ({ id, body }) => ({ url: `/fleet/obd-devices/${id}/update-communication/`, method: 'POST', body }),
       invalidatesTags: ['OBDDevices'],
     }),
 
@@ -938,12 +967,24 @@ export const fleetApi = createApi({
     }),
 
     // Fleet Settings endpoints - Added missing endpoints from postman collection
-    getFleetSettings: builder.query<any, void>({
-      query: () => `/fleet/fleet-settings/`,
+    getFleetSettings: builder.query<any, { operator_id?: string }>({
+      query: ({ operator_id } = {}) => {
+        const url = operator_id 
+          ? `/fleet/fleet-settings/?operator_id=${operator_id}`
+          : `/fleet/fleet-settings/`;
+        return url;
+      },
       providesTags: ['FleetSettings'],
+      // Handle 404 errors gracefully - return null instead of error
+      transformErrorResponse: (response: any) => {
+        if (response.status === 404) {
+          return null;
+        }
+        return response;
+      },
     }),
     updateFleetSettings: builder.mutation<any, any>({
-      query: (body) => ({ url: `/fleet/fleet-settings/`, method: 'PATCH', body }),
+      query: (body) => ({ url: `/fleet/fleet-settings/`, method: 'PUT', body }),
       invalidatesTags: ['FleetSettings'],
     }),
 

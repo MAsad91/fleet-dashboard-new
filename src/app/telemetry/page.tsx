@@ -37,24 +37,11 @@ export default function TelemetryPage() {
     end_date: undefined,
   });
 
-  // Mock data since API hooks don't exist yet
-  const aggregatedData = {
-    record_count: 0,
-    vehicle_count: 0,
-    error_record_count: 0,
-    averages: {
-      speed_kph: 0,
-      battery_percent: 0,
-      motor_temp_c: 0,
-      range_km: 0
-    }
-  };
-
-  const topErrorsData = {
-    top_error_codes: [],
-    total_error_types: 0,
-    vehicles_with_errors: 0
-  };
+  // TODO: Implement real API hooks when available
+  // const { data: aggregatedData, isLoading: isLoadingAggregated } = useGetTelemetryAggregatedQuery(filters);
+  // const { data: topErrorsData, isLoading: isLoadingErrors } = useGetTopErrorCodesQuery(filters);
+  const aggregatedData: any = null;
+  const topErrorsData: any = null;
 
   // Additional data for filters
   const { data: vehiclesData } = useListVehiclesQuery({ page: 1 });

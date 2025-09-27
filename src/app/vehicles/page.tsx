@@ -79,6 +79,7 @@ export default function VehiclesPage() {
   const [retireVehicles] = useRetireVehiclesMutation();
 
   // Get dashboard stats with same filters as vehicles list
+  // NOTE: API endpoint matches Postman collection: GET /api/fleet/vehicles/dashboard_stats/
   const { data: dashboardStats } = useGetVehiclesDashboardStatsQuery({ dateRange: 'today' });
 
   // Enable real-time updates for vehicles
@@ -274,7 +275,7 @@ export default function VehiclesPage() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Vehicles</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Vehicles</h1>
           </div>
           <div className="flex items-center space-x-2">
             <Button
@@ -293,213 +294,160 @@ export default function VehiclesPage() {
           </div>
         </div>
 
-        {/* KPI Cards - First Row (4 cards) */}
+        {/* KPI CARDS */}
         {dashboardStats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total</p>
+          <>
+            {/* First Row - 4 cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+                <div className="text-center">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {dashboardStats.total_vehicles || 0}
                   </p>
-                </div>
-                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                  <Car className="h-6 w-6 text-blue-600" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Vehicles</p>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Available</p>
+              <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+                <div className="text-center">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Available</p>
                   <p className="text-2xl font-bold text-green-600">
                     {dashboardStats.vehicle_status_breakdown?.available || 0}
                   </p>
-                </div>
-                <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-                  <Car className="h-6 w-6 text-green-600" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Vehicles</p>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">In Service</p>
+              <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+                <div className="text-center">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">In Service</p>
                   <p className="text-2xl font-bold text-blue-600">
                     {dashboardStats.vehicle_status_breakdown?.in_use || 0}
                   </p>
-                </div>
-                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                  <Car className="h-6 w-6 text-blue-600" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Vehicles</p>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Maintenance</p>
+              <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+                <div className="text-center">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Maint</p>
                   <p className="text-2xl font-bold text-yellow-600">
                     {dashboardStats.vehicle_status_breakdown?.maintenance || 0}
                   </p>
-                </div>
-                <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
-                  <Wrench className="h-6 w-6 text-yellow-600" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Vehicles</p>
                 </div>
               </div>
             </div>
-          </div>
-        )}
 
-        {/* KPI Cards - Second Row (2 cards) */}
-        {dashboardStats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Avg Battery %</p>
+            {/* Second Row - 2 cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+                <div className="text-center">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Avg Battery %</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {Math.round(dashboardStats.average_battery_level || 0)}%
                   </p>
                 </div>
-                <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-                  <Fuel className="h-6 w-6 text-green-600" />
-                </div>
               </div>
-            </div>
 
-            <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Expiring Vehicle Docs</p>
+              <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+                <div className="text-center">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Expiring Vehicle Docs</p>
                   <p className="text-2xl font-bold text-orange-600">
                     {dashboardStats.expiring_vehicle_docs || 0}
                   </p>
                 </div>
-                <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-lg">
-                  <Wrench className="h-6 w-6 text-orange-600" />
-                </div>
               </div>
             </div>
-          </div>
+          </>
         )}
 
-        {/* Filters */}
-        <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-          <h3 className="text-lg font-semibold mb-4">Filters</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-            <InputGroup
-              label="Search"
-              type="text"
-              placeholder="Search vehicles..."
-              value={filters.search || ""}
-              handleChange={handleSearchChange}
-              icon={<Search className="h-4 w-4 text-gray-400" />}
-              iconPosition="left"
-            />
-            
-            <Select
-              label="Vehicle Type"
-              items={[
-                { value: "all", label: "All Types" },
-                ...(vehicleTypesData?.results?.map((type: any) => ({
-                  value: type.id.toString(),
-                  label: type.name
-                })) || [])
-              ]}
-              defaultValue={filters.vehicle_type?.toString() || "all"}
-              placeholder="Select type"
-              onChange={handleVehicleTypeFilter}
-            />
-
-            <Select
-              label="Has OBD"
-              items={[
-                { value: "all", label: "All" },
-                { value: "true", label: "Yes" },
-                { value: "false", label: "No" },
-              ]}
-              defaultValue={filters.has_obd?.toString() || "all"}
-              placeholder="Select OBD status"
-              onChange={handleHasObdFilter}
-            />
-
-            <Select
-              label="Online"
-              items={[
-                { value: "all", label: "All" },
-                { value: "true", label: "Online" },
-                { value: "false", label: "Offline" },
-              ]}
-              defaultValue={filters.online?.toString() || "all"}
-              placeholder="Select online status"
-              onChange={handleOnlineFilter}
-            />
-
-            <Select
-              label="Health"
-              items={[
-                { value: "all", label: "All" },
-                { value: "Good", label: "Good" },
-                { value: "Warning", label: "Warning" },
-                { value: "Critical", label: "Critical" },
-              ]}
-              defaultValue={filters.health_status || "all"}
-              placeholder="Select health"
-              onChange={handleHealthStatusFilter}
-            />
-
-            <Select
-              label="Fleet"
-              items={[
-                { value: "all", label: "All Fleets" },
-                ...(fleetOperatorsData?.results?.map((operator: any) => ({
-                  value: operator.id.toString(),
-                  label: operator.name
-                })) || [])
-              ]}
-              defaultValue={filters.fleet?.toString() || "all"}
-              placeholder="Select fleet"
-              onChange={handleFleetFilter}
-            />
-          </div>
-          
-          <div className="flex justify-between items-center mt-4">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              Legend: Online = green/grey • Health = Good/Warning/Critical
+        {/* Search and Filters */}
+        <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+          <div className="space-y-4">
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="🔍 Search by VIN, plate, make, model, year..."
+                value={filters.search || ""}
+                onChange={handleSearchChange}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              />
             </div>
-            <div className="flex space-x-2">
+            
+            {/* Filter Dropdowns */}
+            <div className="flex flex-wrap gap-2">
+              <select
+                value={filters.status || "all"}
+                onChange={handleStatusFilter}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
+              >
+                <option value="all">Status ▾</option>
+                <option value="available">Available</option>
+                <option value="in_service">In Service</option>
+                <option value="maintenance">Maintenance</option>
+                <option value="retired">Retired</option>
+              </select>
+
+              <select
+                value={filters.has_obd?.toString() || "all"}
+                onChange={handleHasObdFilter}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
+              >
+                <option value="all">Has OBD ▾</option>
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+
+              <select
+                value={filters.online?.toString() || "all"}
+                onChange={handleOnlineFilter}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
+              >
+                <option value="all">Online ▾</option>
+                <option value="true">Online</option>
+                <option value="false">Offline</option>
+              </select>
+
+              <select
+                value={filters.health_status || "all"}
+                onChange={handleHealthStatusFilter}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
+              >
+                <option value="all">Health ▾</option>
+                <option value="Good">Good</option>
+                <option value="Warning">Warning</option>
+                <option value="Critical">Critical</option>
+              </select>
+
               <Button
                 label="Apply"
                 variant="primary"
                 size="small"
                 onClick={() => refetchVehicles()}
               />
-              <Button
-                label="Clear Filters"
-                variant="outlineDark"
-                size="small"
-                onClick={() => dispatch(setVehiclesFilters({ 
-                  search: "", 
-                  status: undefined, 
-                  vehicle_type: undefined,
-                  has_obd: undefined,
-                  online: undefined,
-                  health_status: undefined,
-                  fleet: undefined
-                }))}
-              />
             </div>
           </div>
         </div>
 
-        {/* Vehicles Table */}
+        {/* VEHICLES TABLE */}
         <div className="bg-white dark:bg-gray-dark rounded-lg shadow-1">
-          <div className="p-6 border-b border-stroke dark:border-dark-3">
-            <h3 className="text-lg font-semibold">Vehicle List</h3>
+          <div className="p-4 border-b border-stroke dark:border-dark-3 flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Vehicles Table</h3>
+            <div className="flex items-center space-x-2">
+              <label className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                <input
+                  type="checkbox"
+                  checked={selectedVehicles.length === paginatedVehicles.length}
+                  onChange={handleSelectAll}
+                  className="rounded border-gray-300 text-primary focus:ring-primary mr-2"
+                />
+                [▢ Select All]
+              </label>
+            </div>
           </div>
           
           <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
@@ -531,22 +479,8 @@ export default function VehiclesPage() {
               <>
                 {/* Bulk Actions */}
                 {paginatedVehicles.length > 0 && (
-                  <div className="bg-gray-50 dark:bg-gray-800 px-6 py-3 border-b border-gray-200 dark:border-gray-700">
+                  <div className="bg-gray-50 dark:bg-gray-800 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <label className="flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={selectedVehicles.length === paginatedVehicles.length}
-                            onChange={handleSelectAll}
-                            className="rounded border-gray-300 text-primary focus:ring-primary"
-                          />
-                          <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                            [Select All]
-                          </span>
-                        </label>
-                      </div>
-                      
                       <div className="flex items-center space-x-4">
                         {selectedVehicles.length > 0 && (
                           <>
@@ -564,19 +498,35 @@ export default function VehiclesPage() {
                             />
                           </>
                         )}
-                        
-                        <div className="text-sm text-gray-700 dark:text-gray-300">
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          label="◀"
+                          variant="outlineDark"
+                          size="small"
+                          onClick={pagination.page === 1 ? undefined : () => handlePageChange(pagination.page - 1)}
+                          className={pagination.page === 1 ? 'opacity-50 cursor-not-allowed' : ''}
+                        />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">
                           Page {pagination.page}/{Math.ceil(totalFilteredCount / pagination.limit)}
-                        </div>
+                        </span>
+                        <Button
+                          label="▶"
+                          variant="outlineDark"
+                          size="small"
+                          onClick={pagination.page >= Math.ceil(totalFilteredCount / pagination.limit) ? undefined : () => handlePageChange(pagination.page + 1)}
+                          className={pagination.page >= Math.ceil(totalFilteredCount / pagination.limit) ? 'opacity-50 cursor-not-allowed' : ''}
+                        />
                       </div>
                     </div>
                   </div>
                 )}
                 
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700" style={{ minWidth: '1200px' }}>
+                <table className="w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       <input
                         type="checkbox"
                         checked={selectedVehicles.length === paginatedVehicles.length}
@@ -584,29 +534,26 @@ export default function VehiclesPage() {
                         className="rounded border-gray-300 text-primary focus:ring-primary"
                       />
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       VIN
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Plate
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Make / Model (Year)
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Make/Model (Year)
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Battery
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Batt
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Online
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Onln
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Health
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Actions
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Hlth
                     </th>
                   </tr>
                 </thead>
@@ -626,7 +573,7 @@ export default function VehiclesPage() {
                         }
                       }}
                     >
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap">
                         <input
                           type="checkbox"
                           checked={selectedVehicles.includes(vehicle.id)}
@@ -638,76 +585,45 @@ export default function VehiclesPage() {
                           className="rounded border-gray-300 text-primary focus:ring-primary"
                         />
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-white">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-white">
                         {vehicle.vin || 'N/A'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                         {vehicle.license_plate || 'N/A'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center space-x-3">
-                          <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                            <Car className="h-5 w-5 text-blue-600" />
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-900 dark:text-white">
-                              {vehicle.make} / {vehicle.model}
-                            </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              ({vehicle.year})
-                            </div>
-                          </div>
-                        </div>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {vehicle.make || 'N/A'}/{vehicle.model || 'N/A'}({vehicle.year || 'N/A'})
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {vehicle.current_battery_level || 0}%
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {vehicle.current_battery_level ? `${vehicle.current_battery_level}%` : 'N/A'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {getStatusBadge(vehicle.status)}
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {vehicle.status === 'available' ? 'avail' : 
+                         vehicle.status === 'in_service' ? 'in_srv' : 
+                         vehicle.status === 'maintenance' ? 'maint' : 
+                         vehicle.status || 'N/A'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          vehicle.online_status ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
+                      <td className="px-4 py-3 whitespace-nowrap text-sm">
+                        {vehicle.online_status === true || vehicle.online_status === 'online' ? (
+                          <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500">●</span>
+                        ) : vehicle.online_status === false || vehicle.online_status === 'offline' ? (
+                          <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-300">○</span>
+                        ) : (
+                          <span className="text-gray-400 text-xs">--</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm">
+                        <span className={`inline-flex items-center justify-center w-4 h-4 ${
+                          vehicle.health_status === 'Good' ? 'text-green-500' : 
+                          vehicle.health_status === 'Warning' ? 'text-yellow-500' : 
+                          vehicle.health_status === 'Critical' ? 'text-red-500' : 
+                          'text-gray-400'
                         }`}>
-                          {vehicle.online_status ? 'Online' : 'Offline'}
+                          {vehicle.health_status === 'Good' ? '✓' : 
+                           vehicle.health_status === 'Warning' ? '⚠' : 
+                           vehicle.health_status === 'Critical' ? '⛔' : 
+                           '--'}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {getHealthBadge(vehicle.health_status)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            label=""
-                            variant="outlineDark"
-                            size="small"
-                            icon={<Eye className="h-4 w-4" />}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewVehicle(vehicle.id);
-                            }}
-                          />
-                          <Button
-                            label=""
-                            variant="outlineDark"
-                            size="small"
-                            icon={<Edit className="h-4 w-4" />}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditVehicle(vehicle.id);
-                            }}
-                          />
-                          <Button
-                            label=""
-                            variant="outlineDark"
-                            size="small"
-                            icon={<Trash2 className="h-4 w-4" />}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteVehicle(vehicle.id);
-                            }}
-                          />
-                        </div>
                       </td>
                     </tr>
                   ))}
@@ -717,33 +633,6 @@ export default function VehiclesPage() {
             )}
           </div>
 
-          {/* Pagination */}
-          {totalFilteredCount > 0 && (
-            <div className="px-6 py-4 border-t border-stroke dark:border-dark-3 flex items-center justify-between">
-              <div className="text-sm text-gray-700 dark:text-gray-300">
-                Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, totalFilteredCount)} of {totalFilteredCount} results
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  label="Previous"
-                  variant="outlineDark"
-                  size="small"
-                  onClick={pagination.page === 1 ? undefined : () => handlePageChange(pagination.page - 1)}
-                  className={pagination.page === 1 ? 'opacity-50 cursor-not-allowed' : ''}
-                />
-                <span className="text-sm text-gray-700 dark:text-gray-300">
-                  Page {pagination.page} of {Math.ceil(totalFilteredCount / pagination.limit)}
-                </span>
-                <Button
-                  label="Next"
-                  variant="outlineDark"
-                  size="small"
-                  onClick={pagination.page >= Math.ceil(totalFilteredCount / pagination.limit) ? undefined : () => handlePageChange(pagination.page + 1)}
-                  className={pagination.page >= Math.ceil(totalFilteredCount / pagination.limit) ? 'opacity-50 cursor-not-allowed' : ''}
-                />
-              </div>
-            </div>
-          )}
         </div>
       </div>
 

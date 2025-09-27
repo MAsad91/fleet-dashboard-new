@@ -11,34 +11,32 @@ export default function TelemetryDetailPage() {
   const params = useParams();
   const telemetryId = params.id as string;
 
-  // Mock data since API hooks don't exist yet
-  const telemetryData = {
-    id: parseInt(telemetryId),
-    trip: 712,
-    timestamp: new Date().toISOString(),
-    coordinates: {
-      type: "Point",
-      coordinates: [78.47, 17.41]
-    },
-    latitude: 17.41,
-    longitude: 78.47,
-    speed_kph: 58,
-    battery_level_percent: 76,
-    motor_temp_c: 36,
-    battery_voltage: 380.5,
-    odometer_km: 12500.5,
-    range_km: 372,
-    battery_power_kw: 45.2,
-    tire_pressure_kpa: 220,
-    torque_nm: 180,
-    charge_limit_percent: 80,
-    error_codes: ["P0A1", "U012"],
-    vehicle_id: 123,
-    device_id: "DEV-456"
-  };
+  // TODO: Implement real API hook when available
+  // const { data: telemetryData, isLoading, error } = useGetTelemetryQuery(telemetryId);
+  const telemetryData: any = null;
 
   const isLoading = false;
   const error = null;
+
+  // Show no data message when no telemetry data is available
+  if (!telemetryData) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Telemetry Record Not Found</h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">The requested telemetry record could not be found.</p>
+            <button
+              onClick={() => router.back()}
+              className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark"
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

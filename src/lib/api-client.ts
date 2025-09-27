@@ -84,12 +84,13 @@ class ApiClient {
 
   private setToken(token: string): void {
     if (typeof window === 'undefined') return;
-    // Set cookie with longer expiration for better persistence
+    // Use cookies for token storage (more secure and persistent)
     Cookies.set('access_token', token, { 
       expires: 30, // 30 days
       secure: window.location.protocol === 'https:',
       sameSite: 'lax'
     });
+    // Keep localStorage as backup for compatibility
     localStorage.setItem('access_token', token);
     localStorage.setItem('authToken', token);
   }

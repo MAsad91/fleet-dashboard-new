@@ -17,59 +17,9 @@ export default function UsersPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
-  // Mock data for demonstration
-  const mockUsers = [
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john.doe@company.com",
-      role: "admin",
-      status: "active",
-      lastLogin: "2024-01-15 09:30:00",
-      createdAt: "2023-06-15",
-      permissions: ["fleet_management", "user_management", "analytics"]
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      email: "jane.smith@company.com",
-      role: "manager",
-      status: "active",
-      lastLogin: "2024-01-15 08:45:00",
-      createdAt: "2023-08-20",
-      permissions: ["fleet_management", "analytics"]
-    },
-    {
-      id: 3,
-      name: "Mike Johnson",
-      email: "mike.johnson@company.com",
-      role: "operator",
-      status: "active",
-      lastLogin: "2024-01-14 16:20:00",
-      createdAt: "2023-09-10",
-      permissions: ["fleet_management"]
-    },
-    {
-      id: 4,
-      name: "Sarah Wilson",
-      email: "sarah.wilson@company.com",
-      role: "viewer",
-      status: "inactive",
-      lastLogin: "2024-01-10 14:15:00",
-      createdAt: "2023-10-05",
-      permissions: ["analytics"]
-    },
-    {
-      id: 5,
-      name: "David Brown",
-      email: "david.brown@company.com",
-      role: "FLEET_USER",
-      status: "active",
-      lastLogin: "2024-01-15 07:30:00",
-      createdAt: "2023-11-12",
-      permissions: ["fleet_management"]
-    }
-  ];
+  // TODO: Implement real API hook when available
+  // const { data: usersData, isLoading, error } = useGetUsersQuery();
+  const mockUsers: any[] = [];
 
   const filteredUsers = mockUsers.filter((user) => {
     const matchesSearch = searchTerm
@@ -80,12 +30,12 @@ export default function UsersPage() {
     return matchesSearch && matchesGroup;
   });
 
-  // Calculate KPI data (mock for now)
+  // Calculate KPI data (empty for now)
   const kpiData = {
-    totalUsers: mockUsers.length,
-    totalGroups: 4, // Mock groups count
-    phoneVerified: mockUsers.filter(u => u.status === 'active').length, // Mock phone verified
-    emailVerified: mockUsers.filter(u => u.status === 'active').length // Mock email verified
+    totalUsers: 0,
+    totalGroups: 0,
+    phoneVerified: 0,
+    emailVerified: 0
   };
 
   const handleAddUser = () => {

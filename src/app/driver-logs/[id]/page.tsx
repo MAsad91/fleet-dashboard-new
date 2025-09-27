@@ -11,22 +11,32 @@ export default function DriverLogDetailPage() {
   const params = useParams();
   const logId = params.id as string;
 
-  // Mock data since API hooks don't exist yet
-  const logData = {
-    id: parseInt(logId),
-    trip: 712,
-    timestamp: new Date().toISOString(),
-    coordinates: {
-      type: "Point",
-      coordinates: [78.47, 17.41]
-    },
-    speed_kph: 45,
-    heading: 180,
-    event_type: "brake"
-  };
+  // TODO: Implement real API hook when available
+  // const { data: logData, isLoading, error } = useGetDriverLogQuery(logId);
+  const logData: any = null;
 
   const isLoading = false;
   const error = null;
+
+  // Show no data message when no log data is available
+  if (!logData) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Driver Log Not Found</h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">The requested driver log could not be found.</p>
+            <button
+              onClick={() => router.back()}
+              className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark"
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

@@ -83,73 +83,79 @@ export function FleetOverviewCards() {
       growthRate: vehiclesStats?.distance_growth_rate || null,
       description: "Total distance (km)",
       hasData: (vehiclesStats?.total_distance_km !== undefined) || (summary?.total_distance_travelled_km !== undefined)
-    },
+    }
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <FleetOverviewCard
-        label="Total Vehicles"
-        data={{
-          ...fleetData.totalVehicles,
-          value: compactFormat(fleetData.totalVehicles.value),
-        }}
-        Icon={icons.TruckIcon}
-      />
+    <div className="space-y-4">
+      {/* First Row: 5 Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <FleetOverviewCard
+          label="Total Vehicles"
+          data={{
+            ...fleetData.totalVehicles,
+            value: compactFormat(fleetData.totalVehicles.value),
+          }}
+          Icon={icons.TruckIcon}
+        />
 
-      <FleetOverviewCard
-        label="Online Vehicles"
-        data={{
-          ...fleetData.onlineVehicles,
-          value: compactFormat(fleetData.onlineVehicles.value),
-        }}
-        Icon={icons.OnlineVehiclesIcon}
-      />
+        <FleetOverviewCard
+          label="Online Vehicles"
+          data={{
+            ...fleetData.onlineVehicles,
+            value: compactFormat(fleetData.onlineVehicles.value),
+          }}
+          Icon={icons.OnlineVehiclesIcon}
+        />
 
-      <FleetOverviewCard
-        label="Active Trips"
-        data={{
-          ...fleetData.activeTrips,
-          value: compactFormat(fleetData.activeTrips.value),
-        }}
-        Icon={icons.ActiveTripsIcon}
-      />
+        <FleetOverviewCard
+          label="Active Trips"
+          data={{
+            ...fleetData.activeTrips,
+            value: compactFormat(fleetData.activeTrips.value),
+          }}
+          Icon={icons.ActiveTripsIcon}
+        />
 
-      <FleetOverviewCard
-        label="Critical Alerts"
-        data={{
-          ...fleetData.criticalAlerts,
-          value: compactFormat(fleetData.criticalAlerts.value),
-        }}
-        Icon={icons.CriticalAlertsIcon}
-      />
+        <FleetOverviewCard
+          label="Critical Alerts"
+          data={{
+            ...fleetData.criticalAlerts,
+            value: compactFormat(fleetData.criticalAlerts.value),
+          }}
+          Icon={icons.CriticalAlertsIcon}
+        />
 
-      <FleetOverviewCard
-        label="Open Maintenance"
-        data={{
-          ...fleetData.openMaintenance,
-          value: compactFormat(fleetData.openMaintenance.value),
-        }}
-        Icon={icons.MaintenanceIcon}
-      />
+        <FleetOverviewCard
+          label="Open Maintenance"
+          data={{
+            ...fleetData.openMaintenance,
+            value: compactFormat(fleetData.openMaintenance.value),
+          }}
+          Icon={icons.MaintenanceIcon}
+        />
+      </div>
 
-      <FleetOverviewCard
-        label="Avg Battery %"
-        data={{
-          ...fleetData.avgBattery,
-          value: compactFormat(fleetData.avgBattery.value) + "%",
-        }}
-        Icon={icons.BatteryIcon}
-      />
+      {/* Second Row: 2 Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <FleetOverviewCard
+          label="Avg Battery"
+          data={{
+            ...fleetData.avgBattery,
+            value: compactFormat(fleetData.avgBattery.value) + "%",
+          }}
+          Icon={icons.BatteryIcon}
+        />
 
-      <FleetOverviewCard
-        label="Total Distance (km)"
-        data={{
-          ...fleetData.totalDistance,
-          value: compactFormat(fleetData.totalDistance.value),
-        }}
-        Icon={icons.DistanceIcon}
-      />
+        <FleetOverviewCard
+          label="Total Distance (km)"
+          data={{
+            ...fleetData.totalDistance,
+            value: compactFormat(fleetData.totalDistance.value),
+          }}
+          Icon={icons.DistanceIcon}
+        />
+      </div>
     </div>
   );
 }

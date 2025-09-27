@@ -13,8 +13,8 @@ interface TelemetryAggregatedProps {
 }
 
 export function TelemetryAggregated({ className }: TelemetryAggregatedProps) {
-  const { data: telemetryData, isLoading, error } = useGetTelemetryAggregatedQuery({
-    dateRange: 'today'
+  const { data: aggregatedData, isLoading, error } = useGetTelemetryAggregatedQuery({
+    dateRange: '1month'
   });
 
 
@@ -38,7 +38,7 @@ export function TelemetryAggregated({ className }: TelemetryAggregatedProps) {
   }
 
   // Show "No data" if no telemetry data is available
-  if (!telemetryData) {
+  if (!aggregatedData) {
     return (
       <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>
         <div className="flex items-center gap-2 mb-4">
@@ -78,20 +78,6 @@ export function TelemetryAggregated({ className }: TelemetryAggregatedProps) {
     );
   }
 
-  // Use real API data if available, fallback to mock data
-  const aggregatedData = telemetryData || {
-    total_data_points: 15420,
-    average_speed_kph: 54.2,
-    average_battery_level: 78.5,
-    average_motor_temp_c: 76.8,
-    average_efficiency_km_per_kwh: 6.3,
-    total_energy_consumed_kwh: 6240,
-    vehicles_reporting: 45,
-    data_quality_score: 94.2,
-    performance_trend: 'up',
-    efficiency_trend: 'up',
-    battery_trend: 'down'
-  };
 
   const chartData = {
     series: [{

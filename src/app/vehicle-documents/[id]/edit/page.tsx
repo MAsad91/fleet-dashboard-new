@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useGetVehicleDocumentByIdQuery, useUpdateVehicleDocumentMutation, useListVehiclesQuery } from "@/store/api/fleetApi";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
@@ -42,7 +42,7 @@ export default function VehicleDocumentEditPage({ params }: VehicleDocumentEditP
   const [errors, setErrors] = useState<any>({});
 
   // Helper function to get vehicle ID for a document
-  const getVehicleId = (document: any) => {
+  const getVehicleId = useCallback((document: any) => {
     if (document.vehicle?.id) {
       return document.vehicle.id.toString();
     }
@@ -56,7 +56,7 @@ export default function VehicleDocumentEditPage({ params }: VehicleDocumentEditP
     }
     
     return '';
-  };
+  }, [vehiclesData]);
 
   // Populate form when data loads
   useEffect(() => {
@@ -71,7 +71,7 @@ export default function VehicleDocumentEditPage({ params }: VehicleDocumentEditP
         doc_file: null, // Don't pre-populate file
       });
     }
-  }, [documentData, vehiclesData]);
+  }, [documentData, vehiclesData, getVehicleId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;

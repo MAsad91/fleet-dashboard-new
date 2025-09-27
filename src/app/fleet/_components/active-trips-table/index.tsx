@@ -12,7 +12,7 @@ interface ActiveTripsTableProps {
 
 export function ActiveTripsTable({ className }: ActiveTripsTableProps) {
   const router = useRouter();
-  const { stats } = useDashboard();
+  const { stats, loading } = useDashboard();
   // Use dashboard context data instead of individual API calls
   // const { data: tripsData, isLoading: tripsLoading, error: tripsError } = useGetTripsQuery({
   //   status: 'active', // Try 'active' instead of 'in_progress'
@@ -56,6 +56,20 @@ export function ActiveTripsTable({ className }: ActiveTripsTableProps) {
   const handleTripClick = (tripId: string) => {
     router.push(`/trips/${tripId}`);
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>
+        <h4 className="text-sm font-medium text-body-color dark:text-body-color-dark mb-4">
+          Active Trips
+        </h4>
+        <div className="flex items-center justify-center py-12">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+        </div>
+      </div>
+    );
+  }
 
 
   const trips = stats?.trips?.results || [];

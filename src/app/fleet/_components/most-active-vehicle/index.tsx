@@ -28,11 +28,7 @@ export function MostActiveVehicle({ className }: MostActiveVehicleProps) {
     );
   }
 
-  const mostActiveVehicle = summary?.most_active_vehicle || {
-    id: 42,
-    license_plate: "EV-9832",
-    total_distance_km: 1284.0
-  };
+  const mostActiveVehicle = summary?.most_active_vehicle;
 
   if (!mostActiveVehicle) {
     return (

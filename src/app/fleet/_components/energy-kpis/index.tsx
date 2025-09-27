@@ -2,6 +2,7 @@
 
 import { useDashboard } from "@/contexts/DashboardContext";
 import { cn } from "@/lib/utils";
+import { useGetTelemetryAggregatedQuery } from "@/store/api/fleetApi";
 import { Battery, Zap, TrendingUp } from "lucide-react";
 
 interface EnergyKPIsProps {
@@ -10,6 +11,11 @@ interface EnergyKPIsProps {
 
 export function EnergyKPIs({ className }: EnergyKPIsProps) {
   const { summary, loading } = useDashboard();
+  
+  // Use real API data from telemetry aggregated endpoint
+  const { data: telemetryData } = useGetTelemetryAggregatedQuery({ 
+    dateRange: '1month' 
+  });
 
   if (loading) {
     return (
@@ -25,14 +31,8 @@ export function EnergyKPIs({ className }: EnergyKPIsProps) {
     );
   }
 
-  // Mock data since energy_metrics might not be available in API
-  const energyMetrics = summary?.energy_metrics || {
-    total_energy_consumed_kwh: 6240,
-    average_efficiency_km_per_kwh: 6.3,
-  };
-
-  const totalEnergy = energyMetrics.total_energy_consumed_kwh || 0;
-  const avgEfficiency = energyMetrics.average_efficiency_km_per_kwh || 0;
+  const totalEnergy = telemetryData?.total_energy_consumed_kwh || 0;
+  const avgEfficiency = telemetryData?.average_efficiency_km_per_kwh || 0;
 
   return (
     <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>

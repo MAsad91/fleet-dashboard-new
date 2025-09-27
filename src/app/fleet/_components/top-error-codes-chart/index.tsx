@@ -34,17 +34,7 @@ export function TopErrorCodesChart({ className }: TopErrorCodesChartProps) {
   }
 
 
-  // Use real API data if available, fallback to dashboard summary, then mock data
-  const topErrorCodes = errorCodesData?.top_error_codes || errorCodesData?.results || summary?.top_error_codes || [
-    { code: "P0301", description: "Cylinder 1 Misfire", count: 15 },
-    { code: "P0171", description: "System Too Lean", count: 12 },
-    { code: "P0420", description: "Catalyst Efficiency", count: 10 },
-    { code: "P0442", description: "Evap System Leak", count: 8 },
-    { code: "P0128", description: "Coolant Thermostat", count: 6 },
-    { code: "P0300", description: "Random Misfire", count: 5 },
-    { code: "P0174", description: "System Too Lean", count: 4 },
-    { code: "P0455", description: "Large Evap Leak", count: 3 },
-  ];
+  const topErrorCodes = errorCodesData?.top_error_codes || errorCodesData?.results || summary?.top_error_codes || [];
 
   const chartData = {
     series: [{

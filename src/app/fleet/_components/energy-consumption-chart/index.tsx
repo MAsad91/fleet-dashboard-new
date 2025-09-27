@@ -26,15 +26,16 @@ export function EnergyConsumptionChart({ className }: EnergyConsumptionChartProp
     );
   }
 
-  // Use mock data for energy consumption chart (API doesn't provide this data yet)
+  // TODO: Implement real API call when available
+  // const { data: energyData } = useGetEnergyConsumptionQuery({ dateRange: '24hours' });
   const energyData = {
     series: [
       {
         name: "Energy Consumption",
-        data: [12, 8, 15, 22, 18, 25, 30, 28, 35, 32, 28, 25, 20, 18, 22, 28, 32, 35, 30, 25, 20, 15, 12, 10]
+        data: []
       }
     ],
-    categories: Array.from({ length: 24 }, (_, i) => `${i}:00`)
+    categories: []
   };
 
   const options = {

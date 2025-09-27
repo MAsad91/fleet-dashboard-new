@@ -1,6 +1,7 @@
 "use client";
 
 import { useDashboard } from "@/contexts/DashboardContext";
+import { useGetTripsDashboardStatsQuery } from "@/store/api/fleetApi";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 import { TrendingUp, Activity } from "lucide-react";
@@ -13,7 +14,12 @@ interface DistanceSpeedChartsProps {
 }
 
 export function DistanceSpeedCharts({ className }: DistanceSpeedChartsProps) {
-  const { summary, loading } = useDashboard();
+  const { summary, loading: dashboardLoading } = useDashboard();
+  
+  // Use real API data from trips dashboard stats endpoint
+  const { data: tripsStatsData, isLoading: isLoadingTripsStats } = useGetTripsDashboardStatsQuery();
+
+  const loading = dashboardLoading || isLoadingTripsStats;
 
   if (loading) {
     return (
@@ -26,23 +32,43 @@ export function DistanceSpeedCharts({ className }: DistanceSpeedChartsProps) {
     );
   }
 
-  // Mock data for last 30 days - in real implementation, this would come from trips/telemetry API
   const generateTimeSeriesData = () => {
-    const days = [];
-    const distanceData = [];
-    const speedData = [];
-    
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      days.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+    // Process real trips data if available
+    if (tripsStatsData?.results && tripsStatsData.results.length > 0) {
+      const days = [];
+      const distanceData = [];
+      const speedData = [];
       
-      // Mock data - in reality this would come from API
-      distanceData.push(Math.floor(Math.random() * 500) + 200);
-      speedData.push(Math.floor(Math.random() * 20) + 40);
+      // Group trips data by date and calculate daily metrics
+      const dailyData = new Map();
+      
+      tripsStatsData.results.forEach((trip: any) => {
+        const date = new Date(trip.start_time).toDateString();
+        if (!dailyData.has(date)) {
+          dailyData.set(date, { distance: 0, speed: 0, count: 0 });
+        }
+        dailyData.get(date).distance += trip.distance_km || 0;
+        dailyData.get(date).speed += trip.average_speed_kph || 0;
+        dailyData.get(date).count += 1;
+      });
+
+      // Generate last 30 days
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toDateString();
+        days.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+        
+        const dayData = dailyData.get(dateStr);
+        distanceData.push(dayData ? Math.round(dayData.distance / dayData.count) : 0);
+        speedData.push(dayData ? Math.round(dayData.speed / dayData.count) : 0);
+      }
+      
+      return { days, distanceData, speedData };
+    } else {
+      // Return empty data if no trips data available
+      return { days: [], distanceData: [], speedData: [] };
     }
-    
-    return { days, distanceData, speedData };
   };
 
   const { days, distanceData, speedData } = generateTimeSeriesData();

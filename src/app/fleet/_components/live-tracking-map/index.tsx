@@ -15,29 +15,10 @@ export function LiveTrackingMap({ className }: PropsType) {
   
   const { summary, stats, loading } = useDashboard();
   
-  // Use real trips data from the API, fallback to mock data if not available
-  const trips = stats?.trips?.results || [
-    {
-      id: 1,
-      trip_id: "TRP-001",
-      vehicle: "EV-001",
-      driver: "John Doe",
-      status: "in_progress",
-      current_location: "Downtown",
-      actual_start_time: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
-    },
-    {
-      id: 2,
-      trip_id: "TRP-002", 
-      vehicle: "EV-002",
-      driver: "Jane Smith",
-      status: "in_progress",
-      current_location: "Airport",
-      actual_start_time: new Date(Date.now() - 60 * 60 * 1000).toISOString(), // 1 hour ago
-    }
-  ];
+  // Use real trips data from the API only
+  const trips = stats?.trips?.results || [];
 
-  // Use real vehicle data from the API, fallback to mock data if not available
+  // Use real vehicle data from the API only
   const vehicles = stats?.vehicles?.results?.map((v: any) => ({
     id: v.id.toString(),
     name: v.name || v.license_plate,
@@ -50,19 +31,7 @@ export function LiveTrackingMap({ className }: PropsType) {
     last_updated: v.last_updated || new Date().toISOString(),
     speed: v.current_speed || 0,
     battery_level: v.battery_level || 0,
-  })) || [
-    {
-      id: "1",
-      name: "EV-001",
-      license_plate: "ABC-123",
-      driver: "John Doe",
-      status: "in_progress" as const,
-      location: { lat: 40.7128, lng: -74.0060 },
-      last_updated: new Date().toISOString(),
-      speed: 45,
-      battery_level: 85,
-    }
-  ];
+  })) || [];
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {

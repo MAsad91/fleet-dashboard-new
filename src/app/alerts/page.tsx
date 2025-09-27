@@ -902,65 +902,73 @@ export default function AlertsPage() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Alerts</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Alerts</h1>
           </div>
-          <div className="flex space-x-3">
+          <div className="flex space-x-2">
             <Button
-              label="Mark Read"
+              label="Bulk ▼"
               variant="outlineDark"
-              icon={<Check className="h-4 w-4" />}
-              onClick={handleBulkMarkRead}
-              className={selectedAlerts.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
-            />
-            <Button
-              label="Resolve"
-              variant="primary"
-              icon={<Check className="h-4 w-4" />}
-              onClick={handleBulkResolve}
-              className={selectedAlerts.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+              onClick={() => {}} // TODO: Add bulk actions dropdown
             />
           </div>
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Alerts</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {dashboardStats?.total_alerts || alertsData?.count || 0}
-                </p>
-              </div>
-              <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <AlertTriangle className="h-6 w-6 text-blue-600" />
-              </div>
+        {/* KPI CARDS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Alerts</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                {dashboardStats?.total_alerts || alertsData?.count || 0}
+              </p>
             </div>
           </div>
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Unread</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {dashboardStats?.unread || alertsData?.results?.filter((alert: any) => alert.status === 'active').length || 0}
-                </p>
-              </div>
-              <div className="p-3 bg-red-100 dark:bg-red-900 rounded-lg">
-                <AlertCircle className="h-6 w-6 text-red-600" />
-              </div>
+
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Critical</p>
+              <p className="text-2xl font-bold text-red-600">
+                {dashboardStats?.critical_alerts || alertsData?.results?.filter((alert: any) => alert.severity === 'critical').length || 0}
+              </p>
             </div>
           </div>
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Resolved</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {dashboardStats?.resolved_alerts || alertsData?.results?.filter((alert: any) => alert.status === 'resolved').length || 0}
-                </p>
-              </div>
-              <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-                <Check className="h-6 w-6 text-green-600" />
-              </div>
+
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">High</p>
+              <p className="text-2xl font-bold text-orange-600">
+                {dashboardStats?.high_alerts || alertsData?.results?.filter((alert: any) => alert.severity === 'high').length || 0}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Medium</p>
+              <p className="text-2xl font-bold text-yellow-600">
+                {dashboardStats?.medium_alerts || alertsData?.results?.filter((alert: any) => alert.severity === 'medium').length || 0}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Additional KPI Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Low</p>
+              <p className="text-2xl font-bold text-green-600">
+                {dashboardStats?.low_alerts || alertsData?.results?.filter((alert: any) => alert.severity === 'low').length || 0}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">New/Unread</p>
+              <p className="text-2xl font-bold text-blue-600">
+                {dashboardStats?.new_unread_alerts || alertsData?.results?.filter((alert: any) => alert.status === 'active' || alert.status === 'new').length || 0}
+              </p>
             </div>
           </div>
         </div>
@@ -1026,91 +1034,147 @@ export default function AlertsPage() {
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Severity
-              </label>
+        {/* FILTERS */}
+        <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+          <div className="space-y-4">
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="🔍 Search by title, message, vehicle, driver..."
+                value={filters.search || ""}
+                onChange={handleSearchChange}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+            
+            {/* Filter Dropdowns */}
+            <div className="flex flex-wrap gap-2">
               <select
                 value={filters.severity || "all"}
                 onChange={handleSeverityFilter}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
               >
-                <option value="all">All Severities</option>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
+                <option value="all">Severity: All ▾</option>
                 <option value="critical">Critical</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
               </select>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Status
-              </label>
-              <select
-                value={filters.status || "all"}
-                onChange={handleStatusFilter}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
-              >
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="acknowledged">Acknowledged</option>
-                <option value="ignored">Ignored</option>
-                <option value="resolved">Resolved</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Vehicle
-              </label>
-              <select
-                value={filters.vehicle_id || ""}
-                onChange={(e) => dispatch(setAlertsFilters({ vehicle_id: e.target.value || undefined }))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
-              >
-                <option value="">All Vehicles</option>
-                {vehiclesData?.results?.map((vehicle: any) => (
-                  <option key={vehicle.id} value={vehicle.id.toString()}>
-                    {vehicle.plate_number || vehicle.license_plate || 'N/A'} - {vehicle.make || ''} {vehicle.model || ''}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                System
-              </label>
               <select
                 value={filters.alert_type || "all"}
                 onChange={handleAlertTypeFilter}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
               >
-                <option value="all">All Systems</option>
+                <option value="all">System: All ▾</option>
                 <option value="vehicle_health">Vehicle Health</option>
                 <option value="maintenance_due">Maintenance Due</option>
                 <option value="system">System</option>
                 <option value="geofence">Geofence</option>
               </select>
+
+              <select
+                value={filters.status || "all"}
+                onChange={handleStatusFilter}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
+              >
+                <option value="all">Status: All ▾</option>
+                <option value="active">Active</option>
+                <option value="acknowledged">Acknowledged</option>
+                <option value="ignored">Ignored</option>
+                <option value="resolved">Resolved</option>
+              </select>
+
+              <Button
+                label="Apply"
+                variant="primary"
+                size="small"
+                onClick={() => {}} // Filters are applied automatically
+              />
             </div>
-          </div>
-          
-          <div className="flex justify-end mt-4">
-            <Button
-              label="Apply"
-              variant="primary"
-              size="small"
-              onClick={() => {}} // Filters are applied automatically
-            />
           </div>
         </div>
 
-        {/* Table */}
+        {/* DISTRIBUTION CHARTS */}
+        <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1 mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Severity Distribution */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Severity Distribution</h4>
+              <div className="space-y-3">
+                {['critical', 'high', 'medium', 'low'].map((severity) => {
+                  const count = dashboardStats?.severity_distribution?.[severity] || 0;
+                  const maxCount = Math.max(
+                    dashboardStats?.severity_distribution?.low || 0,
+                    dashboardStats?.severity_distribution?.medium || 0,
+                    dashboardStats?.severity_distribution?.high || 0,
+                    dashboardStats?.severity_distribution?.critical || 0
+                  );
+                  const barWidth = maxCount > 0 ? Math.round((count / maxCount) * 7) : 0;
+                  const bar = '▓'.repeat(barWidth);
+                  
+                  return (
+                    <div key={severity} className="flex items-center">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize w-16">
+                        {severity}
+                      </span>
+                      <span className="text-sm font-mono text-gray-600 dark:text-gray-400 ml-4">
+                        {bar.padEnd(7, ' ')} {Number(count)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {/* Type Distribution */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Alert Type Distribution</h4>
+              <div className="space-y-3">
+                {dashboardStats?.type_distribution ? Object.entries(dashboardStats.type_distribution).map(([type, count]) => {
+                  const maxCount = Math.max(...Object.values(dashboardStats.type_distribution).map(v => Number(v)));
+                  const barWidth = Math.round((Number(count) / maxCount) * 7);
+                  const bar = '▓'.repeat(barWidth);
+                  
+                  return (
+                    <div key={type} className="flex items-center">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize w-20 truncate">
+                        {type.replace('_', ' ')}
+                      </span>
+                      <span className="text-sm font-mono text-gray-600 dark:text-gray-400 ml-4">
+                        {bar.padEnd(7, ' ')} {Number(count)}
+                      </span>
+                    </div>
+                  );
+                }) : (
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    No type distribution data available
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ALERTS TABLE */}
         <div className="bg-white dark:bg-gray-dark rounded-lg shadow-1">
+          <div className="p-4 border-b border-stroke dark:border-dark-3 flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Alerts Table</h3>
+            <div className="flex items-center space-x-2">
+              <label className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                <input
+                  type="checkbox"
+                  checked={selectedAlerts.length === filteredAlerts.length}
+                  onChange={handleSelectAll}
+                  className="rounded border-gray-300 text-primary focus:ring-primary mr-2"
+                />
+                [▢ Select All]
+              </label>
+            </div>
+          </div>
+          
           <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             {isLoading ? (
               <div className="p-6">
@@ -1147,26 +1211,31 @@ export default function AlertsPage() {
                 )}
               </div>
             ) : (
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <table className="w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Sev
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <input
+                        type="checkbox"
+                        checked={selectedAlerts.length === filteredAlerts.length}
+                        onChange={handleSelectAll}
+                        className="rounded border-gray-300 text-primary focus:ring-primary"
+                      />
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Type
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Sev.
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Title
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Vehicle
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Created
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Time
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      St
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Status
                     </th>
                   </tr>
                 </thead>
@@ -1176,29 +1245,34 @@ export default function AlertsPage() {
                       key={alert.id} 
                       className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-150"
                       onClick={(e) => {
-                        // Don't navigate if clicking on action buttons
+                        // Don't navigate if clicking on checkbox or action buttons
                         const target = e.target as HTMLElement;
+                        const isCheckbox = (target as HTMLInputElement).type === 'checkbox' || target.closest('input[type="checkbox"]');
                         const isButton = target.closest('button');
                         
-                        if (!isButton) {
+                        if (!isCheckbox && !isButton) {
                           router.push(`/alerts/${alert.id}`);
                         }
                       }}
                     >
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={selectedAlerts.includes(alert.id.toString())}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            handleSelectAlert(alert.id.toString());
+                          }}
+                          className="rounded border-gray-300 text-primary focus:ring-primary"
+                        />
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
                         {getSeverityBadge(alert.severity)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 capitalize">
-                          {alert.alert_type || alert.system || alert.source || alert.category || 'Unknown'}
-                        </span>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                        {alert.title}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="font-medium text-gray-900 dark:text-white">
-                          {alert.title}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {(() => {
                           // Handle vehicle field based on new API structure
                           if (alert.vehicle_info) {
@@ -1230,11 +1304,22 @@ export default function AlertsPage() {
                           return 'N/A';
                         })()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {new Date(alert.created_at).toLocaleTimeString()}
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {(() => {
+                          const now = new Date();
+                          const alertTime = new Date(alert.created_at);
+                          const diffMs = now.getTime() - alertTime.getTime();
+                          const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                          const diffDays = Math.floor(diffHours / 24);
+                          
+                          if (diffHours < 1) return 'Just now';
+                          if (diffHours < 24) return `${diffHours}h ago`;
+                          if (diffDays < 7) return `${diffDays}d ago`;
+                          return alertTime.toLocaleDateString();
+                        })()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {getStatusBadge(alert.status_label || alert.status || 'unknown')}
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {(alert.status_label || alert.status || 'unknown').toLowerCase()}
                       </td>
                     </tr>
                   ))}
@@ -1245,27 +1330,59 @@ export default function AlertsPage() {
 
           {/* Bulk Actions */}
           {filteredAlerts.length > 0 && (
-            <div className="bg-gray-50 dark:bg-gray-800 px-6 py-3 border-t border-gray-200 dark:border-gray-700">
+            <div className="bg-gray-50 dark:bg-gray-800 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <Button
-                    label="Mark Read"
+                    label="[Mark Read]"
                     variant="outlineDark"
                     size="small"
                     onClick={handleBulkMarkRead}
                     className={selectedAlerts.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
                   />
                   <Button
-                    label="Resolve"
-                    variant="primary"
+                    label="[Ignore]"
+                    variant="outlineDark"
+                    size="small"
+                    onClick={() => {}} // TODO: Implement bulk ignore
+                    className={selectedAlerts.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+                  />
+                  <Button
+                    label="[Resolve]"
+                    variant="outlineDark"
                     size="small"
                     onClick={handleBulkResolve}
                     className={selectedAlerts.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
                   />
+                  <Button
+                    label="[Export]"
+                    variant="outlineDark"
+                    size="small"
+                    onClick={() => {}} // TODO: Implement export
+                    className={selectedAlerts.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+                  />
                 </div>
                 
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                  Page 1/2
+                <div className="flex items-center space-x-2">
+                  <Button
+                    label="◀"
+                    variant="outlineDark"
+                    size="small"
+                    onClick={() => handlePageChange(pagination.page - 1)}
+                    disabled={pagination.page <= 1}
+                    className={pagination.page <= 1 ? 'opacity-50 cursor-not-allowed' : ''}
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    Page {pagination.page}/{Math.ceil(totalFilteredCount / pagination.limit)}
+                  </span>
+                  <Button
+                    label="▶"
+                    variant="outlineDark"
+                    size="small"
+                    onClick={() => handlePageChange(pagination.page + 1)}
+                    disabled={pagination.page >= Math.ceil(totalFilteredCount / pagination.limit)}
+                    className={pagination.page >= Math.ceil(totalFilteredCount / pagination.limit) ? 'opacity-50 cursor-not-allowed' : ''}
+                  />
                 </div>
               </div>
             </div>

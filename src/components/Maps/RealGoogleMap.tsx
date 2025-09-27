@@ -275,7 +275,7 @@ export function RealGoogleMap({
           // Cleanup global callback
           delete (window as any).initMap;
         };
-  }, [center, zoom, vehicles]);
+  }, [center, zoom, vehicles, apiKey, mapLoaded, markers]);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {

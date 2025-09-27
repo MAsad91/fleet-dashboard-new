@@ -57,7 +57,10 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   useEffect(() => {
     if (isHydrated && !loading && isAuthenticated && isAuthPage) {
       console.log('🔄 ConditionalLayout: Redirecting authenticated user to fleet');
-      router.replace('/fleet');
+      // Add small delay to prevent flash
+      setTimeout(() => {
+        router.replace('/fleet');
+      }, 50);
     }
   }, [isHydrated, loading, isAuthenticated, isAuthPage, router]);
 

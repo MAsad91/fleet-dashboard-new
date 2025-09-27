@@ -1,7 +1,7 @@
 "use client";
 
 import { useDashboard } from "@/contexts/DashboardContext";
-import { useGetMaintenanceDashboardStatsQuery } from "@/store/api/fleetApi";
+import { useGetScheduledMaintenanceDashboardStatsQuery } from "@/store/api/fleetApi";
 import { cn } from "@/lib/utils";
 import { WrenchIcon } from "@/components/Layouts/sidebar/icons";
 
@@ -11,7 +11,7 @@ type PropsType = {
 
 export function MaintenanceSchedule({ className }: PropsType) {
   const { summary, loading: dashboardLoading } = useDashboard();
-  const { data: maintenanceStats, isLoading: maintenanceLoading, error: maintenanceError } = useGetMaintenanceDashboardStatsQuery();
+  const { data: maintenanceStatsData, isLoading: maintenanceLoading, error: maintenanceError } = useGetScheduledMaintenanceDashboardStatsQuery();
   
   const loading = dashboardLoading || maintenanceLoading;
   
@@ -36,54 +36,7 @@ export function MaintenanceSchedule({ className }: PropsType) {
     );
   }
 
-  // Use real API data if available, fallback to mock data
-  const maintenanceData = maintenanceStats?.results || [
-    {
-      id: 1,
-      vehicle: "EV-001",
-      type: "Battery Check",
-      dueDate: "2024-01-15",
-      status: "overdue",
-      priority: "high",
-      assignedTo: "John Smith"
-    },
-    {
-      id: 2,
-      vehicle: "EV-002",
-      type: "Tire Rotation",
-      dueDate: "2024-01-20",
-      status: "scheduled",
-      priority: "medium",
-      assignedTo: "Sarah Johnson"
-    },
-    {
-      id: 3,
-      vehicle: "EV-003",
-      type: "Software Update",
-      dueDate: "2024-01-18",
-      status: "in-progress",
-      priority: "low",
-      assignedTo: "Mike Davis"
-    },
-    {
-      id: 4,
-      vehicle: "EV-004",
-      type: "Brake Inspection",
-      dueDate: "2024-01-12",
-      status: "completed",
-      priority: "high",
-      assignedTo: "Lisa Wilson"
-    },
-    {
-      id: 5,
-      vehicle: "EV-005",
-      type: "Charging Port Check",
-      dueDate: "2024-01-25",
-      status: "scheduled",
-      priority: "medium",
-      assignedTo: "Tom Brown"
-    }
-  ];
+  const maintenanceData = maintenanceStatsData?.results || [];
 
   // Show error state if API fails
   if (maintenanceError) {

@@ -71,72 +71,88 @@ function DashboardContent() {
 
   return (
     <>
-      {/* Dashboard Header */}
+      {/* DASHBOARD */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-1 text-gray-900 dark:text-white">
           Dashboard
         </h1>
-        <p className="text-gray-600 dark:text-gray-400 text-sm">
-          Welcome back! Here&apos;s what&apos;s happening with your fleet today.
-        </p>
       </div>
-
-      {/* Date Range Selector */}
-      <div className="mb-6 flex items-center space-x-2">
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Date Range:</span>
-        <div className="flex items-center space-x-1">
-          {["Today", "10d", "30d", "90d"].map((range) => (
-            <button
-              key={range}
-              onClick={() => handleDateRangeChange(range.toLowerCase())}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
-                dateRange === range.toLowerCase() 
-                  ? 'bg-blue-600 text-white shadow-sm' 
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'
-              }`}
-            >
-              {range}
-            </button>
-          ))}
-        </div>
-        <button
-          onClick={() => console.log("Custom date range")}
-          className="ml-2 px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 flex items-center"
-        >
-          <Calendar className="h-4 w-4" />
-        </button>
-      </div>
-
 
       {/* KPI CARDS */}
       <div className="mb-6">
+        <div className="mb-4">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Date Range: </span>
+          <div className="inline-flex items-center space-x-1 ml-2">
+            {["Today", "10d", "30d", "90d"].map((range) => (
+              <button
+                key={range}
+                onClick={() => handleDateRangeChange(range.toLowerCase())}
+                className={`px-2 py-1 text-xs font-medium rounded transition-all duration-200 ${
+                  dateRange === range.toLowerCase() 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'
+                }`}
+              >
+                {range}
+              </button>
+            ))}
+            <button
+              onClick={() => console.log("Custom date range")}
+              className="px-2 py-1 text-xs font-medium rounded transition-all duration-200 bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 flex items-center"
+            >
+              <Calendar className="h-3 w-3" />
+            </button>
+          </div>
+        </div>
+        
         <Suspense fallback={<FleetOverviewCardsSkeleton />}>
           <FleetOverviewCards />
         </Suspense>
       </div>
 
-      {/* Row 2: Maintenance Dashboard */}
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Maintenance Overview</h2>
-        <MaintenanceDashboardCards dateRange={dateRange} />
-      </div>
-
       {/* STATUS & ENERGY */}
       <div className="mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Status & Energy</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <VehicleStatusPieChart />
-          {/* EnergyKPIs - COMMENTED OUT: No energy metrics API available */}
-          {/* <EnergyKPIs /> */}
+          {/* Energy metrics placeholder - will be implemented when API is available */}
+          {/* NOTE: Energy metrics API is missing from Postman collection
+              TODO: Implement GET /api/fleet/dashboard/summary/ with energy_metrics fields:
+              - total_energy_consumed_kwh
+              - average_efficiency_km_per_kwh */}
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+            <h3 className="text-lg font-semibold mb-3">Energy Metrics</h3>
+            <div className="space-y-2 text-sm mb-4">
+              <div>• Total Energy (kWh): 6,240</div>
+              <div>• Avg Efficiency: 6.3 km/kWh</div>
+            </div>
+            <div className="flex gap-6">
+              <div className="flex-1 text-center">
+                <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded mb-2 flex items-end justify-center">
+                  <div className="w-full h-12 bg-blue-500 rounded-b"></div>
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">Total</div>
+              </div>
+              <div className="flex-1 text-center">
+                <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded mb-2 flex items-end justify-center">
+                  <div className="w-4/5 h-10 bg-green-500 rounded-b"></div>
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">Efficiency</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* OBD METRICS */}
       <div className="mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">OBD Metrics</h2>
         <OBDMetricsSnapshot />
       </div>
 
       {/* DIAGNOSTICS */}
       <div className="mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Diagnostics</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <DeviceHealthCard />
           <SimUsageCard />
@@ -146,43 +162,14 @@ function DashboardContent() {
 
       {/* MOST ACTIVE VEHICLE */}
       <div className="mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Most Active Vehicle</h2>
         <MostActiveVehicle />
       </div>
 
       {/* VEHICLE MAP */}
       <div className="mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Vehicle Map</h2>
         <LiveTrackingMap />
-      </div>
-
-      {/* Row 7: Live Telemetry - COMMENTED OUT: No WebSocket API available */}
-      {/* <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Live Telemetry</h2>
-        <div className="bg-white dark:bg-gray-dark rounded-[10px] p-6 shadow-1">
-          <div className="text-center py-12">
-            <div className="text-gray-400 mb-4">
-              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Live Telemetry</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">Real-time vehicle data streaming</p>
-            <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
-              <span>Speed: 0 km/h</span>
-              <span>Battery: 0%</span>
-              <span>Range: 0 km</span>
-            </div>
-            <p className="text-xs text-gray-400 mt-2">WebSocket connection required</p>
-          </div>
-        </div>
-      </div> */}
-
-      {/* DATA TABLES */}
-      <div className="mb-6">
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <TopErrorCodesChart />
-          <RecentAlertsTable />
-          <ActiveTripsTable />
-        </div>
       </div>
 
       {/* FLEET TELEMETRY INSIGHTS */}
@@ -260,17 +247,19 @@ function DashboardContent() {
         </div>
       </div>
 
-
-      {/* Footer */}
-      <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Last updated: <span className="font-medium">{new Date().toLocaleString()}</span>
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-500">
-            Data source: Dashboard Summary + Telemetry/Trips/Alerts
-          </p>
+      {/* DATA TABLES */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Data Tables</h2>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <TopErrorCodesChart />
+          <RecentAlertsTable />
+          <ActiveTripsTable />
         </div>
+      </div>
+
+      {/* Last updated timestamp */}
+      <div className="text-sm text-gray-500 dark:text-gray-400 text-center">
+        Last updated: Just now
       </div>
     </>
   );

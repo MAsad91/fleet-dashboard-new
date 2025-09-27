@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 import { Button } from "@/components/ui-elements/button";
+import { useGetAlertRuleByIdQuery } from "@/store/api/fleetApi";
 import { ArrowLeft, AlertTriangle, Settings, Bell, Trash2, Save, Plus, Minus } from "lucide-react";
 
 export default function AlertRuleDetailPage() {
@@ -11,36 +12,38 @@ export default function AlertRuleDetailPage() {
   const params = useParams();
   const alertRuleId = params.id as string;
 
-  // Mock data since API hooks don't exist yet
-  const alertRuleData = {
-    id: parseInt(alertRuleId),
-    name: "High Motor Temperature",
-    description: "Alert when motor temperature exceeds 90°C for more than 5 minutes",
-    severity: "high",
-    system: "motor",
-    is_active: true,
-    condition_logic: "AND",
-    trigger_duration_sec: 300,
-    cooldown_minutes: 10,
-    auto_resolve: true,
-    notification_channels: ["in_app", "email"],
-    recipients: ["ops@example.com", "maintenance@example.com"],
-    vehicle_types: [3, 5],
-    conditions: [
-      { field: "motor_temp_c", operator: ">", threshold: 90 }
-    ]
-  };
+  // Use real API data from alert rules endpoint
+  const { data: alertRuleData, isLoading, error } = useGetAlertRuleByIdQuery(alertRuleId);
 
-  const [formData, setFormData] = useState(alertRuleData);
+  const [formData, setFormData] = useState<any>(alertRuleData);
   const [isEditing, setIsEditing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const isLoading = false;
-  const error = null;
-
   useEffect(() => {
-    setFormData(alertRuleData);
-  }, [alertRuleId, alertRuleData]);
+    if (alertRuleData) {
+      setFormData(alertRuleData);
+    }
+  }, [alertRuleData]);
+
+  // Show no data message when no alert rule data is available
+  if (!alertRuleData) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Alert Rule Not Found</h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">The requested alert rule could not be found.</p>
+            <button
+              onClick={() => router.back()}
+              className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark"
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -85,6 +88,7 @@ export default function AlertRuleDetailPage() {
   };
 
   const handleConditionChange = (index: number, field: string, value: string) => {
+    if (!formData) return;
     const newConditions = [...formData.conditions];
     newConditions[index] = {
       ...newConditions[index],
@@ -97,6 +101,7 @@ export default function AlertRuleDetailPage() {
   };
 
   const addCondition = () => {
+    if (!formData) return;
     setFormData((prev: any) => ({
       ...prev,
       conditions: [...prev.conditions, { field: "motor_temp_c", operator: ">", threshold: "" }]
@@ -104,6 +109,7 @@ export default function AlertRuleDetailPage() {
   };
 
   const removeCondition = (index: number) => {
+    if (!formData) return;
     const newConditions = formData.conditions.filter((_: any, i: number) => i !== index);
     setFormData((prev: any) => ({
       ...prev,
@@ -112,6 +118,7 @@ export default function AlertRuleDetailPage() {
   };
 
   const handleSave = () => {
+    if (!formData) return;
     console.log('Saving alert rule:', formData);
     // TODO: Implement save API call
     setIsEditing(false);
@@ -465,13 +472,13 @@ export default function AlertRuleDetailPage() {
         <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-semibold">CONDITIONS (grid)</h3>
-            <Button
-              label="+ Add Condition"
-              variant="outlineDark"
-              size="small"
-              icon={<Plus className="h-4 w-4" />}
-              onClick={addCondition}
-            />
+              <Button
+                label="Add Condition"
+                variant="outlineDark"
+                size="small"
+                icon={<Plus className="h-4 w-4" />}
+                onClick={addCondition}
+              />
           </div>
           
           <div className="overflow-x-auto">

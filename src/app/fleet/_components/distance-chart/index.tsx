@@ -15,7 +15,7 @@ interface DistanceChartProps {
 
 export function DistanceChart({ className }: DistanceChartProps) {
   const { summary, loading: dashboardLoading } = useDashboard();
-  const { data: telemetryData, isLoading: telemetryLoading, error: telemetryError } = useGetObdTelemetryQuery({
+  const { data: telemetryApiData, isLoading: telemetryLoading, error: telemetryError } = useGetObdTelemetryQuery({
     date_range: '30days',
   });
 
@@ -32,13 +32,13 @@ export function DistanceChart({ className }: DistanceChartProps) {
     );
   }
 
-  // Process real telemetry data if available, fallback to mock data
+  // Process real telemetry data if available
   const generateTimeSeriesData = () => {
-    if (telemetryData?.results && telemetryData.results.length > 0) {
+    if (telemetryApiData?.results && telemetryApiData.results.length > 0) {
       // Group telemetry data by date and calculate daily distances
       const dailyData = new Map();
       
-      telemetryData.results.forEach((point: any) => {
+      telemetryApiData.results.forEach((point: any) => {
         const date = new Date(point.timestamp).toDateString();
         if (!dailyData.has(date)) {
           dailyData.set(date, { distance: 0, count: 0 });
@@ -63,25 +63,15 @@ export function DistanceChart({ className }: DistanceChartProps) {
       
       return { days, distanceData };
     } else {
-      // Fallback to mock data
-      const days = [];
-      const distanceData = [];
-      
-      for (let i = 29; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        days.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-        distanceData.push(Math.floor(Math.random() * 500) + 200);
-      }
-      
-      return { days, distanceData };
+      // No data available
+      return { days: [], distanceData: [] };
     }
   };
 
   const { days, distanceData } = generateTimeSeriesData();
 
   // Show "No data" if no telemetry data is available
-  if (!telemetryData?.results || telemetryData.results.length === 0) {
+  if (!telemetryApiData?.results || telemetryApiData.results.length === 0) {
     return (
       <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>
         <div className="flex items-center gap-2 mb-4">

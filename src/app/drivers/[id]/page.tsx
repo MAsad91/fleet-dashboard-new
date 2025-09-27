@@ -1,77 +1,45 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useGetDriverByIdQuery } from "@/store/api/fleetApi";
+import { useRouter, useParams } from "next/navigation";
+import { useGetDriverByIdQuery, useGetDriverDocumentsQuery, useGetTripsQuery, useGetAlertsQuery, useGetDriverPerformanceByIdQuery } from "@/store/api/fleetApi";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 import { Button } from "@/components/ui-elements/button";
-import { ArrowLeft, User, Phone, Mail, Calendar, Car, MapPin, Clock, Edit, Trash2, AlertTriangle } from "lucide-react";
+import { TabbedInterface } from "@/components/ui/TabbedInterface";
+import { ArrowLeft, Edit, Trash2, User, Phone, FileText, Calendar, Clock, AlertTriangle, Star, MapPin, Download, Eye, Upload, Filter, BarChart3 } from "lucide-react";
 
 export default function DriverDetailPage() {
-  const params = useParams();
   const router = useRouter();
+  const params = useParams();
   const driverId = params.id as string;
-
+  
   const { data: driverData, isLoading, error } = useGetDriverByIdQuery(driverId);
+  const { data: documentsData } = useGetDriverDocumentsQuery();
+  const { data: tripsData } = useGetTripsQuery({ driver: driverId, status: 'completed' });
+  const { data: alertsData } = useGetAlertsQuery({});
+  const { data: performanceData } = useGetDriverPerformanceByIdQuery(driverId);
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      active: { className: "bg-green-100 text-green-800", label: "Active" },
-      inactive: { className: "bg-red-100 text-red-800", label: "Inactive" },
-      suspended: { className: "bg-yellow-100 text-yellow-800", label: "Suspended" },
-      terminated: { className: "bg-gray-100 text-gray-800", label: "Terminated" },
-    };
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
     
-    const config = statusConfig[status as keyof typeof statusConfig] || { 
-      className: "bg-gray-100 text-gray-800", 
-      label: status || "Unknown"
-    };
-    
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.className}`}>
-        {config.label}
-      </span>
-    );
-  };
-
-  const getLicenseStatusBadge = (status: string) => {
-    const statusConfig = {
-      valid: { className: "bg-green-100 text-green-800", label: "Valid" },
-      expired: { className: "bg-red-100 text-red-800", label: "Expired" },
-      suspended: { className: "bg-yellow-100 text-yellow-800", label: "Suspended" },
-      revoked: { className: "bg-gray-100 text-gray-800", label: "Revoked" },
-    };
-    
-    const config = statusConfig[status as keyof typeof statusConfig] || { 
-      className: "bg-gray-100 text-gray-800", 
-      label: status || "Unknown"
-    };
-    
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.className}`}>
-        {config.label}
-      </span>
-    );
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    return `${Math.floor(diffInMinutes / 1440)}d ago`;
   };
 
   if (isLoading) {
     return (
       <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
         <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <Button 
-                onClick={() => router.back()} 
-                variant="outlineDark"
-                label="Back"
-                icon={<ArrowLeft className="h-4 w-4" />}
-                className="px-4 py-2 rounded-lg"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Loading Driver...
-                </h1>
-              </div>
+          <div className="animate-pulse space-y-6">
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              ))}
             </div>
           </div>
         </div>
@@ -79,26 +47,10 @@ export default function DriverDetailPage() {
     );
   }
 
-  if (error) {
+  if (error || !driverData) {
     return (
       <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
         <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <Button 
-                onClick={() => router.back()} 
-                variant="outlineDark"
-                label="Back"
-                icon={<ArrowLeft className="h-4 w-4" />}
-                className="px-4 py-2 rounded-lg"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Error Loading Driver
-                </h1>
-              </div>
-            </div>
-          </div>
           <div className="text-center text-red-600">
             <p>Failed to load driver details. Please try again.</p>
             <Button 
@@ -113,35 +65,541 @@ export default function DriverDetailPage() {
     );
   }
 
-  if (!driverData) {
-    return (
-      <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <Button 
-                onClick={() => router.back()} 
-                variant="outlineDark"
-                label="Back"
-                icon={<ArrowLeft className="h-4 w-4" />}
-                className="px-4 py-2 rounded-lg"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Driver Not Found
-                </h1>
-              </div>
+  const driver = driverData.driver || driverData;
+  const user = driver.user || {};
+  const documents = documentsData?.results?.filter((doc: any) => doc.driver === parseInt(driverId)) || [];
+  const trips = tripsData?.results || [];
+  const alerts = alertsData?.results || [];
+  const performance = performanceData || {};
+
+  // Tab content components
+  const OverviewTab = () => (
+    <div className="space-y-6">
+      {/* Driver Information */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">DRIVER INFORMATION</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Fleet Operator:</span>
+              <span className="text-gray-900 dark:text-white">Acme Logistics (ID: {driver.fleet_operator || 'N/A'})</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Name:</span>
+              <span className="text-gray-900 dark:text-white">{user.first_name} {user.last_name}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Username:</span>
+              <span className="text-gray-900 dark:text-white">{user.username || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Email:</span>
+              <span className="text-gray-900 dark:text-white">{user.email || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Phone:</span>
+              <span className="text-gray-900 dark:text-white">{driver.phone_number || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">License Number:</span>
+              <span className="text-gray-900 dark:text-white">{driver.license_number || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Experience:</span>
+              <span className="text-gray-900 dark:text-white">{driver.experience_years || 'N/A'} years</span>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Address:</span>
+              <span className="text-gray-900 dark:text-white">{driver.address || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Date of Birth:</span>
+              <span className="text-gray-900 dark:text-white">{driver.date_of_birth || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Emergency Contact:</span>
+              <span className="text-gray-900 dark:text-white">{driver.emergency_contact || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Joined:</span>
+              <span className="text-gray-900 dark:text-white">{driver.date_joined || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Status:</span>
+              <span className="text-gray-900 dark:text-white">{driver.status || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Rating:</span>
+              <span className="text-gray-900 dark:text-white">{driver.rating || 'N/A'}</span>
             </div>
           </div>
         </div>
-      </ProtectedRoute>
-    );
-  }
+      </div>
+
+      {/* Safety Statistics */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">SAFETY STATISTICS</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-center">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              {performance.safety_score || 'N/A'}
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Safety Score</div>
+            <div className="text-xs text-gray-500 dark:text-gray-500">/100</div>
+          </div>
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-center">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              {performance.eco_score || 'N/A'}
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Eco Score</div>
+            <div className="text-xs text-gray-500 dark:text-gray-500">/100</div>
+          </div>
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-center">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              {performance.number_of_harsh_brakes || 'N/A'}
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Harsh Brakes</div>
+            <div className="text-xs text-gray-500 dark:text-gray-500">(last 30d)</div>
+          </div>
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-center">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              {performance.average_speed_kph || 'N/A'}
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Avg. Speed</div>
+            <div className="text-xs text-gray-500 dark:text-gray-500">kph</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const DocumentsTab = () => (
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">DOCUMENTS TAB</h3>
+          <div className="flex space-x-2">
+            <Button
+              variant="outlineDark"
+              label="Upload Document"
+              icon={<Upload className="h-4 w-4" />}
+              className="px-3 py-1 text-sm"
+            />
+            <Button
+              variant="outlineDark"
+              label="View All Documents →"
+              className="px-3 py-1 text-sm"
+            />
+          </div>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200 dark:border-gray-700">
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Type</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Number</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Issued</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Expires</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Status</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {documents.length > 0 ? (
+                documents.map((doc: any) => (
+                  <tr key={doc.id} className="border-b border-gray-100 dark:border-gray-700">
+                    <td className="py-3 px-4 text-gray-900 dark:text-white">{doc.doc_type || 'N/A'}</td>
+                    <td className="py-3 px-4 text-gray-900 dark:text-white">{doc.doc_number || 'N/A'}</td>
+                    <td className="py-3 px-4 text-gray-900 dark:text-white">{doc.issue_date || 'N/A'}</td>
+                    <td className="py-3 px-4 text-gray-900 dark:text-white">{doc.expiry_date || 'N/A'}</td>
+                    <td className="py-3 px-4 text-gray-900 dark:text-white">{doc.is_active ? 'Active' : 'Inactive'}</td>
+                    <td className="py-3 px-4">
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outlineDark"
+                          label="View"
+                          icon={<Eye className="h-3 w-3" />}
+                          className="px-2 py-1 text-xs"
+                        />
+                        <Button
+                          variant="outlineDark"
+                          label="Download"
+                          icon={<Download className="h-3 w-3" />}
+                          className="px-2 py-1 text-xs"
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-gray-500 dark:text-gray-400">
+                    No documents found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+
+  const TripsTab = () => (
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">TRIPS TAB</h3>
+          <div className="flex space-x-2">
+            <Button
+              variant="outlineDark"
+              label="Filter ▼"
+              icon={<Filter className="h-4 w-4" />}
+              className="px-3 py-1 text-sm"
+            />
+            <Button
+              variant="outlineDark"
+              label="View All Driver Trips →"
+              className="px-3 py-1 text-sm"
+            />
+          </div>
+        </div>
+        
+        <div className="mb-4">
+          <div className="flex space-x-2">
+            <Button variant="outlineDark" label="All" className="px-3 py-1 text-sm" />
+            <Button variant="outlineDark" label="In Progress" className="px-3 py-1 text-sm" />
+            <Button variant="outlineDark" label="Completed" className="px-3 py-1 text-sm" />
+            <Button variant="outlineDark" label="Cancelled" className="px-3 py-1 text-sm" />
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200 dark:border-gray-700">
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Trip ID</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Vehicle</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Date/Time</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Duration</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Status</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {trips.length > 0 ? (
+                trips.map((trip: any) => (
+                  <tr key={trip.id} className="border-b border-gray-100 dark:border-gray-700">
+                    <td className="py-3 px-4 text-gray-900 dark:text-white">{trip.trip_id || 'N/A'}</td>
+                    <td className="py-3 px-4 text-gray-900 dark:text-white">{trip.vehicle || 'N/A'}</td>
+                    <td className="py-3 px-4 text-gray-900 dark:text-white">{trip.scheduled_start_time || 'N/A'}</td>
+                    <td className="py-3 px-4 text-gray-900 dark:text-white">2h 30m</td>
+                    <td className="py-3 px-4 text-gray-900 dark:text-white">{trip.status || 'N/A'}</td>
+                    <td className="py-3 px-4">
+                      <Button
+                        variant="outlineDark"
+                        label="View Details"
+                        icon={<Eye className="h-3 w-3" />}
+                        className="px-2 py-1 text-xs"
+                      />
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-gray-500 dark:text-gray-400">
+                    No trips found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+
+  const LogsTab = () => (
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">LOGS TAB</h3>
+          <div className="flex space-x-2">
+            <Button
+              variant="outlineDark"
+              label="Filter ▼"
+              icon={<Filter className="h-4 w-4" />}
+              className="px-3 py-1 text-sm"
+            />
+            <Button
+              variant="outlineDark"
+              label="View All Driver Logs →"
+              className="px-3 py-1 text-sm"
+            />
+          </div>
+        </div>
+        
+        <div className="mb-4">
+          <div className="flex space-x-2">
+            <Button variant="outlineDark" label="All" className="px-3 py-1 text-sm" />
+            <Button variant="outlineDark" label="Regular" className="px-3 py-1 text-sm" />
+            <Button variant="outlineDark" label="Events" className="px-3 py-1 text-sm" />
+            <Button variant="outlineDark" label="Date Range: Today ▼" className="px-3 py-1 text-sm" />
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200 dark:border-gray-700">
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Time</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Trip</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Vehicle</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Event</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Location</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-gray-100 dark:border-gray-700">
+                <td className="py-3 px-4 text-gray-900 dark:text-white">13:45:22</td>
+                <td className="py-3 px-4 text-gray-900 dark:text-white">T-2025-98</td>
+                <td className="py-3 px-4 text-gray-900 dark:text-white">EV-9012</td>
+                <td className="py-3 px-4 text-gray-900 dark:text-white">-</td>
+                <td className="py-3 px-4 text-gray-900 dark:text-white">Gachibowli Road</td>
+                <td className="py-3 px-4">
+                  <Button
+                    variant="outlineDark"
+                    label="Details"
+                    icon={<Eye className="h-3 w-3" />}
+                    className="px-2 py-1 text-xs"
+                  />
+                </td>
+              </tr>
+              <tr className="border-b border-gray-100 dark:border-gray-700">
+                <td className="py-3 px-4 text-gray-900 dark:text-white">12:30:15</td>
+                <td className="py-3 px-4 text-gray-900 dark:text-white">T-2025-98</td>
+                <td className="py-3 px-4 text-gray-900 dark:text-white">EV-9012</td>
+                <td className="py-3 px-4 text-gray-900 dark:text-white">-</td>
+                <td className="py-3 px-4 text-gray-900 dark:text-white">Hitech City</td>
+                <td className="py-3 px-4">
+                  <Button
+                    variant="outlineDark"
+                    label="Details"
+                    icon={<Eye className="h-3 w-3" />}
+                    className="px-2 py-1 text-xs"
+                  />
+                </td>
+              </tr>
+              <tr className="border-b border-gray-100 dark:border-gray-700">
+                <td className="py-3 px-4 text-gray-900 dark:text-white">12:15:00</td>
+                <td className="py-3 px-4 text-gray-900 dark:text-white">T-2025-98</td>
+                <td className="py-3 px-4 text-gray-900 dark:text-white">EV-9012</td>
+                <td className="py-3 px-4 text-gray-900 dark:text-white">Start</td>
+                <td className="py-3 px-4 text-gray-900 dark:text-white">Madhapur</td>
+                <td className="py-3 px-4">
+                  <Button
+                    variant="outlineDark"
+                    label="Details"
+                    icon={<Eye className="h-3 w-3" />}
+                    className="px-2 py-1 text-xs"
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+
+  const AlertsTab = () => (
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">ALERTS TAB</h3>
+          <div className="flex space-x-2">
+            <Button
+              variant="outlineDark"
+              label="Filter ▼"
+              icon={<Filter className="h-4 w-4" />}
+              className="px-3 py-1 text-sm"
+            />
+            <Button
+              variant="outlineDark"
+              label="View All Driver Alerts →"
+              className="px-3 py-1 text-sm"
+            />
+          </div>
+        </div>
+        
+        <div className="mb-4">
+          <div className="flex space-x-2">
+            <Button variant="outlineDark" label="Active" className="px-3 py-1 text-sm" />
+            <Button variant="outlineDark" label="Resolved" className="px-3 py-1 text-sm" />
+            <Button variant="outlineDark" label="All" className="px-3 py-1 text-sm" />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+            <p className="text-gray-600 dark:text-gray-400 text-center">No active alerts for this driver.</p>
+          </div>
+          
+          <div>
+            <h4 className="font-medium text-gray-900 dark:text-white mb-3">ALERT HISTORY</h4>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Sev.</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Date</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Message</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Status</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {alerts.length > 0 ? (
+                    alerts.map((alert: any) => (
+                      <tr key={alert.id} className="border-b border-gray-100 dark:border-gray-700">
+                        <td className="py-3 px-4 text-gray-900 dark:text-white">{alert.severity || 'N/A'}</td>
+                        <td className="py-3 px-4 text-gray-900 dark:text-white">{alert.created_at || 'N/A'}</td>
+                        <td className="py-3 px-4 text-gray-900 dark:text-white">{alert.message || 'N/A'}</td>
+                        <td className="py-3 px-4 text-gray-900 dark:text-white">{alert.status_label || 'N/A'}</td>
+                        <td className="py-3 px-4">
+                          <Button
+                            variant="outlineDark"
+                            label="View Details"
+                            icon={<Eye className="h-3 w-3" />}
+                            className="px-2 py-1 text-xs"
+                          />
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-gray-500 dark:text-gray-400">
+                        No alert history found
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const PerformanceTab = () => (
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">PERFORMANCE TAB (Admin Only)</h3>
+          <div className="flex space-x-2">
+            <Button
+              variant="outlineDark"
+              label="Date Range ▼"
+              className="px-3 py-1 text-sm"
+            />
+            <Button
+              variant="outlineDark"
+              label="View Full Performance →"
+              className="px-3 py-1 text-sm"
+            />
+          </div>
+        </div>
+        
+        <div className="mb-6">
+          <h4 className="font-medium text-gray-900 dark:text-white mb-4">KEY METRICS</h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                {performance.safety_score || 'N/A'}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Safety Score</div>
+              <div className="text-xs text-gray-500 dark:text-gray-500">/100</div>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                {performance.eco_score || 'N/A'}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Eco Score</div>
+              <div className="text-xs text-gray-500 dark:text-gray-500">/100</div>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                {driver.rating || 'N/A'}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Rating</div>
+              <div className="text-xs text-gray-500 dark:text-gray-500">/5.0</div>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                {trips.length}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Trips Completed</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <h4 className="font-medium text-gray-900 dark:text-white mb-4">PERFORMANCE HISTORY</h4>
+          <div className="h-64 bg-gray-50 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+            <div className="text-gray-500 dark:text-gray-400 text-center">
+              <BarChart3 className="h-8 w-8 mx-auto mb-2" />
+              <p className="text-sm">Performance metrics chart over time</p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h4 className="font-medium text-gray-900 dark:text-white mb-4">PERFORMANCE BREAKDOWN</h4>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200 dark:border-gray-700">
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Period</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Avg Speed (kph)</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Distance (km)</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Harsh Brakes</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Accidents</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-gray-100 dark:border-gray-700">
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">Last Month</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">{performance.average_speed_kph || 'N/A'}</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">{performance.distance_covered_km || 'N/A'}</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">{performance.number_of_harsh_brakes || 'N/A'}</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">{performance.number_of_accidents || 'N/A'}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const tabs = [
+    { id: 'overview', label: 'Overview', content: <OverviewTab /> },
+    { id: 'documents', label: 'Documents', content: <DocumentsTab /> },
+    { id: 'trips', label: 'Trips', content: <TripsTab /> },
+    { id: 'logs', label: 'Logs', content: <LogsTab /> },
+    { id: 'alerts', label: 'Alerts', content: <AlertsTab /> },
+    { id: 'performance', label: 'Performance', content: <PerformanceTab /> },
+  ];
 
   return (
     <ProtectedRoute requiredRoles={['admin', 'manager', 'operator', 'viewer', 'FLEET_USER']}>
       <div className="space-y-6">
-        {/* HEADER: Back Button + Beautiful Title Card */}
+        {/* HEADER: Back Button + Compact Header */}
         <div className="relative">
           {/* Back Button */}
           <div className="mb-6">
@@ -154,260 +612,55 @@ export default function DriverDetailPage() {
             />
           </div>
 
-          {/* Beautiful Title Card */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 shadow-lg border border-blue-200 dark:border-gray-600 relative overflow-hidden">
-            {/* Background Pattern */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200 dark:bg-gray-600 rounded-full -translate-y-16 translate-x-16 opacity-20"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-200 dark:bg-gray-600 rounded-full translate-y-12 -translate-x-12 opacity-20"></div>
-            
-            <div className="relative z-10">
-              <div className="flex justify-between items-start">
-                {/* Left Side - Driver Info */}
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
-                      <User className="h-8 w-8 text-blue-600" />
-                    </div>
-                    <div>
-                      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                        Driver — Detail
-                      </h1>
-                      <p className="text-lg text-gray-600 dark:text-gray-400">
-                        {driverData.name || 'Driver'} ({driverData.username || 'N/A'})
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Quick Info Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Phone</span>
-                      </div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {driverData.phone_number || 'N/A'}
-                      </p>
-                    </div>
-                    
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">License</span>
-                      </div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {driverData.license_number || 'N/A'}
-                      </p>
-                    </div>
-                    
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <div className={`w-2 h-2 rounded-full ${driverData.status === 'active' ? 'bg-green-500' : 'bg-gray-400'}`}></div>
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Status</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">
-                          {driverData.status || 'N/A'}
-                        </span>
-                        <span className={`inline-flex items-center text-xs ${driverData.status === 'active' ? 'text-green-600' : 'text-gray-400'}`}>
-                          {driverData.status === 'active' ? '● Active' : '● Inactive'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Side - Action Buttons */}
-                <div className="flex flex-col space-y-2 ml-6">
-                  <div className="flex space-x-2">
-                    <Button
-                      label="Edit"
-                      variant="outlineDark"
-                      size="small"
-                      icon={<Edit className="h-3 w-3" />}
-                      onClick={() => router.push(`/drivers/${driverData.id}/edit`)}
-                      className="px-3 py-2 text-xs"
-                    />
-                    <Button
-                      label="Suspend"
-                      variant="outlineDark"
-                      size="small"
-                      icon={<AlertTriangle className="h-3 w-3" />}
-                      onClick={() => {}} // TODO: Add suspend functionality
-                      className="px-3 py-2 text-xs text-yellow-600 hover:text-yellow-700"
-                    />
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button
-                      label="Delete"
-                      variant="outlineDark"
-                      size="small"
-                      icon={<Trash2 className="h-3 w-3" />}
-                      onClick={() => {}} // TODO: Add delete functionality
-                      className="px-3 py-2 text-xs text-red-600 hover:text-red-700"
-                    />
-                  </div>
+          {/* Compact Header */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="flex justify-between items-center">
+              <div className="flex-1">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  {user.first_name} {user.last_name} ({user.username})   Phone: {driver.phone_number}   License: {driver.license_number}   Status: {driver.status}
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Rating</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {driverData.rating ? driverData.rating.toFixed(1) : 'N/A'}
-                </p>
-              </div>
-              <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
-                <User className="h-6 w-6 text-yellow-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Experience (y)</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {driverData.experience_years || 'N/A'}
-                </p>
-              </div>
-              <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <Calendar className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Trips (completed, 30d)</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {/* TODO: This would need to be fetched from trips API */}
-                  0
-                </p>
-              </div>
-              <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-                <Car className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Profile Section */}
-        <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-          <h3 className="text-lg font-semibold mb-4">Profile</h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">• Fleet Operator:</span>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {driverData.fleet_operator?.name || 'N/A'} ({driverData.fleet_operator?.id || 'N/A'})
-                </span>
+              <div className="flex space-x-2">
                 <Button
-                  label="View Operator"
                   variant="outlineDark"
-                  size="small"
-                  onClick={() => router.push(`/fleet-operators/${driverData.fleet_operator?.id}`)}
-                  className="px-2 py-1 text-xs"
+                  label="Edit"
+                  className="px-3 py-1 text-sm"
+                />
+                <Button
+                  variant="outlineDark"
+                  label="Suspend"
+                  className="px-3 py-1 text-sm"
+                />
+                <Button
+                  variant="outlineDark"
+                  label="Delete"
+                  className="px-3 py-1 text-sm"
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">• Name (username) | Email:</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                {driverData.name || 'N/A'} ({driverData.username || 'N/A'}) | {driverData.email || 'N/A'}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">• Phone | License | Status | Rating | Experience (years):</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                {driverData.phone_number || 'N/A'} | {driverData.license_number || 'N/A'} | {driverData.status || 'N/A'} | {driverData.rating ? driverData.rating.toFixed(1) : 'N/A'} | {driverData.experience_years || 'N/A'}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">• Address | Date of Birth | Emergency Contact:</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                {driverData.address || 'N/A'} | {driverData.date_of_birth ? new Date(driverData.date_of_birth).toLocaleDateString() : 'N/A'} | {driverData.emergency_contact || 'N/A'}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">• Joined:</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                {driverData.date_joined ? new Date(driverData.date_joined).toLocaleDateString() : 'N/A'}
-              </span>
-            </div>
           </div>
         </div>
 
-        {/* Documents Section */}
-        <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-          <h3 className="text-lg font-semibold mb-4">Documents</h3>
-          <div className="flex space-x-4">
-            <Button
-              label="View Driver Documents"
-              variant="outlineDark"
-              onClick={() => router.push('/driver-documents')}
-              className="px-4 py-2"
-            />
-            <Button
-              label="Upload Document"
-              variant="primary"
-              onClick={() => router.push('/driver-documents/add')}
-              className="px-4 py-2"
-            />
+        {/* KPI CARDS */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 text-center">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Rating</div>
+            <div className="text-lg font-semibold text-gray-900 dark:text-white">{driver.rating || 'N/A'}</div>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 text-center">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Experience</div>
+            <div className="text-lg font-semibold text-gray-900 dark:text-white">{driver.experience_years || 'N/A'} years</div>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 text-center">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Trips (completed, 30d)</div>
+            <div className="text-lg font-semibold text-gray-900 dark:text-white">{trips.length}</div>
           </div>
         </div>
 
-        {/* Trips Section */}
-        <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-          <h3 className="text-lg font-semibold mb-4">Trips</h3>
-          <div className="flex flex-col space-y-4">
-            <Button
-              label="View Trips"
-              variant="outlineDark"
-              onClick={() => router.push(`/trips?driver=${driverData.id}`)}
-              className="px-4 py-2 w-fit"
-            />
-            <div className="flex space-x-2">
-              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Filter chips:</span>
-              <div className="flex space-x-2">
-                <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs">all</span>
-                <span className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded text-xs">in_progress</span>
-                <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded text-xs">completed</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Alerts Section */}
-        <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-          <h3 className="text-lg font-semibold mb-4">Alerts</h3>
-          <div className="flex space-x-4">
-            <Button
-              label="Open Alerts"
-              variant="outlineDark"
-              onClick={() => router.push(`/alerts?driver=${driverData.id}`)}
-              className="px-4 py-2"
-            />
-          </div>
-        </div>
-
-        {/* Performance Section (Admin only) */}
-        <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-          <h3 className="text-lg font-semibold mb-4">Performance (Admin)</h3>
-          <div className="flex space-x-4">
-            <Button
-              label="Open Driver Performance"
-              variant="outlineDark"
-              onClick={() => router.push(`/driver-performance?driver=${driverData.id}`)}
-              className="px-4 py-2"
-            />
+        {/* TABBED INTERFACE */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="p-6">
+            <TabbedInterface tabs={tabs} defaultTab="overview" />
           </div>
         </div>
       </div>

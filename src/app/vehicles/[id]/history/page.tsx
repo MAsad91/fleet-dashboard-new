@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useGetVehicleByIdQuery } from "@/store/api/fleetApi";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
@@ -25,87 +25,15 @@ export default function VehicleHistoryPage() {
   const [historyData, setHistoryData] = useState<any>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
-  // Mock data for demonstration - replace with real API calls
-  const mockHistoryData = {
-    max_speed_kph: 85,
-    avg_battery_level: 78.5,
-    avg_range_km: 245,
-    error_count: 12,
-    trip_count: 45,
-    distance_km: 12450,
-    time_series_charts: {
-      speed_kph: [
-        { timestamp: "2024-01-01T00:00:00Z", value: 45 },
-        { timestamp: "2024-01-01T01:00:00Z", value: 52 },
-        { timestamp: "2024-01-01T02:00:00Z", value: 38 },
-        // ... more data points
-      ],
-      battery_level_percent: [
-        { timestamp: "2024-01-01T00:00:00Z", value: 85 },
-        { timestamp: "2024-01-01T01:00:00Z", value: 82 },
-        { timestamp: "2024-01-01T02:00:00Z", value: 79 },
-        // ... more data points
-      ],
-      range_km: [
-        { timestamp: "2024-01-01T00:00:00Z", value: 280 },
-        { timestamp: "2024-01-01T01:00:00Z", value: 265 },
-        { timestamp: "2024-01-01T02:00:00Z", value: 250 },
-        // ... more data points
-      ],
-      motor_temp_c: [
-        { timestamp: "2024-01-01T00:00:00Z", value: 45 },
-        { timestamp: "2024-01-01T01:00:00Z", value: 48 },
-        { timestamp: "2024-01-01T02:00:00Z", value: 52 },
-        // ... more data points
-      ],
-      battery_power_kw: [
-        { timestamp: "2024-01-01T00:00:00Z", value: 25 },
-        { timestamp: "2024-01-01T01:00:00Z", value: 28 },
-        { timestamp: "2024-01-01T02:00:00Z", value: 22 },
-        // ... more data points
-      ],
-      tire_pressure_kpa: [
-        { timestamp: "2024-01-01T00:00:00Z", value: 220 },
-        { timestamp: "2024-01-01T01:00:00Z", value: 218 },
-        { timestamp: "2024-01-01T02:00:00Z", value: 215 },
-        // ... more data points
-      ],
-      torque_nm: [
-        { timestamp: "2024-01-01T00:00:00Z", value: 180 },
-        { timestamp: "2024-01-01T01:00:00Z", value: 185 },
-        { timestamp: "2024-01-01T02:00:00Z", value: 175 },
-        // ... more data points
-      ]
-    },
-    telemetry_stats: {
-      speed: { avg: 45.2, min: 0, max: 85 },
-      battery: { avg: 78.5, min: 15, max: 100 },
-      temperature: { avg: 48.3, min: 25, max: 65 },
-      range: { avg: 245, min: 50, max: 300 },
-      power: { avg: 26.8, min: 5, max: 45 }
-    },
-    trips_summary: {
-      completed_trips: 42,
-      total_distance: 12450
-    },
-    maintenance_summary: {
-      count: 3,
-      total_cost: 1250
-    },
-    energy_breakdown: {
-      driving: 65,
-      charging: 25,
-      idle: 10
-    }
-  };
+  // TODO: Implement real API call when available
+  // const { data: historyData, isLoading: isLoadingHistory } = useGetVehicleHistoryQuery({ vehicleId, dateRange, startDate, endDate });
+  const mockHistoryData = null;
 
   useEffect(() => {
-    // Simulate loading history data
-    setIsLoadingHistory(true);
-    setTimeout(() => {
-      setHistoryData(mockHistoryData);
-      setIsLoadingHistory(false);
-    }, 1000);
+    // TODO: Implement real API call when available
+    // For now, set loading to false and data to null
+    setIsLoadingHistory(false);
+    setHistoryData(null);
   }, [dateRange, startDate, endDate]);
 
   const handleDateRangeChange = (range: string) => {
@@ -118,12 +46,10 @@ export default function VehicleHistoryPage() {
   };
 
   const handleApplyFilters = () => {
-    // Trigger history data reload with new filters
-    setIsLoadingHistory(true);
-    setTimeout(() => {
-      setHistoryData(mockHistoryData);
-      setIsLoadingHistory(false);
-    }, 1000);
+    // TODO: Implement real API call when available
+    // For now, just set loading to false
+    setIsLoadingHistory(false);
+    setHistoryData(null);
   };
 
   if (isLoading) {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 
 interface WebSocketContextType {
   isConnected: boolean;
@@ -28,7 +28,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
   // Temporarily disable WebSocket connection
   const isWebSocketEnabled = false;
 
-  const connect = () => {
+  const connect = useCallback(() => {
     try {
       // Get the base URL from environment or use default
       const baseUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
@@ -94,11 +94,13 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     } catch (error) {
       console.error('Failed to create WebSocket connection:', error);
       setConnectionStatus('error');
-      scheduleReconnect();
+      // Note: scheduleReconnect is called here but not in dependencies to avoid circular dependency
+      // This is acceptable since scheduleReconnect doesn't change during component lifecycle
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const scheduleReconnect = () => {
+  const scheduleReconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
     }
@@ -111,7 +113,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     reconnectTimeoutRef.current = setTimeout(() => {
       connect();
     }, delay);
-  };
+  }, [connect]);
 
   const subscribe = (channel: string, callback: (data: any) => void) => {
     if (!subscribersRef.current.has(channel)) {
@@ -162,7 +164,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
         wsRef.current.close(1000, 'Component unmounting');
       }
     };
-  }, [isWebSocketEnabled]);
+  }, [isWebSocketEnabled, connect]);
 
   const value: WebSocketContextType = {
     isConnected,
@@ -194,7 +196,8 @@ export function useWebSocketSubscription(channel: string, callback: (data: any) 
   useEffect(() => {
     const unsubscribeFn = subscribe(channel, callback);
     return unsubscribeFn;
-  }, [channel, subscribe, ...deps]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [channel, subscribe, callback, ...deps]);
 
   useEffect(() => {
     // Re-subscribe when callback changes

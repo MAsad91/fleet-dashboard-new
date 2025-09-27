@@ -559,7 +559,7 @@ export default function DriversPage() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Drivers</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Drivers</h1>
           </div>
           <div className="flex space-x-2">
             <Button
@@ -576,175 +576,138 @@ export default function DriversPage() {
           </div>
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Drivers</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {data?.count || 0}
-                </p>
-              </div>
-              <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <User className="h-6 w-6 text-blue-600" />
-              </div>
+        {/* KPI CARDS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Drivers</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                {data?.count || 0}
+              </p>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Drivers</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {data?.results?.filter((driver: any) => (driver.status || 'active').toLowerCase() === 'active').length || 0}
-                </p>
-              </div>
-              <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-                <User className="h-6 w-6 text-green-600" />
-              </div>
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Active Drivers</p>
+              <p className="text-2xl font-bold text-green-600">
+                {data?.results?.filter((driver: any) => (driver.status || 'active').toLowerCase() === 'active').length || 0}
+              </p>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Suspended</p>
-                <p className="text-2xl font-bold text-red-600">
-                  {data?.results?.filter((driver: any) => (driver.status || 'active').toLowerCase() === 'suspended').length || 0}
-                </p>
-              </div>
-              <div className="p-3 bg-red-100 dark:bg-red-900 rounded-lg">
-                <User className="h-6 w-6 text-red-600" />
-              </div>
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Suspended</p>
+              <p className="text-2xl font-bold text-red-600">
+                {data?.results?.filter((driver: any) => (driver.status || 'active').toLowerCase() === 'suspended').length || 0}
+              </p>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Avg Rating</p>
-                <p className="text-2xl font-bold text-purple-600">
-                  {(() => {
-                    const ratings = data?.results?.map((driver: any) => driver.rating).filter((r: any) => r != null) || [];
-                    return ratings.length > 0 ? Number(ratings.reduce((sum: number, rating: number) => sum + rating, 0) / ratings.length).toFixed(1) : 'N/A';
-                  })()}
-                </p>
-              </div>
-              <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                <User className="h-6 w-6 text-purple-600" />
-              </div>
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Avg Rating</p>
+              <p className="text-2xl font-bold text-purple-600">
+                {(() => {
+                  const ratings = data?.results?.map((driver: any) => driver.rating).filter((r: any) => r != null) || [];
+                  return ratings.length > 0 ? Number(ratings.reduce((sum: number, rating: number) => sum + rating, 0) / ratings.length).toFixed(1) : 'N/A';
+                })()}
+              </p>
             </div>
           </div>
         </div>
 
         {/* Additional KPI Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Expiring Driver Docs (30d)</p>
-                <p className="text-2xl font-bold text-orange-600">
-                  {/* TODO: This would need to be calculated from driver documents */}
-                  0
-                </p>
-              </div>
-              <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-lg">
-                <Calendar className="h-6 w-6 text-orange-600" />
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Expiring Driver Documents (next 30 days)</p>
+              <p className="text-2xl font-bold text-orange-600">
+                {/* TODO: This would need to be calculated from driver documents */}
+                0
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white dark:bg-gray-dark rounded-lg p-6 shadow-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Status
-              </label>
+        {/* FILTERS */}
+        <div className="bg-white dark:bg-gray-dark rounded-lg p-4 shadow-1">
+          <div className="space-y-4">
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="🔍 Search by name, phone, license..."
+                value={filters.search || ""}
+                onChange={handleSearch}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+            
+            {/* Filter Dropdowns */}
+            <div className="flex flex-wrap gap-2">
               <select
-                value={filters.status || ""}
+                value={filters.status || "all"}
                 onChange={handleStatus}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
               >
-                <option value="">All Status</option>
+                <option value="all">Status: All ▾</option>
                 <option value="active">Active</option>
                 <option value="suspended">Suspended</option>
               </select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Min Rating
-              </label>
-              <input
-                type="number"
-                placeholder="Min rating (1-5)"
-                value={filters.minRating || ""}
+
+              <select
+                value={filters.minRating || "all"}
                 onChange={(e) => dispatch(setDriverFilters({ ...filters, minRating: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Search name/phone
-              </label>
-              <input
-                type="text"
-                placeholder="Search by name or phone..."
-                value={filters.search || ""}
-                onChange={handleSearch}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
-              />
-            </div>
-            
-            <div className="flex items-end">
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
+              >
+                <option value="all">Rating: Min ▾</option>
+                <option value="3.0">3.0+</option>
+                <option value="3.5">3.5+</option>
+                <option value="4.0">4.0+</option>
+                <option value="4.5">4.5+</option>
+              </select>
+
               <Button
                 label="Apply"
                 variant="primary"
+                size="small"
                 onClick={() => {}} // Filters are applied automatically
-                className="w-full"
               />
             </div>
           </div>
         </div>
 
-        {/* Drivers Table */}
+        {/* DRIVERS TABLE */}
         <div className="bg-white dark:bg-gray-dark rounded-lg shadow-1">
-          <div className="p-6 border-b border-stroke dark:border-dark-3">
-            <h3 className="text-lg font-semibold">Driver List</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {data?.count || 0} drivers found
-            </p>
+          <div className="p-4 border-b border-stroke dark:border-dark-3 flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Drivers Table</h3>
+            <div className="flex items-center space-x-2">
+              <label className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                <input
+                  type="checkbox"
+                  checked={selectedDrivers.length === data?.results?.length}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedDrivers(data?.results?.map((driver: any) => driver.id) || []);
+                    } else {
+                      setSelectedDrivers([]);
+                    }
+                  }}
+                  className="rounded border-gray-300 text-primary focus:ring-primary mr-2"
+                />
+                [▢ Select All]
+              </label>
+            </div>
           </div>
           
           <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             {/* Bulk Actions */}
             {data?.results && data.results.length > 0 && (
-              <div className="bg-gray-50 dark:bg-gray-800 px-6 py-3 border-b border-gray-200 dark:border-gray-700">
+              <div className="bg-gray-50 dark:bg-gray-800 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={selectedDrivers.length === data.results.length}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedDrivers(data.results.map((driver: any) => driver.id));
-                          } else {
-                            setSelectedDrivers([]);
-                          }
-                        }}
-                        className="rounded border-gray-300 text-primary focus:ring-primary"
-                      />
-                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                        [Select All]
-                      </span>
-                    </label>
-                  </div>
-                  
                   <div className="flex items-center space-x-4">
                     {selectedDrivers.length > 0 && (
                       <Button
@@ -761,18 +724,36 @@ export default function DriversPage() {
                       onClick={handleExportCsv}
                       className="text-sm"
                     />
-                    
-                    <div className="text-sm text-gray-700 dark:text-gray-300">
-                      Page 1/2
-                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      label="◀"
+                      variant="outlineDark"
+                      size="small"
+                      onClick={() => handlePage(-1)}
+                      disabled={!data?.previous}
+                      className={!data?.previous ? 'opacity-50 cursor-not-allowed' : ''}
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      Page {filters.page || 1}/{Math.ceil((data?.count || 0) / 10)}
+                    </span>
+                    <Button
+                      label="▶"
+                      variant="outlineDark"
+                      size="small"
+                      onClick={() => handlePage(1)}
+                      disabled={!data?.next}
+                      className={!data?.next ? 'opacity-50 cursor-not-allowed' : ''}
+                    />
                   </div>
                 </div>
               </div>
             )}
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <table className="w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   <input
                     type="checkbox"
                     checked={selectedDrivers.length === data?.results?.length}
@@ -786,26 +767,23 @@ export default function DriversPage() {
                     className="rounded border-gray-300 text-primary focus:ring-primary"
                   />
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Phone
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   License
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Exp.(y)
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Exp
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Rating
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Actions
                 </th>
               </tr>
             </thead>
@@ -852,7 +830,7 @@ export default function DriversPage() {
                       }
                     }}
                   >
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <input
                         type="checkbox"
                         checked={selectedDrivers.includes(driver.id)}
@@ -867,64 +845,23 @@ export default function DriversPage() {
                         className="rounded border-gray-300 text-primary focus:ring-primary"
                       />
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       {driver.name || driver.full_name || driver.username || `Driver #${driver.id}`}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {driver.phone_number || driver.phone || driver.mobile || "—"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {driver.license_number || "—"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {driver.experience_years || "—"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {driver.rating ? driver.rating.toFixed(1) : "—"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={cn(
-                        "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
-                        (driver.status || "active").toLowerCase() === "active" 
-                          ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400" 
-                          : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
-                      )}>
-                        {(driver.status || "active").charAt(0).toUpperCase() + (driver.status || "active").slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          label=""
-                          variant="outlineDark"
-                          size="small"
-                          icon={<Eye className="h-4 w-4" />}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewDriver(driver.id);
-                          }}
-                        />
-                        <Button
-                          label=""
-                          variant="outlineDark"
-                          size="small"
-                          icon={<Edit className="h-4 w-4" />}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditDriver(driver.id);
-                          }}
-                        />
-                        <Button
-                          label=""
-                          variant="outlineDark"
-                          size="small"
-                          icon={<Trash2 className="h-4 w-4" />}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteDriver(driver.id);
-                          }}
-                        />
-                      </div>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {(driver.status || "active").toLowerCase() === "active" ? "active" : "susp."}
                     </td>
                   </tr>
                 ))
@@ -939,53 +876,6 @@ export default function DriversPage() {
           </table>
         </div>
 
-        {/* Pagination */}
-        <div className="bg-white dark:bg-gray-900 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6">
-          <div className="flex-1 flex justify-between sm:hidden">
-            <button
-              onClick={() => handlePage(-1)}
-              disabled={!data?.previous}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => handlePage(1)}
-              disabled={!data?.next}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300"
-            >
-              Next
-            </button>
-          </div>
-          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                Showing page <span className="font-medium">{filters.page || 1}</span> of{' '}
-                <span className="font-medium">{Math.ceil((data?.count || 0) / 10)}</span>
-              </p>
-            </div>
-            <div>
-              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                <button
-                  onClick={() => handlePage(-1)}
-                  disabled={!data?.previous}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400"
-                >
-                  <span className="sr-only">Previous</span>
-                  <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-                </button>
-                <button
-                  onClick={() => handlePage(1)}
-                  disabled={!data?.next}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400"
-                >
-                  <span className="sr-only">Next</span>
-                  <ChevronRight className="h-5 w-5" aria-hidden="true" />
-                </button>
-              </nav>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
 

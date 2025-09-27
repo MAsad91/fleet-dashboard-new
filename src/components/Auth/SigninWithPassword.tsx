@@ -11,8 +11,8 @@ export default function SigninWithPassword() {
   const router = useRouter();
   const [data, setData] = useState({
     companyName: "",
-    username: process.env.NEXT_PUBLIC_DEMO_USER_MAIL || "testadmin",
-    password: process.env.NEXT_PUBLIC_DEMO_USER_PASS || "testadmin123",
+    username: "",
+    password: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -105,7 +105,8 @@ export default function SigninWithPassword() {
       
       if (result.success) {
         console.log('✅ Login successful, redirecting to /fleet');
-        // Don't set loading to false here - let the redirect happen
+        // Keep loading state active to prevent form flash during redirect
+        // The ConditionalLayout will handle the redirect and loading state
         router.replace('/fleet'); // Use replace instead of push to prevent back button issues
         return; // Exit early to prevent setting loading to false
       } else {

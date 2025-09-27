@@ -13,8 +13,8 @@ interface DashcamAnalyticsProps {
 }
 
 export function DashcamAnalytics({ className }: DashcamAnalyticsProps) {
-  const { data: dashcamStats, isLoading, error } = useGetDashcamsDashboardStatsQuery({
-    dateRange: 'today'
+  const { data: analyticsData, isLoading, error } = useGetDashcamsDashboardStatsQuery({
+    dateRange: '1month'
   });
 
 
@@ -38,7 +38,7 @@ export function DashcamAnalytics({ className }: DashcamAnalyticsProps) {
   }
 
   // Show "No data" if no dashcam data is available
-  if (!dashcamStats) {
+  if (!analyticsData) {
     return (
       <div className={cn("rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark", className)}>
         <div className="flex items-center gap-2 mb-4">
@@ -78,19 +78,6 @@ export function DashcamAnalytics({ className }: DashcamAnalyticsProps) {
     );
   }
 
-  // Use real API data if available, fallback to mock data
-  const analyticsData = dashcamStats || {
-    total_recordings: 1247,
-    storage_used_gb: 89.2,
-    storage_total_gb: 200,
-    incident_detections: 23,
-    cameras_online: 45,
-    cameras_total: 50,
-    recording_hours: 156.7,
-    storage_trend: 'up',
-    incident_trend: 'down',
-    recording_trend: 'up'
-  };
 
   const storagePercentage = analyticsData ? (analyticsData.storage_used_gb / analyticsData.storage_total_gb) * 100 : 0;
 
